@@ -29,9 +29,10 @@ def installation(tmp_path,monkeypatch):
     fake_utils=types.ModuleType('shared.utils')
     fake_plugins=types.ModuleType('shared.utils.plugins')
     class WAN2GPPlugin:
-        def __init__(self):self.tabs=[];self.web_apps=[]
+        def __init__(self):self.tabs=[];self.web_apps=[];self.component_requests=[]
         def request_global(self,name):pass
-        def request_component(self,name):pass
+        def request_component(self,name):
+            if name not in self.component_requests:self.component_requests.append(name)
         def add_tab(self,**kwargs):self.tabs.append(kwargs)
         def register_web_app(self,path,factory):self.web_apps.append((path,factory))
     fake_plugins.WAN2GPPlugin=WAN2GPPlugin

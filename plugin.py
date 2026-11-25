@@ -25,7 +25,7 @@ class CastingStudioPlugin(WAN2GPPlugin):
     def __init__(self):
         super().__init__()
         self.name='Casting Studio for WanGP'
-        self.version='1.0.0-rc.12.18'
+        self.version='1.0.0-rc.12.20'
         self.description='Native casting, reference-photo curation, and prompt management for Refmod-Fork.'
         self.wangp_root=Path(__file__).resolve().parents[2]
         self.adapter=RefmodForkAdapter(self.wangp_root)
@@ -34,6 +34,9 @@ class CastingStudioPlugin(WAN2GPPlugin):
         self.vision_button=None
 
     def setup_ui(self):
+        # Request the host component before main-form injection. The session
+        # proxy requests it again at tab creation, after injection on some hosts.
+        self.request_component("state")
         # WanGP v20.00 may inject a deferred session whose discovery methods
         # demand live Gradio state. Documented requested globals are read-only
         # discovery providers; they do not bind to a browser's Gradio state.

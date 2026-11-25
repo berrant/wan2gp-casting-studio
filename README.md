@@ -1,12 +1,20 @@
 # Casting Studio for WanGP
 
-Version: v1.0.0-rc.12.18
+Version: v1.0.0-rc.12.20
 Date: 2026-11-25
 
 
 ## License and commercial inquiries
 
 Casting Studio is source-available, not OSI open-source. The publisher selects [PolyForm Noncommercial 1.0.0](LICENSE) for independently licensable project material. Noncommercial use, modifications and distribution are permitted, including the specific organizational uses allowed by the standard terms. Uses outside those terms require separate written authorization from applicable rights holders. Contact the [project maintainer](https://github.com/berrant/wan2gp-casting-studio). See [notices](NOTICE.md) and [contribution policy](CONTRIBUTING.md). No upstream rights or ownership of user outputs are granted or claimed. The official terms control. Private testing only pending provenance and attribution clearance.
+
+## RC12.20 — Native session state injection
+
+Request the live WanGP Gradio state component before main-form injection, so deferred native queue callbacks can resolve it at execution. No changes to RefMod conversion formats or user prompts. Actual GPU conversion still requires live testing.
+
+## RC12.19 — Nested dialog stacking
+
+The newest dialog is visually above its parents and receives keyboard focus. Collecting character images from an open character editor no longer hides the collector behind that editor. Return, close and Escape preserve the analysis context and existing mutation safeguards. Live WanGP 20.20 vision options are confirmed by the publisher; actual inference and pigmentation remain live tests.
 
 ## RC12.18 — Licensing and distribution
 

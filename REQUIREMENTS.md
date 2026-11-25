@@ -1,6 +1,6 @@
 # Casting Board — cumulative requirements
 
-Authoritative development baseline for the next candidate: v1.0.0-rc.12.17 (Casting Studio for WanGP, release candidate 12.17), only after its release gate passes. Do not build from earlier ZIPs. Before making a release, compare this document and REGRESSION_CHECKLIST.md with the working tree; retain user data outside the package. The requirements below were recovered from development chats and earlier release notes, not inferred from the newest code alone.
+Authoritative development baseline for the next candidate: v1.0.0-rc.12.18 (Casting Studio for WanGP, release candidate 12.18), only after its release gate passes. Do not build from earlier ZIPs. Before making a release, compare this document and REGRESSION_CHECKLIST.md with the working tree; retain user data outside the package. The requirements below were recovered from development chats and earlier release notes, not inferred from the newest code alone.
 
 ## Integration and packaging
 - Native WanGP plugin only, no Docker distribution, no patches to WanGP or Refmod-Fork core. Use documented native session/Gradio queue integration; check installed models and custom settings. Correct native queue submission is the acceptance criterion, not whether a GPU can render it. Target portable Windows/macOS/Linux paths, UTF-8, no developer machine paths, private databases, identity mappings, photos, selections, LoRA preferences or inventory shipped. Preserve external user data. Full cumulative ZIP. Use the current v1.0.0-rc.12.x release sequence; synchronize metadata at release boundaries.
@@ -213,3 +213,9 @@ Whole-batch cancellation is latched across manifest boundaries; native cancellat
 
 ## RC12.18 Licensing
 - Adopt selected PolyForm Noncommercial 1.0.0 by reference to official terms, include license and notices in both archives, preserve upstream and output rights, document commercial permission and contributions, and verify packaging. No runtime enforcement. Public release requires attribution and provenance clearance.
+
+## RC12.19 Dialog stacking
+- The latest open dialog must be visually and interactively above its parents regardless of DOM order. Preserve the analysis state when collecting, including when another character editor remains open. Close and Escape use existing lifecycle guards; inspection lightbox remains usable and the fixed footer stays visible.
+
+## RC12.20 Native queue lifecycle
+- Request the shared live Gradio state component in initial plugin setup, before the host’s component injection pass. Preserve the actual host component and native session proxy; never manufacture shared state or patch WanGP.

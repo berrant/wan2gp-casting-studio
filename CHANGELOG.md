@@ -1,3 +1,14 @@
+## RC12.20 — Native session state injection
+
+- Request WanGP’s shared Gradio state during initial plugin setup, before host component injection. The host’s automatic request at tab construction can be too late. Prevent the native wrapper from failing before the conversion, generation or Workshop callback can begin. No private session patch or replacement state.
+- Reproduce the missing-state failure in a synthetic host lifecycle and test native conversion dispatch with the actual injected component. Live GPU conversion requires installation testing.
+
+## RC12.19 — Nested dialog stacking
+
+- Fix live report: character reference collector could open behind the still-open character identity editor. Assign visual layer order from the existing modal stack, keep the fixed footer above dialogs, and clear temporary layers on dismissal. Preserve keyboard handling, return state, and collection mutation safeguards.
+- Chromium reproduces the nested parent interception on RC12.18; add real click, repeat return, lightbox/Escape, narrow viewport and pending mutation regressions.
+- Publisher confirmed live WanGP 20.20 vision relay readiness, six discovered engines and preferred default ID 3. Actual inference remains unverified.
+
 ## RC12.18 — Licensing and distribution
 
 - Select PolyForm Noncommercial 1.0.0, retain separate commercial permissions, and document contribution rights and upstream terms. Public release remains subject to provenance clearance.

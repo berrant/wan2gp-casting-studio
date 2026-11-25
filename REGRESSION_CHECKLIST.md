@@ -430,3 +430,12 @@ Use a Python environment with plugin dependencies, pytest and optional Playwrigh
 
 ## RC12.18 Licensing
 - Local legal routes, About links, missing/unknown documents, required archive legal files and tamper rejection. Public release requires ownership and provenance confirmation.
+
+## RC12.19 Nested dialog stacking
+- [x] Reproduce parent intercepting collector pointer events on RC12.18.
+- [x] Chromium: actual return clicks over character editor, repeat collection, draft/engine retention, lightbox, Escape, 420px viewport, pending mutation dismissal guard, layer cleanup.
+- [ ] Live WanGP/Safari confirmation and actual vision inference. See TEST_RESULTS.txt for final cumulative gate and archive audits.
+
+## RC12.20 Native session state
+- Synthetic host lifecycle: one and two main-form injection passes before tab creation, original shared component retained, wrapper resolves state before H3-to-FLUX conversion dispatch.
+- Live conversion, actual GPU execution and current host revision verification remain required. See TEST_RESULTS.txt for measured gate.

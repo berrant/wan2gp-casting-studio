@@ -1,18 +1,18 @@
-Casting Studio v1.0.0-rc.12.18 — Licensing and distribution
+Casting Studio v1.0.0-rc.12.20 — Native session state injection
 Measured release verification (2026-11-25)
 
 FINAL COMPLETE CUMULATIVE REGRESSION GATE
-395 collected, 393 passed, 0 failed, 2 retired standalone Docker checks skipped.
-Group 1: 102 passed, 145 warnings in 114.83s (0:01:54)
-Group 2: 88 passed, 94 warnings in 119.99s (0:01:59)
-Group 3: 93 passed, 144 warnings in 113.77s (0:01:53)
-Group 4: 110 passed, 2 skipped, 148 warnings in 107.60s (0:01:47)
-All four exit codes: 0. All 84 test modules included exactly once. Final source, documentation and test fingerprints matched those recorded before the gate (this generated results report excluded).
+401 collected, 399 passed, 0 failed, 2 retired standalone Docker checks skipped.
+Group 1: 105 passed, 145 warnings in 120.24s (0:02:00)
+Group 2: 91 passed, 100 warnings in 121.33s (0:02:01)
+Group 3: 93 passed, 144 warnings in 115.08s (0:01:55)
+Group 4: 110 passed, 2 skipped, 148 warnings in 108.25s (0:01:48)
+All four exit codes: 0. All 86 test modules included exactly once. Final application, documentation and test fingerprints matched before and after the gate (this generated report excluded).
 
-Three additional permanent regressions passed: mounted read-only legal documents and invalid/missing document handling; About license and notice links and dismissal; distribution audit rejection of missing legal documents, altered license file and altered copyright notice in both layouts. These are included in the cumulative count.
+Three new synthetic host lifecycle regressions failed on unchanged RC12.19 (with the test fixture enhanced to track component requests). One reproduces the missing-live-state exception before conversion starts. All three pass after requesting the actual shared state component early in setup_ui. The focused suite of 16 tests covering state injection, native vision lifecycle and conversion passed. This simulates the host ordering; it does not execute the actual WanGP wrapper or GPU.
 
-RC12.17 -> RC12.18 synthetic Git update and startup/restart passed. Preserved saved wardrobe template, approved portrayal traits, reference-image bytes and SQLite integrity. Git worktree clean. Existing queue, vision, conversion and workshop bridges are byte-identical to RC12.17. No new schema, model, prompt template, runtime entitlement checks or external services.
+RC12.19 -> RC12.20 synthetic Git fast-forward, startup/restart, saved wardrobe, approved character traits, reference-image byte preservation and SQLite integrity passed. Python and inline JavaScript syntax passed. Conversion, workshop, generation and vision bridge code and licensing files are unchanged. No schema, prompt template, model or upstream changes.
 
-PolyForm Noncommercial 1.0.0 selected by publisher. LICENSE incorporates the official versioned terms by reference, as allowed by the official terms, rather than reproducing the full text. Both archives include NOTICE.md and CONTRIBUTING.md. Generic copyright-holder wording pending identification of actual rights holders; maintainer contact is the project repository. The license audit is an integrity/presence check, not legal clearance. Eight icons unchanged from RC12.17, PNG metadata empty; source archive and prior notes do not establish complete artwork/code provenance or ownership. No outside contributor commercial rights assumed. Public distribution remains on hold until rights, attribution and third-party provenance are cleared. Commercial permissions cannot grant upstream rights.
+Live conversion and actual vision inference, pigmentation adherence, Safari and current host revision verification remain open. Public distribution on hold pending attribution and provenance clearance. Private installation-test candidate only.
 
-Live WanGP 20.20 vision relay/model discovery, GPU analysis and generation, pigmentation adherence, model-family selection preservation and Safari remain installation checks; no live server access. Existing non-failing warnings remain. Distribution privacy audit covers both archives and a staged synthetic source Git index. Private installation-test candidate, not public v1 approval.
+Both archives and exact staged synthetic source index checked by distribution privacy audit; the audit is not a proof of ownership or complete security assessment.
