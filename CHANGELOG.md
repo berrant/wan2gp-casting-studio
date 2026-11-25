@@ -1,3 +1,11 @@
+## RC12.23 — Final stabilization: inventory concurrency, appearance navigation and autosave
+
+- Manual physical-appearance edits in the character card, image and video editors save automatically after a short idle period. Flush edits before switching portrayals, closing or analysis; keep failed drafts available for retry. Do not infer deletion from blank text; AI analysis still requires explicit approval.
+- Opening Analyze with AI after approving a previous portrayal now opens the requested role directly. Unapproved reviews remain protected; the pending destination is clearly named and captured by exact role, with an explicit switch and confirmation. Stale portrayal changes fail closed.
+
+- Reproduce concurrent cold scan duplication and a stale public inventory response after Personal registration on RC12.22. Serialize cold inventory scans, retain cached reads during forced refresh, recheck Personal exclusions, and retain concurrent cache invalidation.
+- Preserve explicit refresh and recover from scanner failures. Three new permanent tests. Update public-facing quick start, supported model list and troubleshooting; record RC12.22 maintainer live results. No changes to generation prompts, upstream code or database schema. Public release remains gated on live active-generation protection, asset and copyright clearance, and publisher-account review.
+
 ## RC12.22 — Live generation monitor recovery
 
 - Follow native casting activity across overlapping submissions rather than redirecting the monitor to a staged job. Keep submission receipts and exact job-status lookups separate from monitor following. Continue polling across cancellations and mixed image/video jobs while other casting work remains.

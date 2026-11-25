@@ -1,8 +1,18 @@
+# v1.0.0-rc.12.23 — Final stabilization
+
+- [x] Reproduce duplicate cold scans and concurrent Personal-registration disclosure on unchanged RC12.22.
+- [x] Three focused tests: shared scan, invalidation and Personal exclusion, cache and scan-failure recovery.
+- [x] Initial inventory-only candidate: 412 passed, zero failed, two approved retired Docker skips, 414 collected, 89 modules. Superseded by navigation changes; not the final gate.
+- [x] Focused browser tests for exact appearance navigation, approved/unapproved reviews and manual character identity autosave (debounce, flush on close/switch, failure recovery, empty draft, concurrent edits).
+- [x] Final complete cumulative regression gate: 423 passed, zero failed, two approved retired Docker skips, 425 collected, 91 modules. Final fingerprints, Python/JS syntax, synthetic exact Git upgrade and fresh native mount passed. See TEST_RESULTS.txt.
+- [ ] Live RC12.23 scan, idle vision lock behavior and clean install; final public provenance and publisher review.
+
 # v1.0.0-rc.12.22 — Live generation monitor recovery
 
 - [x] Active-job following, four media-transition combinations, cancellation and stale revision rejection; six permanent regression cases.
 - [x] Complete cumulative regression gate: 409 passed, zero failed, two retired Docker checks skipped, 411 collected, 88 modules. Syntax, synthetic Git upgrade and external-data checks passed. Distribution and staged-index audits required before delivery.
-- [ ] Live Safari and native GPU verification.
+- [x] Maintainer live RC12.22 monitor, image/video, cancellation, conversion, Workshop, vision inference, cleanup, character fidelity and caption checks.
+- [ ] Live active-generation protection during vision analysis.
 
 # v1.0.0-rc.12.21 — Identity captions
 

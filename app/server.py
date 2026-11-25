@@ -58,7 +58,7 @@ prefetch_lock=threading.Lock()
 prefetch_state={'running':False,'paused':False,'total':0,'done':0,'found':0,'failed':0,'last':'','started':None}
 prefetch_stop=threading.Event()
 prefetch_thread=None
-catalog_cache={'until':0,'models':[]}
+catalog_cache={'until':0,'models':[],'revision':0}
 
 # Read the driver's existing sensor, without initializing CUDA or touching GPU jobs.
 GPU_TEMPERATURE_TTL=5.0
@@ -502,12 +502,20 @@ def put_local_paths(settings:LocalPathsRequest):
     try:
         with lock:atomic_state_write(PATHS_FILE,json.dumps({'refmod_root':str(candidate)},indent=2)+'\n')
     except OSError as exc:raise HTTPException(503,'Could not save library settings. Previous settings retained.') from exc
-    catalog_cache['until']=0
+    invalidate_catalog_cache()
     if 'WORKSHOP_MOD_CACHE' in globals():WORKSHOP_MOD_CACHE['created']=0
     return get_local_paths()
 
 CATALOG_SCAN_STATE={'running':False,'last_scanned':None,'checked':0,'total':0,'count':0,'phase':'Waiting'}
 CATALOG_SCAN_LOCK=threading.RLock()
+CATALOG_SCAN_WORKER=threading.Lock()
+
+def invalidate_catalog_cache():
+    # A scan already underway must not erase a later invalidation.
+    with CATALOG_SCAN_LOCK:
+        catalog_cache['until']=0
+        catalog_cache['revision']+=1
+
 CATALOG_SCAN_INFO=external_data_path(DATA/'catalog_last_scan.json')
 try:
     stored=json.loads(CATALOG_SCAN_INFO.read_text(encoding='utf-8'))
@@ -528,10 +536,26 @@ def picture_conversion_source(path):
         return is_h3_picture_refmod(safetensors_metadata(path,'refmod_meta'))
     except (ImportError,OSError,ValueError,TypeError,AttributeError):return False
 
-def scan(force=False):
+def cached_public_inventory():
+    with CATALOG_SCAN_LOCK:
+        if time.monotonic()>=catalog_cache['until']:return None
+        models=catalog_cache['models']
     private_names=personal_name_keys()
-    if not force and time.monotonic()<catalog_cache['until']:
-        return [m for m in catalog_cache['models'] if token(m['name']) not in private_names]
+    return [m for m in models if token(m['name']) not in private_names]
+
+
+def scan(force=False):
+    # Cached readers stay responsive while an explicit refresh is running.
+    # Cold readers recheck the cache after waiting for the single scan owner.
+    if not force and (cached:=cached_public_inventory()) is not None:return cached
+    with CATALOG_SCAN_WORKER:
+        if not force and (cached:=cached_public_inventory()) is not None:return cached
+        return scan_uncached()
+
+
+def scan_uncached():
+    with CATALOG_SCAN_LOCK:revision=catalog_cache['revision']
+    private_names=personal_name_keys()
     active=effective_local_paths()
     roots=[(active['public_h3'],'minimax_h3'),(active['public_flux'],'flux2')]
     # pathlib does not descend into symlinked children during rglob. The
@@ -568,9 +592,14 @@ def scan(force=False):
             convertible=picture_conversion_source(f) if family=='minimax_h3' else False
             items.append({'filename':f.name,'path':path,'name':canonical_name(model_name(f)),'family':family,'convertible_to_flux':convertible, 'role_specific':'__role__' in f.stem})
         items.sort(key=lambda x:(x['name'].casefold(),x['family'],x['path']))
-        catalog_cache.update(models=items,until=float('inf'))
+        # A Personal profile may have been registered during enumeration.
+        # Recheck before publishing, and leave the cache invalidated if any
+        # concurrent identity/path mutation occurred while the scan was active.
+        private_names=personal_name_keys()
+        items=[m for m in items if token(m['name']) not in private_names]
         stamp=int(time.time())
         with CATALOG_SCAN_LOCK:
+            catalog_cache.update(models=items,until=float('inf') if revision==catalog_cache['revision'] else 0)
             CATALOG_SCAN_STATE.update(last_scanned=stamp,count=len(items),phase='Complete')
             snapshot={k:CATALOG_SCAN_STATE[k] for k in ('last_scanned','checked','total','count')}
         try:
@@ -680,9 +709,9 @@ def catalog(response:Response=None):
 
 @app.post('/api/catalog/rescan')
 def catalog_rescan():
-    scan(force=True)
+    models=scan(force=True)
     WORKSHOP_MOD_CACHE['created']=0
-    return {'ok': True, 'count': len(catalog_cache['models'])}
+    return {'ok': True, 'count': len(models)}
 
 @app.get('/api/profiles/categories')
 def get_profile_categories():
@@ -1259,7 +1288,7 @@ def personal_add(item:PersonalPayload):
             db.execute('INSERT INTO personal_profiles(id,name,name_key,relationship,notes,consent,h3_refmod,flux_refmod,updated_at) VALUES (?,?,?,?,?,?,?,?,?)',
                 (uid,name,token(name),item.relationship.strip(),item.notes,int(item.consent),item.h3_refmod,item.flux_refmod,int(time.time())))
         except sqlite3.IntegrityError:raise HTTPException(409,'A Personal entry with that name already exists')
-    catalog_cache['until']=0
+    invalidate_catalog_cache()
     return {'id':uid,'saved':True}
 
 @app.put('/api/personal/{personal_id}')
@@ -1285,7 +1314,7 @@ def personal_update(personal_id:str,item:PersonalPayload):
             db.execute('UPDATE personal_profiles SET name=?,name_key=?,relationship=?,notes=?,consent=?,h3_refmod=?,flux_refmod=?,updated_at=? WHERE id=?',
                        (name,token(name),item.relationship.strip(),item.notes,int(item.consent),item.h3_refmod,item.flux_refmod,int(time.time()),personal_id))
         except sqlite3.IntegrityError:raise HTTPException(409,'A Personal entry with that name already exists')
-    catalog_cache['until']=0
+    invalidate_catalog_cache()
     return {'saved':True}
 
 @app.delete('/api/personal/{personal_id}')
@@ -1305,7 +1334,7 @@ def personal_remove(personal_id:str):
                     db.execute('DELETE FROM choices WHERE key=?',(key,))
             except (ValueError,TypeError):pass
     remove_owned_portrait(before['portrait'],personal_id)
-    catalog_cache['until']=0
+    invalidate_catalog_cache()
     return {'removed':True}
 
 @app.post('/api/personal/{personal_id}/portrait')

@@ -79,8 +79,8 @@ def test_character_identity_editor_updates_when_switching_cast(page):
     assert tab.locator('#generatorCharacterPanel').is_visible()
     tab.locator('#generatorCharacterPanel summary').click() if not tab.locator('#generatorCharacterPanel').evaluate('(e)=>e.open') else None
     tab.locator('#generatorCharacterTraits').fill('Permanent luminous silver irises.')
-    tab.locator('#generatorCharacterPanel').get_by_role('button',name='Save character identity').click()
-    tab.wait_for_function('window.savedTraits.length===1')
+    # Normal editing no longer requires a manual save action.
+    tab.wait_for_function("window.savedTraits.length===1 && $('generatorCharacterStatus').textContent.includes('Saved automatically')")
     assert tab.evaluate('window.savedTraits[0].character')=='The Android'
     tab.locator('#generatorChoice').select_option('alicebraga|amandalucas|darkmatter')
     tab.wait_for_function("document.querySelector('#generatorCharacterTraits').value==='Natural face'")

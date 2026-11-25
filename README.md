@@ -1,12 +1,56 @@
 # Casting Studio for WanGP
 
-Version: v1.0.0-rc.12.22
+Version: v1.0.0-rc.12.23
 Date: 2026-11-25
 
 
 ## License and commercial inquiries
 
 Casting Studio is source-available, not OSI open-source. The publisher selects [PolyForm Noncommercial 1.0.0](LICENSE) for independently licensable project material. Noncommercial use, modifications and distribution are permitted, including the specific organizational uses allowed by the standard terms. Uses outside those terms require separate written authorization from applicable rights holders. Contact the [project maintainer](https://github.com/berrant/wan2gp-casting-studio). See [notices](NOTICE.md) and [contribution policy](CONTRIBUTING.md). No upstream rights or ownership of user outputs are granted or claimed. The official terms control. Private testing only pending provenance and attribution clearance.
+
+## Quick start
+
+Casting Studio is a native local WanGP plugin for building a cast, organizing reference images and submitting independently reviewed image/video prompts. It does not include WanGP, Refmod-Fork, model weights, a populated performer database or a remote generation service.
+
+1. Install and launch WanGP and the separately maintained [Refmod-Fork](https://github.com/jedsdead/Refmod-Fork). Finish jobs and back up external data before upgrades. In WanGP's Apps & PlugIn Manager, install `https://github.com/berrant/wan2gp-casting-studio`, then restart. The repository remains private until release approval; authorized testers need Git access. For manual installation, use the wrapped installation ZIP (not GitHub's source ZIP).
+2. Open Casting Studio inside WanGP. In **Getting started**, run the local checks. Use Settings to verify the RefMod root, then **Rescan RefMods** if files were added or moved. Choose an installed compatible model/checkpoint rather than guessing from the family name.
+3. Find a production or public performer, choose a role and exact RefMod, or manage a consented Personal profile separately. Use explicit research or collection controls to add reference images. The initial catalog is empty except for locally discovered information.
+4. Open the generator, review model settings and each image or video prompt, adjust the wardrobe/action fields, and submit. Identity captions are optional; saved manual final prompts are preserved. Track the active task in the live monitor or inspect the native queue. Do not resubmit simply because a status request is temporarily unavailable.
+5. Use the Workshop to create or inspect RefMods and compatible conversion tools. For AI character appearance analysis, explicitly choose the portrayal, local character reference images and available vision engine. Review before approving; wait for an idle native queue. No automatic model downloads or background vision runs.
+
+### Supported generation options
+
+| Family | Casting Studio model options |
+| --- | --- |
+| MiniMax H3 video | H3 Ref2VA |
+| MiniMax H3 stills | H3-Image 33B, H3-Image Pruned 20B, Pruna P-H3-Image 20B |
+| FLUX stills | FLUX.2 Dev, Klein 4B, Klein 9B, pi-FLUX.2, FLUX.3 Klein |
+
+These are recognized options, not a guarantee that every checkpoint, encoder, GPU or operating system combination is installed or has been tested. Refmod-Fork compatibility is checked using metadata and live capabilities; an unsupported model or unavailable exact checkpoint is not silently substituted. Vision uses the compatible locally installed WanGP engines discovered by the bridge. The maintainer reported successful live RC12.22 tests of image/video previews, cancellation, bidirectional RefMod conversion, Workshop creation/decompilation, appearance inference, GPU cleanup, prompt/caption behavior and Git update on WanGP 20.20 (revision 72d50753). Independent testing of other configurations remains outstanding. Native vision locking during active generation still requires a live check.
+
+### Troubleshooting
+
+| Symptom | First action |
+| --- | --- |
+| Empty catalog | Check the library root and exact family, then explicitly rescan. No cast database is shipped. |
+| Native relay unavailable | Open the plugin inside WanGP; use Settings / Troubleshooting and inspect the native queue before retrying. Restart the host if the plugin was updated. |
+| A model is unavailable | Verify that exact compatible checkpoint and RefMod are installed; do not rename or move private model directories to bypass checks. |
+| Vision analysis unavailable or busy | Check the selected engine's assets through WanGP and wait for active/queued jobs to finish. No larger model is automatically selected. |
+| Preview missing or stale | Check WanGP's native preview and queue. Reopen the monitor or browser page if needed, but do not duplicate the generation request. Report the model, job state and transition. |
+| Incorrect character appearance | Verify the production/year, in-character reference selection and approved profile. Inspect the final prompt; likeness and anatomy depend on model adherence. |
+| Unexpected maintenance load | Check the maintenance indicator and stop optional work using its controls. Opening a workspace does not launch automatic bulk research. |
+| Damaged settings or data | Back up external storage first; follow the recovery note below. Do not delete the database or reset all browser data as a first step. |
+
+For bug reports, provide plugin, WanGP and Refmod-Fork versions, platform/browser, a reproducible sequence and sanitized errors. Do not post private photographs, identities, prompts, tokens or raw databases. This is a trusted local, single-user workflow; do not expose the service to untrusted users or the public internet.
+
+## RC12.23 — Final stabilization: inventory concurrency and appearance navigation
+
+- Opening Analyze with AI after approving a previous portrayal now opens the requested role directly. Unapproved reviews remain protected; the pending destination is clearly named and captured by exact role, with an explicit switch and confirmation. Stale portrayal changes fail closed.
+
+- Concurrent cold inventory requests share a single scan, while cached readers remain available during a forced refresh. Failed scans release the scan owner. Explicit rescans remain available.
+- Recheck Personal exclusions before returning inventory results and preserve invalidation when Personal or path settings change during a scan. This prevents a scan from overwriting a newer invalidation.
+- Add permanent concurrency, Personal-registration and refresh-failure regression tests. Public quick-start, model and troubleshooting documentation expanded; no generation prompt, bridge or model changes.
+- Private testing only pending live checks, final copyright/asset clearance and publisher-account review.
 
 ## RC12.22 — Live generation monitor recovery
 
@@ -213,7 +257,7 @@ Collected reference photographs are persistent, not temporary. Existing photogra
 
 ## Character appearance and cast controls
 
-When opening a public character's queue editor, the application checks cached appearance details and, when necessary, researches public encyclopedia descriptions and structured appearance fields. The character's on-screen anatomy and coloration take precedence over the performer's everyday appearance in template-generated prompts. Review the suggested traits and source in Character identity signature. Manual identity overrides and custom final prompts are preserved; use Reset to template to incorporate updated traits into a previously customized prompt. No character records are shipped. Bulk generation uses locally available traits rather than initiating a large research operation.
+When opening a public character's queue editor, the application checks cached appearance details and, when necessary, researches public encyclopedia descriptions and structured appearance fields. The character's on-screen anatomy and coloration take precedence over the performer's everyday appearance in template-generated prompts. Review the suggested traits and source in Character identity signature. Manual character appearance edits save automatically in the character card, image and video editors. A visible status reports progress; Save now retries a failed write. Blank drafts do not reset an existing profile without explicit confirmation, and AI-suggested traits still require approval. Manual identity overrides and custom final prompts are preserved; use Reset to template to incorporate updated traits into a previously customized prompt. No character records are shipped. Bulk generation uses locally available traits rather than initiating a large research operation.
 
 Cast rows with installed or convertible RefMods display selection and artwork controls; image collection and creation remain available for missing RefMods and through the Workshop.
 
