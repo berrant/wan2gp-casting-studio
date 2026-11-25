@@ -1,23 +1,38 @@
 # Casting Studio for WanGP
 
-Version: v1.0.0-rc.12.7
+Version: v1.0.0-rc.12.9
 Date: 2026-11-25
 
 
-## RC12.7 workspace workflow
+## RC12.9 People library
+
+- Open People → Performers, type a name and select Add person. A local public performer can be saved without a role, production or RefMod. Use All known people or Missing RefMods to find saved profiles; Installed RefMods only retains the previous fast view.
+- Collect photos or refresh roles explicitly; adding a person never launches online research. Public and Personal profiles remain separate. Duplicate normalized names reuse the existing record.
+- A delayed save cannot replace a newer search or navigation context. Failed saves retain the draft.
+
+## RC12.8 persistence and navigation
+
+- Completed results retain the newest 30 entries in external local storage. Restarting WanGP restores records for unchanged, existing native output files; the plugin does not copy media or preserve deleted output files. Completed videos remain paused.
+- Historical retries are available for explicitly failed native tasks submitted with this version, if original snapshots remain available in the latest 100 history records. The original prompt and settings are retained privately in the runtime database. Retry validates current identity, consent, exact RefMod path and recorded file size/modification time. Replaced dependencies, unknown outcomes and pending retry claims are blocked; no automatic retry runs.
+- Technical reference ranking uses recorded sharpness, dimensions, face count and quality status. Near-duplicate perceptual hashes are grouped within a collection; Workshop preselects the highest ranked unique candidates (up to 20). All candidates remain available for manual review. No photos are deleted or automatically researched.
+- Workshop can optionally generate one neutral test portrait after successfully creating a RefMod, using a compatible installed image model and the exact newly created file. The option is off by default, and its failure does not discard a completed RefMod. Review the test result in the completed gallery.
+- Private settings and prompts backup includes saved public production selection sets. Imports validate identifiers and merge the sets; restoring a saved set still checks current inventory. The backup does not bundle reference media, generated files, model weights or retry history.
+- Click a public performer name on a cast card or result to open that person's People view, including performers with no installed RefMod. Click the production name on a role to return to its cast. Private identities remain unlinked. Existing selections are retained.
+
+## RC12.7 workspace workflow (historical)
 
 - Open the generator and use Prompts, Model settings, Identity, or Batch review. All configured image prompts stay independently editable; pending edits and blocked reviews still prevent unsafe submission.
 - Select an exact compatible RefMod from the cast/role dropdown when multiple files are available. Character-specific Workshop names contain `__role__`; existing library files are not renamed. Ambiguous cross-family choices require explicit selection.
 - Save selections from a production cast for the active RefMod family; restore merges available saved selections without replacing existing choices. Use the filtered selection control to select visible roles.
 - Switch between performer and character reference collection and Workshop, then return to the original cast.
-- Browse recent completed outputs from the monitor. The gallery is in-memory for this WanGP process, up to 30 outputs; it never controls the live job, and video playback is manual.
+- Browse recent completed outputs from the monitor. The gallery originally retained up to 30 outputs in memory; RC12.8 persists these records; it never controls the live job, and video playback is manual.
 - The image-set editor includes the same public character identity as the video workflow. Factory action, framing and expression now occupy their own fields. Personally edited final prompts are not overwritten.
-- Settings has category navigation; reset an individual fine-tune without resetting the others. Batch history can be filtered by model, status, performer or production. Confirmed failed-task retry remains limited to the current process.
+- Settings has category navigation; reset an individual fine-tune without resetting the others. Batch history can be filtered by model, status, performer or production. RC12.8 adds cross-restart retry for newly recorded confirmed failures.
 - No new keyboard shortcuts. No new automatic online collection. Native Git updates preserve external runtime data.
 
 **Discover. Cast. Create.**
 
-Native WanGP plugin · Release candidate 12.7.
+Native WanGP plugin · Release candidate 12.9.
 
 ## RC12.6 — prompt review and saved model settings
 
@@ -27,7 +42,7 @@ For still images, the generator presents the complete configured image set as nu
 
 **People → Performers:** filmographies are collapsed by default. Each performer has a role count, selected-role count and independent disclosure control. Character searches reveal matching roles. Refresh roles is a separate, explicit research action.
 
-Existing Git installations should use Apps & PlugIn Manager → Update, followed by a WanGP restart. Export private settings and back up external runtime data before updating. If GitHub credentials fail after a Pinokio restart, verify the Pinokio-specific credential helper; do not remove the working installation or expose credentials in the repository URL.
+Existing Git installations should use Apps & PlugIn Manager → Update, followed by a WanGP restart. Export private settings and back up external runtime data before updating. If GitHub credentials fail after a Pinokio restart, verify the repository-local credential helper in the installed plugin’s .git/config (not a tracked source file); do not remove the working installation or expose credentials in the repository URL.
 
 ## GitHub installation and cast coverage (RC12.5)
 
@@ -55,7 +70,7 @@ The optional **Getting started** dialog offers setup checks, first-generation st
 
 **Keyboard shortcuts:** outside text-entry fields, Alt+N queues the current task and advances; Alt+P refreshes the prompt; Alt+Left/Right navigates the casting selection; Alt+U restores the most recent removal when no dialog is open. Browser/OS shortcut interception may vary; the original buttons remain available.
 
-**Batch history:** local SQLite retains the most recent 100 casting-generation records and submitted settings. Refresh to see new states. Settings history does not include the full generated prompt or identity metadata, but may contain user-configured extra settings and LoRA filenames. Clear history removes stored records without cancelling jobs; in-flight jobs can create a new record when their state changes. Older versions' jobs cannot be reconstructed. Retry is enabled only for explicit, validated native failure indices while the original task snapshots are still in the current WanGP process; skipped, cancelled, unconfirmed, or known successful output tasks are excluded. The retry preserves submitted settings, including a random seed request if applicable, and rechecks live consent and RefMods. No retry is performed automatically. After a restart the record persists but the retry source does not; unconfirmed in-flight outcomes are marked unknown.
+**Batch history:** local SQLite retains the most recent 100 casting-generation records and submitted settings. Refresh to see new states. RC12.8 retains private prompt/identity snapshots for confirmed failed tasks eligible for retry, as well as user-configured extra settings and LoRA filenames. Clear history removes stored records without cancelling jobs; in-flight jobs can create a new record when their state changes. Older versions' jobs cannot be reconstructed. Retry is enabled only for explicit, validated native failure indices while the original validated task snapshots are available; skipped, cancelled, unconfirmed, or known successful output tasks are excluded. The retry preserves submitted settings, including a random seed request if applicable, and rechecks live consent and RefMods. No retry is performed automatically. After a restart RC12.8 restores eligible confirmed-failure snapshots; unconfirmed in-flight outcomes are not retried.
 
 ## Recovery note
 

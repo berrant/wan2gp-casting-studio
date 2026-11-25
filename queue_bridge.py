@@ -159,6 +159,7 @@ class QueueBridge:
         self._monitor_gallery = {}
         self._last_monitor_output = None
         self.history_sink = None
+        self.gallery_sink = None
 
     @property
     def live_session_ready(self):
@@ -584,6 +585,16 @@ class QueueBridge:
             record['tasks']=deepcopy(item.get('_monitor_history_labels',[]))
             record['task_count']=item.get('total_tasks',1)
             record['output_count']=len(item.get('files') or [])
+            # Store only explicitly failed tasks, never infer failed or skipped work.
+            if record.get('state')=='failed' and not record.get('retried_as'):
+                source=item.get('_monitor_retry_source',([],None))[0]
+                snapshots=[]
+                for i in record.get('failed_task_indices',[]):
+                    if type(i) is not int or not 1<=i<=len(source):continue
+                    sub=source[i-1];snap=getattr(sub,'_retry_snapshot',None)
+                    if isinstance(snap,dict):snapshots.append({'index':i,'settings':{**self._history_settings(sub),'choice_key':sub.choice_key},'snapshot':deepcopy(snap)})
+                if len(snapshots)==len(record.get('failed_task_indices',[])) and snapshots:record['_retry_tasks']=snapshots
+                record['_retry_batch']=bool(item.get('batch'))
         try:self.history_sink(record)
         except Exception:logging.getLogger(__name__).exception('Casting Studio could not write local batch history')
 
@@ -844,6 +855,19 @@ class QueueBridge:
             self._run_batch(job_id,submission,validate)
         elif isinstance(submission, WorkshopTask):
             self._run_workshop(job_id,submission,validate)
+            if (self.status(job_id) or {}).get('state')=='completed' and callable(getattr(submission,'test_portrait',None)):
+                try:
+                    test_sub,test_validate=submission.test_portrait()
+                    self.preflight(test_sub,test_validate)
+                    test_id=uuid.uuid4().hex
+                    with self._lock:
+                        self._jobs[test_id]={'id':test_id,'state':'queued','message':'Workshop test portrait','model_type':test_sub.model_type,'scene':1,'files':[],'error':''}
+                        self._jobs[job_id].update(test_portrait_job=test_id,test_portrait_state='running')
+                    self._run(test_id,test_sub,test_validate)
+                    result=self.status(test_id) or {}
+                    with self._lock:self._jobs[job_id].update(test_portrait_state=result.get('state','failed'),test_portrait_error=result.get('error',''))
+                except Exception as exc:
+                    with self._lock:self._jobs[job_id].update(test_portrait_state='failed',test_portrait_error=str(getattr(exc,'detail',exc))[:500])
         elif isinstance(submission, ConversionTask):
             self._run_conversion(job_id,submission,validate)
         else:
@@ -1260,6 +1284,7 @@ class QueueBridge:
                 raise ValueError('A Workshop job already targets this destination')
             self._jobs[job_id]={'id':job_id,'state':'queued','message':'Waiting for native WanGP queue relay',
                                 'model_type':task.model_type,'operation':task.op,'files':[], 'error':'','workshop_destination':destination}
+            if callable(getattr(task,'test_portrait',None)):self._jobs[job_id]['test_portrait_state']='pending'
             self._pending.append((job_id,task,validate))
         return job_id
 
@@ -1398,6 +1423,30 @@ class QueueBridge:
             for old in list(self._monitor_outputs)[:-30]:
                 self._monitor_outputs.pop(old,None);self._monitor_gallery.pop(old,None)
             if self._last_monitor_output and self._last_monitor_output['id'] not in self._monitor_outputs:self._last_monitor_output=output
+            if callable(self.gallery_sink):
+                try:self.gallery_sink(self.gallery_snapshot())
+                except Exception:logging.getLogger(__name__).exception('Casting Studio could not persist gallery')
+
+    def gallery_snapshot(self):
+        with self._lock:
+            return [{'output':deepcopy(self._monitor_gallery[k]),'path':str(v[0]),'mime':v[1],'size':v[2],'mtime':v[3]} for k,v in self._monitor_outputs.items()]
+
+    def restore_gallery(self,records):
+        # Only from local runtime storage, never from an import or HTTP request.
+        with self._lock:
+            for rec in records[-30:]:
+                try:
+                    output=rec['output'];token=output['id'];path=Path(rec['path']);mime=rec['mime']
+                    allowed={'.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.mp4':'video/mp4','.webm':'video/webm'}
+                    if not re.fullmatch(r'[a-f0-9]{32}',token) or allowed.get(path.suffix.lower())!=mime or output.get('kind')!=('video' if mime.startswith('video/') else 'image'):continue
+                    if not path.is_absolute() or path.resolve(strict=True)!=path or not path.is_file():continue
+                    st=path.stat()
+                    if (st.st_size,st.st_mtime_ns)!=(rec['size'],rec['mtime']):continue
+                    self._monitor_outputs[token]=(path,mime,st.st_size,st.st_mtime_ns)
+                    self._monitor_gallery[token]=deepcopy(output)
+                except (OSError,ValueError,TypeError,KeyError,RuntimeError,AttributeError):continue
+            # A historical result must not pretend to be a current job's live preview.
+
 
     def monitor_gallery(self):
         with self._lock:results=list(self._monitor_gallery.values())[::-1]

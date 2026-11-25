@@ -44,6 +44,7 @@ def test_image_inspector_refmod_filter_and_split_resolution_picker():
         page.wait_for_function('document.querySelector("#generatorLoraStatus").textContent.includes("installed for this model")')
         assert '480p' in page.locator('#generatorResolutionCategory option').all_text_contents()
         assert '720p' in page.locator('#generatorResolutionCategory option').all_text_contents()
+        page.locator('button[data-workspace=model]').click()
         page.locator('#generatorResolutionCategory').select_option('720p')
         assert page.locator('#generatorResolution').input_value()=='704x1280'
         page.locator('#generatorResolutionCategory').select_option('480p')

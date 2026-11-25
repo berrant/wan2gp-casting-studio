@@ -142,6 +142,7 @@ def test_fork_metadata_discovery_and_path_safety(installation):
             plugin.adapter.validate_refmod(relative_path=path,family=kind,personal=private)
 
 
+@pytest.mark.skip(reason="Legacy standalone Docker distribution is not shipped in the native WanGP plugin")
 def test_docker_mode_unchanged(tmp_path):
     import subprocess
     env=dict(os.environ)
@@ -169,6 +170,7 @@ print('Standalone Docker interface works')
     assert (tmp_path/'docker_data'/'casting.sqlite3').exists()
 
 
+@pytest.mark.skip(reason="Legacy standalone Docker import tool is not shipped in the native WanGP plugin")
 def test_docker_import_creates_consistent_snapshot_without_overwrite(tmp_path):
     import sqlite3
     from importlib.machinery import SourceFileLoader
@@ -362,7 +364,7 @@ def test_model_discovery_without_live_gradio_session_and_resolution_picker(insta
     assert details['resolution_default']=='1280x720'
     assert any(item['value']=='1280x720' for item in details['resolutions'])
     html=client.get('/casting-studio/').text
-    assert 'v1b5.2.1' in html
+    assert plugin.version in html
     assert '<select id="generatorResolution"' in html
     assert 'generatorLoraRows' in html
     assert 'function addGeneratorLora' in html

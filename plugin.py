@@ -24,7 +24,7 @@ class CastingStudioPlugin(WAN2GPPlugin):
     def __init__(self):
         super().__init__()
         self.name='Casting Studio for WanGP'
-        self.version='1.0.0-rc.12.7'
+        self.version='1.0.0-rc.12.9'
         self.description='Native casting, reference-photo curation, and prompt management for Refmod-Fork.'
         self.wangp_root=Path(__file__).resolve().parents[2]
         self.adapter=RefmodForkAdapter(self.wangp_root)
@@ -109,6 +109,8 @@ class CastingStudioPlugin(WAN2GPPlugin):
         server.startup()
         server.app.state.casting_queue_bridge=self.queue_bridge
         self.queue_bridge.history_sink=server.persist_cast_job_history
+        self.queue_bridge.gallery_sink=server.persist_cast_gallery
+        self.queue_bridge.restore_gallery(server.load_cast_gallery())
 
         @server.app.get('/api/integration/status', include_in_schema=False)
         def integration_status(response: Response):

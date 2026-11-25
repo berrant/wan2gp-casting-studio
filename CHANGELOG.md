@@ -1,3 +1,20 @@
+# v1.0.0-rc.12.9 — People library (2026-11-25)
+
+- Register a public performer directly from People without requiring an installed RefMod or a production. Add All known people and Missing RefMods filters. Preserve installed-only default and existing casting choices.
+- Explicitly collect references or refresh credits for saved people. Normalize duplicate names, reject private identities and invalid names, and serialize concurrent additions.
+- Prevent a delayed add response from overriding a newer search or tab navigation; show save outcome and retain failed drafts.
+- Release gates: full cumulative suite on final code, targeted workflow and failure cases, upgrade simulation, privacy and syntax checks. See measured test results.
+
+# v1.0.0-rc.12.8 — Persistent workflow and navigation (2026-11-25)
+
+- Persist the last 30 completed result records in external SQLite storage; restore only existing unchanged native files. Keep completed videos paused and gallery browsing independent of active generation.
+- Persist confirmed failed-task retry snapshots locally; revalidate identity, authorization, exact RefMod path and recorded file metadata before explicit retry. Exclude successful, cancelled, unknown or already claimed tasks. Older session-only history is not retroactively reconstructible.
+- Rank photo candidates using existing technical metrics, group near-duplicates by perceptual hash within their collection, preselect high-quality distinct candidates in Workshop without deleting any photos or initiating online research.
+- Add opt-in neutral test portrait after successful Workshop extraction with the exact created RefMod and a compatible installed image model; report the follow-up outcome separately.
+- Include saved public production selection sets in validated private settings/prompt export and merge import; preserve legacy backup compatibility and reject unsafe model identifiers.
+- Make public cast and monitor performer labels navigate directly to People, including missing RefMods; role production links navigate to the corresponding cast. Preserve current selections and keep private identities unlinked.
+- Require the complete cumulative regression suite and all new targeted/adversarial tests on the final corrected code before delivering any release ZIP. See current measured TEST_RESULTS.txt for release status.
+
 # v1.0.0-rc.12.7 — Workspace Edition (2026-11-25)
 
 - Approved UX priorities 1–8: dedicated wide generator workspace with Prompts, Model settings, Identity and Batch review tabs; explicit same-performer RefMod picker and character variant naming; grouped secondary cast/role actions and filtered selection; continuous collection/Workshop navigation; recent completed result gallery; saved production selections; settings navigation and individual fine-tune reset; searchable batch history and expandable public casting labels.

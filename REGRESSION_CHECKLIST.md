@@ -1,3 +1,30 @@
+# v1.0.0-rc.12.9 — People library release gate
+
+- [x] Direct local public performer registration; independent of productions and installed RefMods.
+- [x] Duplicate normalization, invalid/private name rejection, concurrent add safety and explicit role research.
+- [x] Browser save failure recovery; delayed save does not override a newer search, Clear or tab navigation.
+- [x] Responsive registration controls at 1440, 800 and 420px; synthetic 1,343-person library and role search.
+- [x] Final complete native test directory: 327 passed, 0 failed, 2 retired standalone Docker tests skipped (325.19 seconds).
+- [x] Seven focused RC12.9 cases passed separately on final code; the cumulative suite includes them and all prior adversarial cases.
+- [x] Native mount, simulated Git fast-forward from RC12.8, restart and external data preservation, clean working tree.
+- [x] Python and inline JavaScript syntax checks; final application/test source fingerprint verified unchanged after full regression.
+- [ ] Real WanGP native update, GPU generation and actual user library verification.
+- No arbitrary repeated stress rounds required. Full cumulative suite after final code changes and meaningful targeted/adversarial testing remain mandatory. See TEST_RESULTS.txt.
+
+# v1.0.0-rc.12.8 — Persistent workflow and navigation release gate
+
+- [x] Persistent gallery across restart, unchanged-file validation, playback and active-job independence.
+- [x] Explicit historical failure retry, original settings/prompt snapshot and dependency/consent checks.
+- [x] Technical reference quality ranking, near-duplicate grouping and opt-in test portrait workflow.
+- [x] Saved public production collections in private backup, validated merge/restore.
+- [x] Performer/production navigation, including missing RefMods and private-name guard.
+- [x] Final complete native test directory: 320 passed, 0 failed, 2 explicitly retired standalone Docker tests skipped, 451 warnings (330.09 seconds).
+- [x] Final MOAB+: 25 fresh-process rounds, 37 passing cases per round, 925 successful executions, zero failed.
+- [x] Final Git fast-forward simulation from RC12.7, native mount and external-state preservation through restart; clean working tree.
+- [x] Python and inline JavaScript syntax checks.
+- [ ] Real WanGP native update, GPU generation, actual photo/model libraries and user-data verification.
+- Full regression is mandatory after the final application or fixture correction; do not deliver ZIPs if an applicable test fails. Distribution audit performed during packaging. See TEST_RESULTS.txt.
+
 # v1.0.0-rc.12.7 — Workspace Edition release gate
 
 - [x] Tabbed generator workspace, shared image-set character identity, exact legacy factory action migration, RefMod variant selection, saved production sets, gallery and batch history: focused tests.

@@ -348,6 +348,7 @@ def connect():
         conn.execute('CREATE TABLE IF NOT EXISTS identity_names (key TEXT PRIMARY KEY, display_name TEXT NOT NULL)')
         conn.execute('CREATE TABLE IF NOT EXISTS choices (key TEXT PRIMARY KEY, payload TEXT NOT NULL)')
         conn.execute('CREATE TABLE IF NOT EXISTS production_selection_sets (production TEXT NOT NULL, family TEXT NOT NULL, payload TEXT NOT NULL, PRIMARY KEY(production,family))')
+        conn.execute('CREATE TABLE IF NOT EXISTS casting_gallery (id INTEGER PRIMARY KEY CHECK(id=1), payload TEXT NOT NULL)')
         conn.execute('CREATE TABLE IF NOT EXISTS casting_job_history (id TEXT PRIMARY KEY, updated INTEGER NOT NULL, payload TEXT NOT NULL)')
         conn.execute('CREATE TABLE IF NOT EXISTS images (key TEXT PRIMARY KEY, url TEXT NOT NULL)')
         conn.execute('CREATE TABLE IF NOT EXISTS photo_files (url TEXT PRIMARY KEY, filename TEXT NOT NULL)')
@@ -729,7 +730,7 @@ def get_profile_link(name:str=Query(min_length=1,max_length=180)):
         return {'provider':'imdb','url':row[0],'verified':True} if row[0] else default
     imdb=''
     try:
-        with httpx.Client(timeout=5,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.7 (personal catalog)'}) as client:
+        with httpx.Client(timeout=5,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.9 (personal catalog)'}) as client:
             resp=client.get('https://www.wikidata.org/w/api.php',params={'action':'wbsearchentities','search':name,'language':'en','format':'json','limit':6,'type':'item'})
             resp.raise_for_status()
             candidates=[v for v in resp.json().get('search',[]) if token(v.get('label'))==token(name)]
@@ -821,7 +822,7 @@ def wikidata_get(client,params):
     raise last_error
 
 def wikidata_profile(name):
-    with httpx.Client(timeout=20, headers={'User-Agent':'CastingStudio/1.0.0-rc.12.7 (public performer metadata; respectful research)'}) as client:
+    with httpx.Client(timeout=20, headers={'User-Agent':'CastingStudio/1.0.0-rc.12.9 (public performer metadata; respectful research)'}) as client:
         search=wikidata_get(client,{
             'action':'wbsearchentities','search':name,'language':'en','format':'json','type':'item','limit':8})
         candidates=[c for c in search.get('search',[]) if token(c.get('label',''))==token(name) or
@@ -1936,7 +1937,7 @@ def download_image(url):
         if cached and safe_media_file(PHOTO_DIR,cached[0],r'[0-9a-f]{64}\.jpg'):return 'api/photos/'+cached[0]
         validate_public_url(url)
         # Disable proxies and redirects; redirects must not reach private network addresses.
-        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.0-rc.12.7)'}) as client:
+        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.0-rc.12.9)'}) as client:
             with client.stream('GET',url) as res:
                 if res.status_code!=200 or not res.headers.get('content-type','').lower().startswith('image/'):
                     return ''
@@ -2981,6 +2982,11 @@ def save_final_prompt_edit(edit:FinalPromptEdit):
     except PermissionError as exc:raise HTTPException(403,str(exc))
     except (ValueError,RuntimeError) as exc:raise HTTPException(400,str(exc))
 
+def retry_choice_personal_id(key):
+    with connect() as db:row=db.execute('SELECT payload FROM choices WHERE key=?',(key,)).fetchone()
+    if not row:raise ValueError('Casting selection no longer exists')
+    return require_choice(key,row[0]).get('personal_id') or ''
+
 def snapshot_cast_validator():
     staged={}
     def validate(task):
@@ -2991,6 +2997,13 @@ def snapshot_cast_validator():
         saved,old_family,old_path,old_details=staged[k]
         task.monitor_details=dict(old_details)
         if (old_family,old_path)!=(family,path):raise ValueError('RefMod changed after staging; queue the task again')
+        # Private snapshot kept in runtime DB only if native WanGP confirms failure.
+        if not hasattr(task,'_retry_snapshot'):
+            st=path.stat()
+            task._retry_snapshot={'prompt':saved,'family':family,'path':str(path),'size':st.st_size,'mtime':st.st_mtime_ns,'details':dict(old_details),'personal_id':retry_choice_personal_id(task.choice_key)}
+        else:
+            snap=task._retry_snapshot;st=path.stat()
+            if (st.st_size,st.st_mtime_ns,details,retry_choice_personal_id(task.choice_key))!=(snap['size'],snap['mtime'],snap['details'],snap.get('personal_id','')):raise ValueError('Original casting identity or RefMod changed; queue the task again')
         return saved,family,path
     return validate
 
@@ -3091,6 +3104,70 @@ def generator_batch_submit(request:CastBatchRequest):
     except PermissionError as exc:raise HTTPException(403,str(exc))
     except (ValueError,TypeError,RuntimeError) as exc:raise HTTPException(400,str(exc))
 
+def persist_cast_gallery(records):
+    with connect() as db:
+        db.execute('INSERT OR REPLACE INTO casting_gallery VALUES (1,?)',(json.dumps(records,allow_nan=False),))
+
+
+def load_cast_gallery():
+    with connect() as db:row=db.execute('SELECT payload FROM casting_gallery WHERE id=1').fetchone()
+    try:records=json.loads(row[0]) if row else []
+    except (ValueError,TypeError):return []
+    if not isinstance(records,list):return []
+    # Do not restore private identities without current consent.
+    consent={token(p['name']) for p in get_personal_rows() if p['consent']}
+    out=[]
+    for rec in records:
+        if not isinstance(rec,dict) or not isinstance(rec.get('output'),dict):continue
+        details=rec['output'].get('task_details') or {}
+        if not isinstance(details,dict):continue
+        if details.get('personal') and token(details.get('person','')) not in consent:continue
+        out.append(rec)
+    return out
+
+
+historical_retry_lock=threading.RLock()
+
+def historical_retry_tasks(record):
+    tasks=record.get('_retry_tasks')
+    indices=record.get('failed_task_indices')
+    if record.get('state')!='failed' or record.get('retried_as') or record.get('_retry_pending') or not isinstance(tasks,list) or not tasks or not isinstance(indices,list):return []
+    if any(not isinstance(t,dict) or not isinstance(t.get('snapshot'),dict) or not {'prompt','family','path','size','mtime','details','personal_id'}<=set(t['snapshot']) or not isinstance(t.get('settings'),dict) for t in tasks):return []
+    if [t.get('index') for t in tasks]!=indices or any(type(i) is not int or i<1 for i in indices) or len(set(indices))!=len(indices):return []
+    return tasks
+
+
+def retry_historical_job(job_id,bridge):
+    from ..queue_bridge import Submission
+    with historical_retry_lock:
+        with connect() as db:row=db.execute('SELECT payload FROM casting_job_history WHERE id=?',(job_id,)).fetchone()
+        if not row:raise ValueError('Historical job not found')
+        record=json.loads(row[0]);tasks=historical_retry_tasks(record)
+        if not tasks:raise ValueError('No confirmed failed task snapshots available')
+        subs=[]
+        for t in tasks:
+            sub=Submission(**t['settings']);sub._retry_snapshot=t['snapshot'];subs.append(sub)
+        def validate(sub):
+            snap=sub._retry_snapshot;details={}
+            _,family,path=build_live_cast_prompt(sub,use_saved=False,monitor_details=details)
+            st=path.stat()
+            if (family,str(path),st.st_size,st.st_mtime_ns,details,retry_choice_personal_id(sub.choice_key))!=(snap['family'],snap['path'],snap['size'],snap['mtime'],snap['details'],snap['personal_id']):raise ValueError('Original casting identity or RefMod changed; create a new job instead')
+            sub.monitor_details=dict(details)
+            return snap['prompt'],family,path
+        # Claim before staging, so an interruption cannot cause an automatic duplicate.
+        # Explicitly rejected submissions release the claim; a crashed process leaves it blocked.
+        for sub in subs:bridge.preflight(sub,validate)
+        record['_retry_pending']=True
+        persist_cast_job_history(record)
+        try:
+            jid=bridge.enqueue_batch(subs,validate) if record.get('_retry_batch') else bridge.enqueue(subs[0],validate)
+        except Exception:
+            record.pop('_retry_pending',None);persist_cast_job_history(record);raise
+        record.pop('_retry_pending',None);record['retried_as']=jid;record.pop('_retry_tasks',None)
+        persist_cast_job_history(record)
+        return jid,len(subs)
+
+
 def persist_cast_job_history(record):
     with connect() as db:
         db.execute('INSERT OR REPLACE INTO casting_job_history VALUES (?,?,?)',
@@ -3107,7 +3184,9 @@ def casting_job_history():
         except (TypeError,ValueError):continue
         if not isinstance(record,dict) or not isinstance(record.get('id'),str):continue
         record['updated']=updated//1_000_000
-        record['retry_count']=len(bridge.retryable_indices(record['id'])) if bridge else 0
+        record['retry_count']=(len(bridge.retryable_indices(record['id'])) if bridge and bridge.status(record['id']) else len(historical_retry_tasks(record))) if bridge else 0
+        for k in list(record):
+            if k.startswith('_retry_'):record.pop(k,None)
         if record.get('state') in ('queued','running') and (not bridge or not bridge.status(record['id'])):
             record['state']='unknown';record['message']='WanGP restarted or job expired; outcome is not confirmed.'
         results.append(record)
@@ -3121,7 +3200,8 @@ def clear_casting_job_history():
 @app.post('/api/generator/jobs/{job_id}/retry-failed',include_in_schema=False)
 def retry_failed_cast_job(job_id:str):
     try:
-        new_id,count=_casting_bridge().retry_failed(job_id)
+        bridge=_casting_bridge()
+        new_id,count=bridge.retry_failed(job_id) if bridge.status(job_id) else retry_historical_job(job_id,bridge)
         return {'id':new_id,'task_count':count,'state':'queued'}
     except PermissionError as exc:raise HTTPException(403,str(exc))
     except (ValueError,TypeError,RuntimeError) as exc:raise HTTPException(400,str(exc))
@@ -3359,6 +3439,29 @@ def register_television(item:TelevisionRegistration):
             db.execute('INSERT OR IGNORE INTO production_cast(key,payload) VALUES (?,?)',(canonical_role_key(name,role,station),json.dumps(entry)))
     return {'name':name,'station':station,'role':role,'saved':True}
 
+class PublicPersonRequest(BaseModel):
+    name:str=Field(min_length=1,max_length=150)
+
+@app.get('/api/people/library')
+def people_library():
+    people,roles=normalized_catalog(discovery=True)
+    return {'people':people,'roles':roles}
+
+@app.post('/api/people/library')
+def add_public_person(item:PublicPersonRequest):
+    name=canonical_name(' '.join(item.name.split()))
+    if not any(c.isalpha() for c in name) or any(ord(c)<32 or ord(c)==127 for c in item.name):
+        raise HTTPException(400,'Enter a valid performer name')
+    with lock:
+        assert_public_name(name)
+        people,_=normalized_catalog(discovery=True)
+        existing=next((p for p in people if token(p['name'])==token(name)),None)
+        if existing:return {'name':existing['name'],'created':False}
+        # Register locally without inventing a production, credit or RefMod.
+        with connect() as db:
+            db.execute('INSERT OR IGNORE INTO profile_categories(name,categories) VALUES (?,?)',(name,'[]'))
+    return {'name':name,'created':True}
+
 @app.get('/api/discovery/people')
 def discover_people(q:str=Query(min_length=1,max_length=160)):
     wanted=token(q)
@@ -3499,7 +3602,7 @@ def search_production_online(q:str=Query(min_length=2,max_length=120)):
 # Key-free film credit source. Match exact title or explicit "(film)" titles;
 # treat cast lists as suggestions for human review, not verified installed mods.
 WIKIPEDIA_API='https://en.wikipedia.org/w/api.php'
-WIKI_AGENT='CastingStudio/1.0.0-rc.12.7 (personal local catalog; Wikimedia public credits)'
+WIKI_AGENT='CastingStudio/1.0.0-rc.12.9 (personal local catalog; Wikimedia public credits)'
 def wiki_api(client,params):
     r=client.get(WIKIPEDIA_API,params={**params,'format':'json','formatversion':2},headers={'User-Agent':WIKI_AGENT})
     r.raise_for_status();return r.json()
@@ -3838,7 +3941,7 @@ def save_reference_image(item:ReferenceImageRequest):
             return {**result,'reused_local':True}
         try:validate_public_url(item.image_url)
         except Exception as e:raise HTTPException(400,str(e))
-        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.7'}) as client:
+        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.9'}) as client:
             with client.stream('GET',item.image_url) as r:
                 if r.status_code!=200 or not r.headers.get('content-type','').lower().startswith('image/'):
                     raise HTTPException(422,'Image host did not return an image')
@@ -3948,7 +4051,7 @@ def list_reference_images(person:str=Query(min_length=2),production:str='',chara
         item=dict(zip(cols,r))
         if not reference_file_exists(item['filename']):item.update(quality_status='missing',quality_notes='Saved image file missing; add it again or remove this record.')
         result.append(item)
-    return result
+    return rank_reference_photos(result)
 
 @app.post('/api/reference-images/audit')
 def audit_reference_images(person:str=Query(min_length=2),production:str='',character:str|None=None):
@@ -4072,13 +4175,13 @@ def workshop_public_mod_root():
 
 def workshop_photo_rows(person=None, production=None, character=None):
     with connect() as db:
-        results=db.execute('''SELECT id,person,production,character,filename,width,height,quality_status
+        results=db.execute('''SELECT id,person,production,character,filename,width,height,quality_status,sharpness,face_count,perceptual_hash
             FROM reference_images WHERE quality_status IN ('passed','reviewed')
             ORDER BY person COLLATE NOCASE, production COLLATE NOCASE, filename''').fetchall()
     rows=[]
     private=personal_name_keys()
     for row in results:
-        id_,name,prod,char,file,w,h,quality=row
+        id_,name,prod,char,file,w,h,quality,sharp,faces,fingerprint=row
         if token(name) in private:continue
         if person is not None and token(canonical_name(name))!=token(canonical_name(person)):continue
         if production is not None and token(canonical_production(prod))!=token(canonical_production(production)):continue
@@ -4086,8 +4189,34 @@ def workshop_photo_rows(person=None, production=None, character=None):
         path=safe_media_file(REFERENCE_DIR,file)
         if path:
             rows.append({'id':id_,'person':name,'production':prod,'character':char,'path':path,
-                         'width':w,'height':h,'quality':quality})
+                         'width':w,'height':h,'quality':quality,'sharpness':sharp,'face_count':faces,'perceptual_hash':fingerprint})
     return rows
+
+
+def rank_reference_photos(rows):
+    # Technical ranking, not identity or aesthetic validation. Group by a
+    # 64-bit perceptual fingerprint within this collection only.
+    import math
+    def score(r):
+        try:
+            sharp=max(0,min(1000,float(r.get('sharpness') or 0)))
+            pixels=max(0,min(16_000_000,int(r.get('width') or 0)*int(r.get('height') or 0)))
+            if not math.isfinite(sharp):sharp=0
+        except (ValueError,TypeError,OverflowError):sharp=pixels=0
+        face=r.get('face_count');status=r.get('quality',r.get('quality_status'))
+        return (2 if status in ('passed','reviewed') else 1 if status=='review' else 0, 2 if face==1 else 1 if face in (-1,None) else 0, round(math.log1p(sharp)*12+math.log1p(pixels)*3,3))
+    ranked=sorted(rows,key=lambda r:(score(r),str(r.get('id',''))),reverse=True)
+    groups=[]
+    for i,r in enumerate(ranked):
+        r['quality_rank']=i+1;r['duplicate_group']=None;r['duplicate_of']=None
+        h=r.get('perceptual_hash') or ''
+        if not isinstance(h,str) or not re.fullmatch(r'[0-9a-fA-F]{16}',h):continue
+        scope=(token(r.get('person','')),token(r.get('production','')),token(r.get('character','')))
+        match=next((g for g in groups if g[2]==scope and hash_distance(h,g[0])<=6),None)
+        if match:
+            r['duplicate_group']=match[1]['id'];r['duplicate_of']=match[1]['id'];match[1]['duplicate_group']=match[1]['id']
+        else:groups.append((h,r,scope))
+    return ranked
 
 
 @app.get('/api/workshop/sources')
@@ -4102,10 +4231,10 @@ def workshop_sources(role_aware:bool=False):
 
 @app.get('/api/workshop/photos')
 def workshop_photos(person:str=Query(min_length=2),production:str='',character:str|None=None):
-    rows=workshop_photo_rows(person,production,character)
+    rows=rank_reference_photos(workshop_photo_rows(person,production,character))
     return {'photos':[{'id':r['id'],'person':r['person'],'production':r['production'],
                        'character':r['character'],'width':r['width'],'height':r['height'],
-                       'quality':r['quality'],'url':'api/reference-images/file/'+r['id']} for r in rows]}
+                       'quality':r['quality'],'quality_rank':r['quality_rank'],'duplicate_group':r['duplicate_group'],'duplicate_of':r['duplicate_of'],'sharpness':r.get('sharpness',0),'face_count':r.get('face_count',-1),'url':'api/reference-images/file/'+r['id']} for r in rows]}
 
 
 @app.get('/api/workshop/models')
@@ -4218,6 +4347,7 @@ class WorkshopCreateRequest(BaseModel):
     family:str='minimax_h3'
     layout:str='separate'
     budget:int=4096
+    test_portrait:bool=False
 
 
 class WorkshopDecompileRequest(BaseModel):
@@ -4283,6 +4413,26 @@ def workshop_create(item:WorkshopCreateRequest):
             op='extract'
     except (ValueError,TypeError) as exc:raise HTTPException(400,str(exc))
     task=WorkshopTask(op,item.model_type,name,spec,expected,tuple(map(str,paths)),item.family)
+    if item.test_portrait:
+        def test_portrait():
+            from ..queue_bridge import Submission
+            # A compatible installed IMAGE model, not the H3 extraction/video checkpoint.
+            candidates=[]
+            for option in MODEL_OPTIONS:
+                if option['kind']!='image' or option['family']!=item.family:continue
+                try:candidates.extend((option['id'],m['model_type']) for m in bridge.models(option['id']) if m['ready'])
+                except (ValueError,RuntimeError):continue
+            if not candidates:raise ValueError('RefMod created, but no compatible image checkpoint is available for the test portrait')
+            board,checkpoint=next((c for c in candidates if c[1]==item.model_type),candidates[0])
+            stat=expected.stat()
+            def validate(sub):
+                assert_public_name(item.person)
+                current=public_workshop_path(bridge.adapter.refmod_root,item.family,name,'.safetensors')
+                if current!=expected or not current.is_file() or (current.stat().st_size,current.stat().st_mtime_ns)!=(stat.st_size,stat.st_mtime_ns):raise ValueError('New RefMod changed before test generation')
+                return portrait_prompt(board).replace('linked Personal RefMod','newly created RefMod'),item.family,current
+            sub=Submission(model=board,model_type=checkpoint,choice_key='workshop-test:'+name,monitor_details={'person':item.person,'character':item.character or '', 'production':item.production,'kind':'image','scene':1})
+            return sub,validate
+        task.test_portrait=test_portrait
     try:job=bridge.enqueue_workshop(task,validate_workshop_task)
     except (ValueError,RuntimeError) as e:raise HTTPException(409,str(e))
     return {'job_id':job,'operation':'extract','target':name}
@@ -4443,7 +4593,8 @@ def export_prompt_backup():
                 'templates':{k:json.loads(v) for k,v in db.execute('SELECT id,payload FROM prompt_settings')},
                 'overrides':{k:json.loads(v) for k,v in db.execute('SELECT key,payload FROM prompt_overrides')},
                 'final_edits':[dict(zip(('key','choice_key','personal_id','prompt'),row)) for row in db.execute('SELECT key,choice_key,personal_id,prompt FROM final_prompt_edits')],
-                'character_traits':dict(db.execute('SELECT key,traits FROM character_identity'))}
+                'character_traits':dict(db.execute('SELECT key,traits FROM character_identity')),
+                'production_sets':[{'production':p,'family':f,'choices':json.loads(v)} for p,f,v in db.execute('SELECT production,family,payload FROM production_selection_sets')]}
         return JSONResponse(data,headers={'Cache-Control':'no-store'})
     except (ValueError,TypeError) as exc:
         raise HTTPException(409,'Saved prompt data is damaged. Repair the affected template before exporting; no data has been changed.') from exc
@@ -4456,7 +4607,21 @@ async def import_prompt_backup(request:Request):
         raw.extend(chunk)
     try:
         data=json.loads(raw)
-        if not isinstance(data,dict) or set(data)!={'templates','overrides','final_edits','character_traits'}:raise ValueError('Unrecognized prompt backup structure')
+        if not isinstance(data,dict) or set(data)-{'templates','overrides','final_edits','character_traits','production_sets'} or not {'templates','overrides','final_edits','character_traits'}<=set(data):raise ValueError('Unrecognized prompt backup structure')
+        sets=data.get('production_sets',[]);production_sets=[];seen=set();private=personal_name_keys()
+        if not isinstance(sets,list) or len(sets)>10000:raise ValueError('Invalid production collections')
+        for rec in sets:
+            if not isinstance(rec,dict) or set(rec)!={'production','family','choices'}:raise ValueError('Invalid production collection')
+            prod,family,choices=rec['production'],rec['family'],rec['choices']
+            if not isinstance(prod,str) or not prod or len(prod)>180 or token(prod)!=prod or not isinstance(family,str) or family not in ('minimax_h3','flux2') or (prod,family) in seen or not isinstance(choices,list) or not 1<=len(choices)<=2000:raise ValueError('Invalid production collection')
+            keys=set()
+            for c in choices:
+                if not isinstance(c,dict) or not decoded_choice(c.get('key'),json.dumps(c)) or c.get('personal_id') or token(canonical_name(c['person'])) in private or token(canonical_production(c['production']))!=prod or c['key']!=canonical_role_key(c['person'],c['character'],c['production']) or c['key'] in keys:raise ValueError('Invalid production collection selection')
+                # Store only the known selection fields. Actual availability and family are checked on restore.
+                ref=c['refmod'];parts=Path(ref).parts
+                if not parts or Path(ref).is_absolute() or '..' in parts or '\\' in ref or not ref.endswith('.safetensors'):raise ValueError('Invalid collection RefMod identifier')
+                keys.add(c['key'])
+            seen.add((prod,family));production_sets.append((prod,family,json.dumps([{k:c[k] for k in ('key','person','character','production','refmod')} for c in choices])))
         def mapping(name):
             value=data[name]
             if not isinstance(value,dict) or len(value)>10000 or any(not isinstance(k,str) or not k or len(k)>500 for k in value):raise ValueError('Invalid '+name)
@@ -4487,8 +4652,9 @@ async def import_prompt_backup(request:Request):
         db.executemany('INSERT OR REPLACE INTO prompt_settings VALUES (?,?)',templates)
         db.executemany('INSERT OR REPLACE INTO prompt_overrides VALUES (?,?)',overrides)
         db.executemany('INSERT OR REPLACE INTO character_identity VALUES (?,?,?)',traits)
+        db.executemany('INSERT OR REPLACE INTO production_selection_sets VALUES (?,?,?)',production_sets)
         for row in edits:
             if row[2] and not db.execute('SELECT 1 FROM personal_profiles WHERE id=? AND consent=1',(row[2],)).fetchone():
                 skipped+=1;continue
             db.execute('INSERT OR REPLACE INTO final_prompt_edits VALUES (?,?,?,?)',row)
-    return {'saved':True,'templates':len(templates),'overrides':len(overrides),'final_edits':len(edits)-skipped,'skipped_private_edits':skipped,'character_traits':len(traits)}
+    return {'saved':True,'templates':len(templates),'overrides':len(overrides),'final_edits':len(edits)-skipped,'skipped_private_edits':skipped,'character_traits':len(traits),'production_sets':len(production_sets)}

@@ -1,57 +1,30 @@
-Casting Studio v1.0.0-rc.12.7 — Workspace Edition
+Casting Studio v1.0.0-rc.12.9 — People library
 Measured release verification (2026-11-25)
 
-FINAL MOAB+: 25 independent fresh-process rounds, 31 cases per round, 775 passed, 0 failed. Distinct hash seeds and temporary directories; five parallel workers. Earlier 25 x 30 runs are excluded from the final count because application code was subsequently corrected.
+FINAL COMPLETE REGRESSION GATE — python run_regression.py
+327 passed, 2 skipped, 457 warnings in 325.19s (0:05:25)
+Exit status: 0. No failures. Both skips are explicitly retired standalone Docker tests, not applicable to the native WanGP distribution. No applicable test was skipped.
+The run began after the last application and test changes. Fingerprints verified unchanged afterward.
 
-4 0 31 passed, 62 warnings in 23.54s
-2 0 31 passed, 62 warnings in 22.75s
-1 0 31 passed, 62 warnings in 24.37s
-5 0 31 passed, 62 warnings in 24.02s
-3 0 31 passed, 62 warnings in 23.80s
-7 0 31 passed, 62 warnings in 21.08s
-6 0 31 passed, 62 warnings in 23.70s
-8 0 31 passed, 62 warnings in 22.07s
-9 0 31 passed, 62 warnings in 22.02s
-10 0 31 passed, 62 warnings in 22.44s
-11 0 31 passed, 62 warnings in 22.39s
-12 0 31 passed, 62 warnings in 21.29s
-14 0 31 passed, 62 warnings in 19.17s
-13 0 31 passed, 62 warnings in 24.05s
-15 0 31 passed, 62 warnings in 23.08s
-16 0 31 passed, 62 warnings in 25.30s
-18 0 31 passed, 62 warnings in 25.72s
-17 0 31 passed, 62 warnings in 27.65s
-19 0 31 passed, 62 warnings in 28.73s
-20 0 31 passed, 62 warnings in 26.72s
-21 0 31 passed, 62 warnings in 29.08s
-22 0 31 passed, 62 warnings in 29.73s
-23 0 31 passed, 62 warnings in 29.97s
-24 0 31 passed, 62 warnings in 24.21s
-25 0 31 passed, 62 warnings in 21.63s
-Elapsed 157.01
+FINAL TARGETED REGRESSION — tests/test_rc129_people_library.py
+7 passed, 6 warnings in 14.59s. Exit status 0.
+Includes direct registration without a role/model, duplicate normalization, private/invalid name rejection, concurrent additions, failed-save recovery, explicit credit research, and delayed saves during search, Clear and navigation.
+Earlier preliminary full run intentionally stopped when the Clear-button context issue was corrected; the final complete gate supersedes it.
 
-CUMULATIVE REGRESSION: earlier candidate, 251 passed / 5 failed, 370 warnings, 419.42 seconds. This run began before the final gallery correction. Four failed browser tests had outdated navigation/visibility expectations (new tabs, More menu, conversion action); assertions updated to exercise the current UI. One actual application defect, gallery summary events replacing exact output metadata, was repaired and added as a permanent MOAB+ case. All five original failures passed in subsequent focused runs. The complete cumulative suite has NOT been rerun after the final corrections; no claim of a clean single final cumulative run is made. Final gate contains one extra case, for 257 collected cases.
+SUPPLEMENTAL CHROMIUM WORKFLOW CHECKS
+Registration controls remained within the viewport at 1440, 800 and 420 pixels.
+Synthetic library: 1,343 saved profiles plus three installed; first page limited to 20 cards, role search found the correct person, one library request and no page errors.
 
-Focused reruns (overlapping cases, not an additive total):
-Model-settings tab fixture: 1 passed in 4.59s
-Batch and Identity tab fixtures: 2 passed in 8.70s
-Cast More menu and conversion action fixture: 3 passed, 4 warnings in 6.21s
-Corrected gallery and expanded adversarial cases: 14 passed, 28 warnings in 7.70s
-Related preview and workspace tests: 16 passed, 14 warnings in 47.52s
-New workspace browser workflows: 4 passed in 11.17s
-
-FINAL GIT UPGRADE SIMULATION:
-1.0.0-rc.12.6 seed mount, version and external state PASS
+FINAL GIT UPGRADE SIMULATION
+RC12.8 seed mount, version and external state PASS
 Clean installed Git working tree PASS
 Actual source-tree fast-forward PASS
-1.0.0-rc.12.7 update mount, version and external state PASS
+RC12.9 update mount, version and external state PASS
 Clean installed Git working tree PASS
-1.0.0-rc.12.7 restart mount, version and external state PASS
+RC12.9 restart mount, version and external state PASS
 Clean installed Git working tree PASS
 
-Python compileall and inline JavaScript syntax check passed.
-Distribution audit is run separately against the completed archives and staged source index.
-
-Outstanding: real WanGP v20.20 native update, GPU generation, real library variant selection, browser-specific behavior, and actual user data preservation. Simulated host and synthetic data only. Existing FastAPI deprecation warnings remain.
-
-Final distribution verification: source archive 104 files, manual archive 100 files, staged Git index 104 files. All privacy checks and archive integrity checks passed. Bundled catalog counts: people 0, roles 0, productions 0. Manual review and publisher-account checks remain separate.
+Python source and inline JavaScript syntax checks: PASS.
+The complete suite includes all maintained earlier adversarial tests. No artificial repetition count used.
+Outstanding: real WanGP update and GPU generation, actual model/photo library and user data verification. FastAPI/Pillow deprecation warnings remain.
+Distribution audit: final source and installation archives and exact staged source index checked separately; empty factory public catalog. The audit does not cover Git history or author metadata.
