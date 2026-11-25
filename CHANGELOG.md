@@ -1,3 +1,9 @@
+## RC12.21 — Identity caption ownership
+
+- The existing image and video caption toggles now apply to every subject category, including performer-only, game, broadcast and Personal. Enabled generates one current identity caption per generated scene or image; disabled generates none. Personal relationship labels remain available when enabled.
+- Recognize pasted identity-caption instructions in the two existing generated formats and remove them from generated prompt bodies before adding the single current caption. Stored custom templates and manually edited final prompts are not rewritten. Other scene text remains intact.
+- Clarify the caption controls and Personal labels. Correct the authoritative baseline declaration. No native bridge, model, license, database schema or upstream changes. Character pigmentation and live GPU/Safari verification remain open.
+
 ## RC12.20 — Native session state injection
 
 - Request WanGP’s shared Gradio state during initial plugin setup, before host component injection. The host’s automatic request at tab construction can be too late. Prevent the native wrapper from failing before the conversion, generation or Workshop callback can begin. No private session patch or replacement state.

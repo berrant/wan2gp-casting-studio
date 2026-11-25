@@ -105,6 +105,8 @@ def test_public_private_separation_and_consent(installation):
     private['consent']=True
     assert client.put(prefix+'/personal/'+person['id'],json=private).status_code==200
     assert client.put(prefix+'/choices',json=choice).status_code==200
+    template=client.get(prefix+'/prompts/template').json()
+    assert client.put(prefix+'/prompts/template',json={**template,'include_caption':True}).status_code==200
     prompt=client.get(prefix+'/prompts/export?model=h3_video').text
     assert 'Private Test' in prompt
     assert 'Friend' in prompt
@@ -300,6 +302,8 @@ def test_private_queue_consent_and_notes(installation):
     assert client.put(api+'/choices',json=choice).status_code==200
     key=next(x for x in client.get(api+'/choices').json() if x['person']=='Private Test')['key']
     body={'choice_key':key,'model':'h3_video','model_type':'h3_ref2va_pruned_checkpoint'}
+    template=client.get(api+'/prompts/template').json()
+    assert client.put(api+'/prompts/template',json={**template,'include_caption':True}).status_code==200
     r=client.post(api+'/generator/submit',json=body)
     assert r.status_code==200,r.text
     state=_await_job(client,r.json()['id'])
@@ -537,7 +541,7 @@ def test_h3_personal_profiles_preserve_previous_identity_template(installation):
     srv = import_module('cb_under_test.app.server')
     item={'person':'Private Test','relationship':'Friend', 'character':'','production':'',
           'refmod':'personal/Private_Test_H3.safetensors'}
-    video=srv.prompt_for_selection(item,srv.SAMPLE_TEMPLATE,personal=True)
+    video=srv.prompt_for_selection(item,{**srv.SAMPLE_TEMPLATE,'include_caption':True},personal=True)
     assert '<Subject 1> is Private Test, appearing as themselves in a professional photography studio.' in video
     assert 'partially_preserved' in video
     assert 'fully_preserved' not in video

@@ -2550,6 +2550,35 @@ def portrayal_reference_authority(traits):
     return text
 
 
+# Identity captions belong to the template toggle, not to editable scene fields.
+# Recognize the two formats emitted by Casting Studio (including old pasted
+# template placeholders). Leave other scene text, signage and final edits alone.
+_IDENTITY_CAPTION = re.compile(
+    r'(?:^[ \t]*|(?<=[.!?:])[ \t]+)'
+    r'(?:A crisp, fixed bottom caption reads|Bottom caption)[ \t]*:[ \t]*'
+    r'(?:"[^"\r\n]*"|“[^”\r\n]*”|["“]?\[Performer Name\][ \t]*-[ \t]*\[Character Name\][ \t]*-[ \t]*\[Production Title\](?:[ \t]*\[Year\])?[ \t]*$)'
+    r'(?:[ \t]*\.)?', re.I | re.M)
+
+
+def generated_caption_parts(parts, enabled, caption, *, video=False):
+    """Normalize generated scenes only; never rewrite stored template fields."""
+    cleaned=[]
+    for part in parts:
+        text=_IDENTITY_CAPTION.sub('',part)
+        if text!=part:
+            text=flatten(text)
+            if not text:continue
+        cleaned.append(text)
+    if enabled and caption:
+        line=(f'A crisp, fixed bottom caption reads: "{caption}".' if video
+              else f'Bottom caption: "{caption}".')
+        if video:
+            cleaned.insert(cleaned.index('overall_soundscape:'),line)
+        else:
+            cleaned.append(line)
+    return cleaned
+
+
 def prompt_for_selection(item,t,personal=False):
     actress=clean_line(item.get('person',''))
     character=clean_line(item.get('character',''))
@@ -2630,16 +2659,14 @@ def prompt_for_selection(item,t,personal=False):
                    '[Shot 1, 0.00s–15.00s] '+setting,acts,
                    'Maintain the defined character appearance across motion, angles and all exposed skin surfaces.',
                    '  wardrobe_description:',dress]
-            if t.get('include_caption',False):parts.append(f'A crisp, fixed bottom caption reads: "{caption}".')
             parts+=['overall_soundscape:',sound,'non_diegetic_music:',music]
         else:
             parts=[f'# {refmod} — Video {v}', 'subject_definitions:',identity,
                 'wardrobe_description:',dress,'summary:',description,
                 'retention_analysis:',keep,'detailed_description:',
                 '[Shot 1] '+setting,acts,
-                f'A crisp, fixed bottom caption reads: "{caption}".',
                 'overall_soundscape:',sound,'non_diegetic_music:',music]
-        out.append('\n'.join(parts))
+        out.append('\n'.join(generated_caption_parts(parts,t.get('include_caption',False),caption,video=True)))
     return '\n\n'.join(out)
 
 # Exact old factory values are migrated field-by-field; personal edits are never parsed or rewritten.
@@ -2834,7 +2861,6 @@ def image_prompts_for_selection(item,model,template,video_template,installed,per
                     'wardrobe_description: '+wardrobe,
                     'Location: '+setting,
                     flatten(template.get('visual_style') or ImageTemplate().visual_style)]
-            if template.get('include_caption',False):fields.append('Bottom caption: "'+caption+'".')
         else:
             fields=[
                 f'### Image {n}/{template["image_count"]} — {MODEL_BY_ID[model]["label"]} — RefMod: {filepath}',
@@ -2848,9 +2874,8 @@ def image_prompts_for_selection(item,model,template,video_template,installed,per
                 'wardrobe_description: '+wardrobe,
                 'Location: '+setting,
                 'Visual style: '+('Photorealistic professional studio photography, soft balanced light and a plain seamless background.' if personal else flatten(template.get('visual_style') or ImageTemplate().visual_style)),
-                'Bottom caption: "'+caption+'".',
                 'Photographic direction: '+direction]
-        prompts.append('\n'.join(fields))
+        prompts.append('\n'.join(generated_caption_parts(fields,template.get('include_caption',False),caption)))
     return '\n\n'.join(prompts)
 
 def resolve_public_cast_model(item,family,models):

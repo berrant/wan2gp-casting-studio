@@ -102,7 +102,7 @@ def test_personal_shared_templates_neutral_background(installation):
     assert c.post(API+'/personal',json=data).status_code==200
     pid=c.get(API+'/personal').json()[0]['id']
     assert c.put(API+'/choices',json={'key':'','person':'Private Test','character':'','production':'','refmod':data['h3_refmod'],'personal_id':pid}).status_code==200
-    template=c.get(API+'/prompts/template').json();template.update({'wardrobe':'A blue jacket and green trousers','video1_action':'She walks toward the camera.','setting':'Unrelated mountain landscape','include_non_diegetic_music':True})
+    template=c.get(API+'/prompts/template').json();template.update({'wardrobe':'A blue jacket and green trousers','video1_action':'She walks toward the camera.','setting':'Unrelated mountain landscape','include_non_diegetic_music':True,'include_caption':True})
     assert c.put(API+'/prompts/template',json=template).status_code==200
     key=c.get(API+'/choices').json()[0]['key']
     r=c.post(API+'/generator/preview',json={'choice_key':key,'model':'h3_video','scene':1});assert r.status_code==200,r.text

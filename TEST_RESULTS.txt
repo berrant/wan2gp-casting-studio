@@ -1,18 +1,16 @@
-Casting Studio v1.0.0-rc.12.20 — Native session state injection
+Casting Studio v1.0.0-rc.12.21 — Identity caption ownership
 Measured release verification (2026-11-25)
 
 FINAL COMPLETE CUMULATIVE REGRESSION GATE
-401 collected, 399 passed, 0 failed, 2 retired standalone Docker checks skipped.
-Group 1: 105 passed, 145 warnings in 120.24s (0:02:00)
-Group 2: 91 passed, 100 warnings in 121.33s (0:02:01)
-Group 3: 93 passed, 144 warnings in 115.08s (0:01:55)
-Group 4: 110 passed, 2 skipped, 148 warnings in 108.25s (0:01:48)
-All four exit codes: 0. All 86 test modules included exactly once. Final application, documentation and test fingerprints matched before and after the gate (this generated report excluded).
+405 collected, 403 passed, 0 failed, 2 retired standalone Docker checks skipped.
+Group 1: 114 passed, 163 warnings in 117.11s
+Group 2: 99 passed, 118 warnings in 122.65s
+Group 3: 93 passed, 140 warnings in 124.21s
+Group 4: 97 passed, 2 skipped, 124 warnings in 102.16s
+All four exit codes: 0. All 87 test modules included exactly once. 545 non-failing warnings, including FastAPI lifecycle and Pillow deprecation warnings. Final source and test file fingerprints matched after the gate; only the generated verification report and checklist results were subsequently updated.
 
-Three new synthetic host lifecycle regressions failed on unchanged RC12.19 (with the test fixture enhanced to track component requests). One reproduces the missing-live-state exception before conversion starts. All three pass after requesting the actual shared state component early in setup_ui. The focused suite of 16 tests covering state injection, native vision lifecycle and conversion passed. This simulates the host ordering; it does not execute the actual WanGP wrapper or GPU.
+Four new permanent tests pass: repeated video caption toggles for all five subject categories, all eight image model options and five categories, saved templates/preview/export/synthetic native queue/manual final edits, and unrelated scene text preservation. Two targeted tests reproduce duplicate/unconditional captions against unchanged RC12.20. Legacy private-caption assertions explicitly opt in to captions; prior consent and private-note protections remain tested. Additional Chromium pointer interaction check against mocked API passed (both checkboxes, save and reopen). An attempted browser-to-TestClient navigation to a synthetic hostname was blocked by the container browser policy; this is not evidence of live host compatibility.
 
-RC12.19 -> RC12.20 synthetic Git fast-forward, startup/restart, saved wardrobe, approved character traits, reference-image byte preservation and SQLite integrity passed. Python and inline JavaScript syntax passed. Conversion, workshop, generation and vision bridge code and licensing files are unchanged. No schema, prompt template, model or upstream changes.
+Exact RC12.20 -> RC12.21 synthetic Git fast-forward, startup/restart, saved template and caption preferences, approved character traits, reference-image bytes and SQLite integrity passed. Python and inline JavaScript syntax passed. No schema, native bridge, model, upstream or license changes. Existing stored templates and manual final prompts are preserved verbatim. Recognized pasted caption instructions are normalized only during template-generated prompt construction; arbitrary custom final instructions are untouched.
 
-Live conversion and actual vision inference, pigmentation adherence, Safari and current host revision verification remain open. Public distribution on hold pending attribution and provenance clearance. Private installation-test candidate only.
-
-Both archives and exact staged synthetic source index checked by distribution privacy audit; the audit is not a proof of ownership or complete security assessment.
+Both normalized archives and the exact staged synthetic source index are subject to the distribution privacy audit before delivery. The audit does not establish ownership or complete security. Live WanGP 20.20/Safari, actual GPU conversion and vision inference, model adherence to captions and character pigmentation remain unverified in this environment. The existing natural skin texture factory wording was inspected but not changed: actual pigmentation causation needs a controlled rendering comparison. Private installation-test candidate only; public distribution remains on hold pending attribution and asset provenance clearance.

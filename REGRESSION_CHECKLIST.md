@@ -1,3 +1,9 @@
+# v1.0.0-rc.12.21 — Identity captions
+
+- [x] Focused checks for repeated toggles, every image model and subject category, stale/pasted caption instructions, saved templates, preview/export, native queue and manual final edits.
+- [x] Complete final cumulative regression gate: 403 passed, zero failed, two retired Docker checks skipped, 405 collected, 87 modules. Python/inline JS syntax, synthetic exact Git upgrade and external data checks passed. See TEST_RESULTS.txt for measured results and distribution audit.
+- [ ] Live Safari, actual generation, native vision and conversion remain installation checks.
+
 # v1.0.0-rc.12.16 — Spit and polish
 
 - [x] Seven permanent Chromium regressions for missing preferred engine, valid selections, explicit portrayal year, old review, temporary monitor disconnect, out-of-order status and missing job.

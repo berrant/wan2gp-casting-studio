@@ -47,7 +47,7 @@ def test_personal_defaults_are_neutral(installation):
     c,*_=installation
     srv=importlib.import_module('cb_under_test.app.server')
     item={'person':'Private Test','relationship':'Friend','refmod':'Private_Test_H3.safetensors'}
-    template={**srv.SAMPLE_TEMPLATE,'video_count':4}
+    template={**srv.SAMPLE_TEMPLATE,'video_count':4,'include_caption':True}
     prompts=srv.prompt_for_selection(item,template,personal=True)
     assert prompts.count(srv.PERSONAL_STUDIO)==4
     assert 'appropriate everyday clothing' in prompts and 'camera tracks' not in prompts

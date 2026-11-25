@@ -1,12 +1,18 @@
 # Casting Studio for WanGP
 
-Version: v1.0.0-rc.12.20
+Version: v1.0.0-rc.12.21
 Date: 2026-11-25
 
 
 ## License and commercial inquiries
 
 Casting Studio is source-available, not OSI open-source. The publisher selects [PolyForm Noncommercial 1.0.0](LICENSE) for independently licensable project material. Noncommercial use, modifications and distribution are permitted, including the specific organizational uses allowed by the standard terms. Uses outside those terms require separate written authorization from applicable rights holders. Contact the [project maintainer](https://github.com/berrant/wan2gp-casting-studio). See [notices](NOTICE.md) and [contribution policy](CONTRIBUTING.md). No upstream rights or ownership of user outputs are granted or claimed. The official terms control. Private testing only pending provenance and attribution clearance.
+
+## RC12.21 — Identity caption ownership
+
+- The existing image and video caption toggles now apply to every subject category, including performer-only, game, broadcast and Personal. Enabled generates one current identity caption per generated scene or image; disabled generates none. Personal relationship labels remain available when enabled.
+- Recognize pasted identity-caption instructions in the two existing generated formats and remove them from generated prompt bodies before adding the single current caption. Stored custom templates and manually edited final prompts are not rewritten. Other scene text remains intact.
+- Clarify the caption controls and Personal labels. Correct the authoritative baseline declaration. No native bridge, model, license, database schema or upstream changes. Character pigmentation and live GPU/Safari verification remain open.
 
 ## RC12.20 — Native session state injection
 
