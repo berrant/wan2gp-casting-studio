@@ -334,7 +334,8 @@ def test_flux_queue_and_image_chaining_guard(installation):
     r=client.post(api+'/generator/submit',json={**body,'scene':2})
     assert r.status_code==200,r.text
     assert _await_job(client,r.json()['id'])['state']=='completed'
-    assert 'Image 2/5' in session.submitted[-1]['prompt']
+    assert 'Image 2/5' not in session.submitted[-1]['prompt']
+    assert 'The subject stands naturally with their weight balanced.' in session.submitted[-1]['prompt']
     assert 'previous still' not in session.submitted[-1]['prompt']
     r=client.post(api+'/generator/submit',json={**body,'extra_settings':{'custom_settings':{'flux_refmod_state':'other'}}})
     assert r.status_code==400 and 'override' in r.text
@@ -514,13 +515,13 @@ def test_h3_character_first_prompts_and_years(installation):
         assert '<Subject 1> is Princess Leia Organa as portrayed by Carrie Fisher in Star Wars: A New Hope (1977).' in scene
         assert 'all images provided' in scene
         assert '<Subject 2>' not in scene
-        assert '<Subject 1> (throughout [Shot 1]): fully_preserved' in scene
-        assert 'Princess Leia Organa’' in scene
-        assert 'partially_preserved' not in scene
+        assert '<Subject 1> (throughout [Shot 1]): partially_preserved' in scene
+        assert 'fully_preserved' not in scene
+        assert 'bottom caption' not in scene
         assert 'wardrobe_description:' in scene
     # One portrayal, not a second person called by another subject number.
     assert 'Carrie Fisher portraying' not in video
-    assert 'A crisp, fixed bottom caption reads: "Carrie Fisher - Princess Leia Organa - Star Wars: A New Hope (1977)".' in scenes[0]
+    assert 'A crisp, fixed bottom caption reads: "Carrie Fisher - Princess Leia Organa - Star Wars: A New Hope (1977)".' in srv.prompt_for_selection(item,{**template,'include_caption':True})
     # Year is used when available, never fabricated when the production has no recorded year.
     unknown={**item,'production':'Uncatalogued Story'}
     text=srv.prompt_for_selection(unknown,template)

@@ -1,3 +1,10 @@
+# v1.0.0-rc.12.15 — Sequel-oriented character prompts (2026-11-25)
+
+- Public fictional live-action defaults separate performer facial identity from portrayal-specific phenotype and anatomy, with the fixed description stated once. Distinguish everyday performer photos from in-character evidence; retain aggregate reference wording instead of guessing Refmod-Fork runtime labels.
+- H3 Ref2VA uses six ordered sections, with wardrobe in a nested detailed-description field. Each independent scene stands alone; long-video sequences retain the native sliding-window workflow. H3-Image describes the complete target, while P-H3-Image starts with `subject_definitions:` to avoid the native automatic edit prefix. FLUX uses descriptive prose with positive finished-state language.
+- Optional identity captions in public live-action image/video templates, off by default for clean footage. Existing final custom prompts, wardrobe and action settings are retained. Personal, game and broadcast templates otherwise retain their established behavior.
+- Strengthen local vision analysis directions for visible anatomy, count, attachment, scalp silhouette, iris appearance and pigmentation closure. No new model load, inference call or dependency for normal generation.
+
 # v1.0.0-rc.12.14 — Direct character editing and library conversion (2026-11-25)
 
 - Make public character names on cast cards, selections, credits and preview metadata open the portrayal-specific identity and AI appearance editor, without adding a casting selection.

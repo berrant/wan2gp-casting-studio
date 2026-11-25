@@ -36,7 +36,9 @@ def test_all_models_factory_scenarios(installation):
         assert len(prompts)==5
         for prompt,expected in zip(prompts,('character portrait','full-body character showcase','environmental portrait','natural action pose','dramatic close-up')):
             assert expected.lower() in prompt.lower()
-            assert srv.IMAGE_REFERENCE_LABEL[model] in prompt and 'all images provided' in prompt
+            assert 'all images provided' in prompt
+            assert srv.IMAGE_REFERENCE_LABEL[model] not in prompt
+            assert 'Bottom caption:' not in prompt
             assert 'Captain as portrayed by Ada Test in Example Show (2025)' in prompt
             no_old(prompt)
             assert 'wardrobe_description:' in prompt

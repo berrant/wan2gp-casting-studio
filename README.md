@@ -1,8 +1,12 @@
 # Casting Studio for WanGP
 
-Version: v1.0.0-rc.12.14
+Version: v1.0.0-rc.12.15
 Date: 2026-11-25
 
+
+## RC12.15 — Sequel-oriented character prompts
+
+The named performer supplies facial identity, while the specific character portrayal supplies fixed pigmentation, eye appearance, anatomy and permanent features. Everyday performer photos are identity donors; any in-character reference evidence supports the requested portrayal. Approved character appearance descriptions are reused without further vision inference. The scene, wardrobe, expression and action are independent of the original narrative. H3 Ref2VA uses the six standard sections; P-H3-Image opens with `subject_definitions:` to avoid unwanted image editing. FLUX uses natural descriptive prose. Refmod-Fork assigns reference labels at runtime; our single-role default uses collective wording without assuming the number/order of injected images. Mixed-reference per-image mapping and simultaneous multi-character scenes are not added in this release. For clean public live-action footage, identity captions default off; enable the caption in the image or video template editor if desired. Custom final prompts are not rewritten. Actual output quality, reference assignment and native prompt parsing require live model testing.
 
 ## RC12.14 — Character shortcuts and bulk conversion
 

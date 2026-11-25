@@ -98,9 +98,10 @@ def test_character_traits_and_year_appear_in_all_scenes(installation):
         db.execute('INSERT INTO character_identity_suggestions VALUES (?,?,?,?)',(srv.character_identity_key('Ahsoka Tano','Ahsoka'),'orange facial and body skin','Synthetic test fixture',0))
     item={'person':'Rosario Dawson','character':'Ahsoka Tano','production':'Ahsoka','refmod':'Rosario_Dawson_H3.safetensors'}
     p=srv.prompt_for_selection(item,{**srv.SAMPLE_TEMPLATE,'video_count':4})
-    assert p.count('orange facial and body skin')==8  # definitions and retention in 4 clips
+    assert p.count('orange facial and body skin')==4  # once in each independent clip
     assert p.count('Ahsoka (2023)')>=4
-    assert 'Rosario Dawson - Ahsoka Tano - Ahsoka (2023)' in p
+    assert 'bottom caption' not in p
+    assert 'Rosario Dawson - Ahsoka Tano - Ahsoka (2023)' in srv.prompt_for_selection(item,{**srv.SAMPLE_TEMPLATE,'include_caption':True})
     assert '<Subject 2>' not in p
     r=client.get(API+'/characters/identity',params={'character':'Ahsoka Tano','production':'Ahsoka'})
     assert r.json()['source']=='researched'

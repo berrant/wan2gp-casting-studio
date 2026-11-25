@@ -1,3 +1,13 @@
+# v1.0.0-rc.12.15 — Sequel-oriented character prompts
+
+- [x] H3 six ordered sections, fixed portrayal traits once per shot, reference-role separation, independent scene actions and nested wardrobe.
+- [x] All eight still model options, P-H3-Image opening, clean native prompt bodies, optional public live-action caption and final custom prompt preservation.
+- [x] Vision instructions cover finished anatomical topology, pigmentation and irises, without new inference for ordinary prompts.
+- [x] Final cumulative gate: 372 passed, zero failed, two retired Docker skips, 374 collected; fingerprints unchanged. See TEST_RESULTS.txt.
+- [x] Git fast-forward, restart, external state preservation, syntax and additional browser caption checks.
+- [ ] Live GPU rendering, reference numbering, prompt fidelity and Safari validation.
+- Distribution ZIP and staged Git index privacy gate required before delivery.
+
 # v1.0.0-rc.12.14 — Direct character editing and library conversion
 
 - [x] Direct character navigation independent of casting selection; catalog portrayal/year validation and existing identity/vision regression coverage.
