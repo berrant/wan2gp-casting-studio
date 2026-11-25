@@ -1,3 +1,18 @@
+# v1.0.0-rc.12.11 — Reference collection and test image controls (2026-11-25)
+
+- Enable native multi-file selection in reference collections, sequential validation and per-batch progress and outcome reporting.
+- Keep single-image artwork selection and individual quality-review approval. Stop sending remaining files when navigating away; keep already saved files.
+- Add three browser regression cases covering mixed results, navigation and single-artwork handling.
+- Label the optional Workshop test image explicitly and expose a separate compatible image-checkpoint selector. Do not silently replace a selected checkpoint. Validate the choice on submission and again after extraction; the completed RefMod is retained if the test cannot run.
+
+# v1.0.0-rc.12.10 — People library reliability (2026-11-25)
+
+- Persist explicit performer registration regardless of installed model inventory; retain existing classifications and duplicate-name behavior.
+- Permit public saved-profile markers and identity corrections without a RefMod. Reject distinct public identity collisions and private-name corrections; normalize repeated aliases and keep category, marker and optional symbol associated with the corrected identity.
+- Preserve current search after a successful identity correction without overwriting a later navigation context. Refresh the public profile metadata after the correction.
+- Suppress human profile links on saved fictional characters; reject direct human-profile lookup and online human filmography discovery for classified fictional or damaged classifications. Reject punctuation-only display names; use the canonical profile name for H3 and FLUX identity edits. Local credit browsing remains available.
+- Extend the cumulative regression suite with eleven targeted cases for these workflows. No generation defaults, model formats or external storage schema changed. See TEST_RESULTS.txt for measured verification and limitations.
+
 # v1.0.0-rc.12.9 — People library (2026-11-25)
 
 - Register a public performer directly from People without requiring an installed RefMod or a production. Add All known people and Missing RefMods filters. Preserve installed-only default and existing casting choices.

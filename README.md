@@ -1,8 +1,20 @@
 # Casting Studio for WanGP
 
-Version: v1.0.0-rc.12.9
+Version: v1.0.0-rc.12.11
 Date: 2026-11-25
 
+
+## RC12.11 Reference collection and test image controls
+
+Select several local JPEG, PNG or WebP reference photos in one file picker (Ctrl-click, Command-click on Mac, or Shift-click). Each image uses the existing quality, duplicate and review checks; failures do not stop the remaining files. Closing or changing the collection stops subsequent uploads; an already submitted image may still save to its original collection. Portraits and posters remain single-image.
+
+In Workshop, optionally enable **Generate one test portrait after creating the RefMod**, then select the exact installed compatible image checkpoint. The encoder and image checkpoint are independent. The selected image model is revalidated before test generation; no substitute is used. If it disappears after extraction, the created RefMod is retained.
+
+## RC12.10 People library reliability
+
+- Explicit Add person now saves a durable local entry even when an installed RefMod already identifies the performer. Removing a model no longer removes an explicitly registered person from the library.
+- Identity corrections and public profile markers work for saved performers without RefMods. Repeated corrections retain category, marker and optional profile symbol; attempts to merge distinct public identities or target a Personal identity are rejected. The current performer search follows a successful correction without replacing a newer search or navigation context.
+- Fictional characters no longer display a human profile search link in People, and both direct human-profile lookup and human credit discovery reject fictional classifications. Identity edits reject punctuation-only names and use the displayed canonical identity instead of guessing from H3 or FLUX filenames. No new automatic online research, generator changes or runtime schema changes.
 
 ## RC12.9 People library
 
@@ -32,7 +44,7 @@ Date: 2026-11-25
 
 **Discover. Cast. Create.**
 
-Native WanGP plugin · Release candidate 12.9.
+Native WanGP plugin · Release candidate 12.11.
 
 ## RC12.6 — prompt review and saved model settings
 

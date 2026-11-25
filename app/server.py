@@ -233,7 +233,7 @@ def normalized_catalog(models=None, discovery=False):
             legacy[k]=person
     with connect() as db:
         public={k:{'categories':decoded_categories(cats) or [],'imdb':imdb,'status':status} for k,cats,imdb,status in db.execute('SELECT name_key,categories,imdb_id,status FROM public_profiles')}
-        edits={token(k):cats for k,v in db.execute('SELECT name,categories FROM profile_categories') if (cats:=decoded_categories(v)) is not None}
+        edits={token(canonical_name(k)):cats for k,v in db.execute('SELECT name,categories FROM profile_categories') if (cats:=decoded_categories(v)) is not None}
     role_performers={token(canonical_name(role['actress'])) for role in DB['roles']}
     if discovery:
         for person in DB['people']:
@@ -618,7 +618,7 @@ def selected_model(model):
 
 @app.get('/api/profiles/gender')
 def profile_gender_list():
-    with connect() as db:return {k:v for k,v in db.execute('SELECT name_key,symbol FROM profile_gender')}
+    with connect() as db:return {token(canonical_name(k)):v for k,v in db.execute('SELECT name_key,symbol FROM profile_gender')}
 
 class GenderEdit(BaseModel):
     name:str=Field(min_length=1,max_length=180)
@@ -629,8 +629,12 @@ def update_profile_gender(item:GenderEdit):
     if item.symbol not in ('','♀','♂','⚧'):
         raise HTTPException(400,'Choose an available symbol or clear the symbol')
     with lock,connect() as db:
-        if item.symbol:db.execute('INSERT OR REPLACE INTO profile_gender VALUES (?,?)',(token(canonical_name(item.name)),item.symbol))
-        else:db.execute('DELETE FROM profile_gender WHERE name_key=?',(token(canonical_name(item.name)),))
+        assert_public_name(item.name)
+        name_key=token(canonical_name(item.name))
+        for (old,) in db.execute('SELECT name_key FROM profile_gender').fetchall():
+            if token(canonical_name(old))==name_key:
+                db.execute('DELETE FROM profile_gender WHERE name_key=?',(old,))
+        if item.symbol:db.execute('INSERT INTO profile_gender VALUES (?,?)',(name_key,item.symbol))
     return {'saved':True,'name':item.name,'symbol':item.symbol}
 
 @app.get("/api/ui/icons/{name}")
@@ -671,7 +675,7 @@ def catalog_rescan():
 @app.get('/api/profiles/categories')
 def get_profile_categories():
     with connect() as db:
-        return {name:cats for name,categories in db.execute('SELECT name,categories FROM profile_categories') if (cats:=decoded_categories(categories)) is not None}
+        return {canonical_name(name):cats for name,categories in db.execute('SELECT name,categories FROM profile_categories') if (cats:=decoded_categories(categories)) is not None}
 
 class ProfileCategories(BaseModel):
     name:str=Field(min_length=1,max_length=150)
@@ -679,11 +683,15 @@ class ProfileCategories(BaseModel):
 
 @app.put('/api/profiles/categories')
 def put_profile_categories(item:ProfileCategories):
-    assert_public_name(item.name)
     allowed={'Actor','Model','Influencer','Musician','TV personality','Comedian','Presenter','Other performer','Video game character','Unclassified'}
     if any(x not in allowed for x in item.categories):raise HTTPException(400,'Unknown performer category')
     with lock,connect() as db:
-        db.execute('INSERT OR REPLACE INTO profile_categories(name,categories) VALUES (?,?)',(canonical_name(item.name),json.dumps(item.categories)))
+        assert_public_name(item.name)
+        name=canonical_name(item.name)
+        for (old,) in db.execute('SELECT name FROM profile_categories').fetchall():
+            if token(canonical_name(old))==token(name) and old!=name:
+                db.execute('DELETE FROM profile_categories WHERE name=?',(old,))
+        db.execute('INSERT OR REPLACE INTO profile_categories(name,categories) VALUES (?,?)',(name,json.dumps(item.categories)))
     return {'saved':True}
 
 
@@ -693,8 +701,8 @@ ADULT_SEED=set()
 @app.get('/api/profiles/markers')
 def get_profile_markers():
     with connect() as db:
-        overrides={token(name):bool(flag) for name,flag in db.execute('SELECT name,adult FROM profile_markers')}
-    names={m['name'] for m in scan()}
+        overrides={token(canonical_name(name)):bool(flag) for name,flag in db.execute('SELECT name,adult FROM profile_markers')}
+    names={p['name'] for p in normalized_catalog(discovery=True)[0]}
     return {name:overrides.get(token(name), token(name) in ADULT_SEED) for name in names if overrides.get(token(name),token(name) in ADULT_SEED)}
 
 class ProfileMarker(BaseModel):
@@ -703,15 +711,24 @@ class ProfileMarker(BaseModel):
 
 @app.put('/api/profiles/markers')
 def put_profile_marker(item:ProfileMarker):
-    if token(item.name) not in {token(m['name']) for m in scan()}:
-        raise HTTPException(404,'Installed RefMod profile not found')
-    with lock,connect() as db:
-        db.execute('INSERT OR REPLACE INTO profile_markers(name,adult) VALUES (?,?)',(token(item.name),int(item.adult)))
+    with lock:
+        assert_public_name(item.name)
+        name_key=token(canonical_name(item.name))
+        if name_key not in {token(p['name']) for p in normalized_catalog(discovery=True)[0]}:
+            raise HTTPException(404,'Known public profile not found')
+        with connect() as db:
+            # Collapse older aliases for this marker so clearing is authoritative.
+            for (old,) in db.execute('SELECT name FROM profile_markers').fetchall():
+                if token(canonical_name(old))==name_key:
+                    db.execute('DELETE FROM profile_markers WHERE name=?',(old,))
+            db.execute('INSERT OR REPLACE INTO profile_markers(name,adult) VALUES (?,?)',(name_key,int(item.adult)))
     return {'name':item.name,'adult':item.adult}
 
 @app.get('/api/profiles/link')
 def get_profile_link(name:str=Query(min_length=1,max_length=180)):
     assert_public_name(name)
+    if token(canonical_name(name)) in fictional_game_name_keys(include_damaged=True):
+        raise HTTPException(400,'Video-game characters cannot be researched as human performers')
     # Wikidata's IMDb identifier is P345. Only link an exact public human identity;
     # otherwise use DuckDuckGo. Never present generic IMDb search as a verified profile.
     if token(name) not in {token(m['name']) for m in scan()}:
@@ -730,7 +747,7 @@ def get_profile_link(name:str=Query(min_length=1,max_length=180)):
         return {'provider':'imdb','url':row[0],'verified':True} if row[0] else default
     imdb=''
     try:
-        with httpx.Client(timeout=5,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.9 (personal catalog)'}) as client:
+        with httpx.Client(timeout=5,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.11 (personal catalog)'}) as client:
             resp=client.get('https://www.wikidata.org/w/api.php',params={'action':'wbsearchentities','search':name,'language':'en','format':'json','limit':6,'type':'item'})
             resp.raise_for_status()
             candidates=[v for v in resp.json().get('search',[]) if token(v.get('label'))==token(name)]
@@ -766,14 +783,24 @@ def list_identities():
 def put_identity(item:IdentityEdit):
     original_key=token(item.original_name)
     display_name=' '.join(item.display_name.split())
-    if not original_key or not re.fullmatch(r"[\w .,'’()\-]+",display_name,re.UNICODE):
+    if not original_key or not token(display_name) or not re.fullmatch(r"[\w .,'’()\-]+",display_name,re.UNICODE):
         raise HTTPException(400,'Invalid identity')
-    # Ensure the submitted identity belongs to an existing RefMod (or its former catalog entry).
-    if original_key not in {token(model_name(Path(m['path']))) for m in scan()} and original_key not in {token(p['name']) for p in DB['people']}:
-        raise HTTPException(400,'Original identity not found in the catalog')
-    with lock,connect() as db:
-        db.execute('INSERT OR REPLACE INTO identity_names(key,display_name) VALUES(?,?)',(original_key,display_name))
-    refresh_identities()
+    # Existing models and saved public identities share the local alias registry.
+    with lock:
+        assert_public_name(item.original_name);assert_public_name(display_name)
+        current_key=token(canonical_name(item.original_name))
+        known={token(p['name']) for p in normalized_catalog(discovery=True)[0]}
+        if current_key not in known and original_key not in {token(model_name(Path(m['path']))) for m in scan()}:
+            raise HTTPException(400,'Original identity not found in the catalog')
+        target_key=token(display_name)
+        if target_key!=current_key and (target_key in known or (target_key in identity_overrides and token(canonical_name(display_name))!=current_key)):
+            raise HTTPException(409,'That display name belongs to another public identity')
+        # Flatten aliases already pointing to the same identity, including repeated corrections.
+        keys={original_key,current_key}|{k for k,v in identity_overrides.items() if token(v)==current_key}
+        with connect() as db:
+            for k in keys:
+                db.execute('INSERT OR REPLACE INTO identity_names(key,display_name) VALUES(?,?)',(k,display_name))
+        refresh_identities()
     scan(force=True)
     return {'saved':True,'original_key':original_key,'display_name':display_name}
 
@@ -822,7 +849,7 @@ def wikidata_get(client,params):
     raise last_error
 
 def wikidata_profile(name):
-    with httpx.Client(timeout=20, headers={'User-Agent':'CastingStudio/1.0.0-rc.12.9 (public performer metadata; respectful research)'}) as client:
+    with httpx.Client(timeout=20, headers={'User-Agent':'CastingStudio/1.0.0-rc.12.11 (public performer metadata; respectful research)'}) as client:
         search=wikidata_get(client,{
             'action':'wbsearchentities','search':name,'language':'en','format':'json','type':'item','limit':8})
         candidates=[c for c in search.get('search',[]) if token(c.get('label',''))==token(name) or
@@ -1937,7 +1964,7 @@ def download_image(url):
         if cached and safe_media_file(PHOTO_DIR,cached[0],r'[0-9a-f]{64}\.jpg'):return 'api/photos/'+cached[0]
         validate_public_url(url)
         # Disable proxies and redirects; redirects must not reach private network addresses.
-        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.0-rc.12.9)'}) as client:
+        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.0-rc.12.11)'}) as client:
             with client.stream('GET',url) as res:
                 if res.status_code!=200 or not res.headers.get('content-type','').lower().startswith('image/'):
                     return ''
@@ -3456,11 +3483,13 @@ def add_public_person(item:PublicPersonRequest):
         assert_public_name(name)
         people,_=normalized_catalog(discovery=True)
         existing=next((p for p in people if token(p['name'])==token(name)),None)
-        if existing:return {'name':existing['name'],'created':False}
-        # Register locally without inventing a production, credit or RefMod.
+        # An explicit add must persist even when the identity already exists only
+        # in the installed inventory. Do not overwrite any existing classification.
+        if existing:name=existing['name']
         with connect() as db:
-            db.execute('INSERT OR IGNORE INTO profile_categories(name,categories) VALUES (?,?)',(name,'[]'))
-    return {'name':name,'created':True}
+            registered=any(token(canonical_name(saved))==token(name) for (saved,) in db.execute('SELECT name FROM profile_categories'))
+            if not registered:db.execute('INSERT INTO profile_categories(name,categories) VALUES (?,?)',(name,'[]'))
+    return {'name':name,'created':existing is None}
 
 @app.get('/api/discovery/people')
 def discover_people(q:str=Query(min_length=1,max_length=160)):
@@ -3480,6 +3509,8 @@ def discover_credits(name:str=Query(min_length=2,max_length=160),online:bool=Fal
     person=next((p for p in people if token(p['name'])==wanted),{})
     warnings=[]
     if online:
+        if wanted in fictional_game_name_keys(include_damaged=True):
+            raise HTTPException(400,'Video-game characters cannot be researched as human performers')
         try:
             remote,warnings=fetch_credits(name)
             for r in remote:
@@ -3602,7 +3633,7 @@ def search_production_online(q:str=Query(min_length=2,max_length=120)):
 # Key-free film credit source. Match exact title or explicit "(film)" titles;
 # treat cast lists as suggestions for human review, not verified installed mods.
 WIKIPEDIA_API='https://en.wikipedia.org/w/api.php'
-WIKI_AGENT='CastingStudio/1.0.0-rc.12.9 (personal local catalog; Wikimedia public credits)'
+WIKI_AGENT='CastingStudio/1.0.0-rc.12.11 (personal local catalog; Wikimedia public credits)'
 def wiki_api(client,params):
     r=client.get(WIKIPEDIA_API,params={**params,'format':'json','formatversion':2},headers={'User-Agent':WIKI_AGENT})
     r.raise_for_status();return r.json()
@@ -3941,7 +3972,7 @@ def save_reference_image(item:ReferenceImageRequest):
             return {**result,'reused_local':True}
         try:validate_public_url(item.image_url)
         except Exception as e:raise HTTPException(400,str(e))
-        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.9'}) as client:
+        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.11'}) as client:
             with client.stream('GET',item.image_url) as r:
                 if r.status_code!=200 or not r.headers.get('content-type','').lower().startswith('image/'):
                     raise HTTPException(422,'Image host did not return an image')
@@ -4237,6 +4268,24 @@ def workshop_photos(person:str=Query(min_length=2),production:str='',character:s
                        'quality':r['quality'],'quality_rank':r['quality_rank'],'duplicate_group':r['duplicate_group'],'duplicate_of':r['duplicate_of'],'sharpness':r.get('sharpness',0),'face_count':r.get('face_count',-1),'url':'api/reference-images/file/'+r['id']} for r in rows]}
 
 
+def workshop_portrait_candidates(bridge,family):
+    candidates=[]
+    for option in MODEL_OPTIONS:
+        if option['kind']!='image' or option['family']!=family:continue
+        try:models=bridge.models(option['id'])
+        except (ValueError,RuntimeError):continue
+        for model in models:
+            if model['ready']:
+                candidates.append({'model':option['id'],'model_type':model['model_type'],'name':model['name']})
+    return candidates
+
+
+@app.get('/api/workshop/portrait-models')
+def workshop_portrait_models(family:str='minimax_h3'):
+    if family not in ('minimax_h3','flux2'):raise HTTPException(400,'Unknown RefMod family')
+    return {'models':workshop_portrait_candidates(workshop_relay(),family)}
+
+
 @app.get('/api/workshop/models')
 def workshop_models(family:str='minimax_h3'):
     if family not in ('minimax_h3','flux2'):
@@ -4348,6 +4397,8 @@ class WorkshopCreateRequest(BaseModel):
     layout:str='separate'
     budget:int=4096
     test_portrait:bool=False
+    test_portrait_model:str|None=Field(default=None,max_length=160)
+    test_portrait_model_type:str|None=Field(default=None,max_length=200)
 
 
 class WorkshopDecompileRequest(BaseModel):
@@ -4414,16 +4465,18 @@ def workshop_create(item:WorkshopCreateRequest):
     except (ValueError,TypeError) as exc:raise HTTPException(400,str(exc))
     task=WorkshopTask(op,item.model_type,name,spec,expected,tuple(map(str,paths)),item.family)
     if item.test_portrait:
+        candidates=workshop_portrait_candidates(bridge,item.family)
+        if item.test_portrait_model is None and item.test_portrait_model_type is None and len(candidates)==1:
+            # Backward compatibility for older clients with exactly one valid choice.
+            chosen=candidates[0]
+        else:
+            chosen=next((c for c in candidates if c['model']==item.test_portrait_model and c['model_type']==item.test_portrait_model_type),None)
+        if chosen is None:raise HTTPException(400,'Choose a compatible installed image model for the test portrait, or turn the test portrait off')
+        board,checkpoint=chosen['model'],chosen['model_type']
         def test_portrait():
             from ..queue_bridge import Submission
-            # A compatible installed IMAGE model, not the H3 extraction/video checkpoint.
-            candidates=[]
-            for option in MODEL_OPTIONS:
-                if option['kind']!='image' or option['family']!=item.family:continue
-                try:candidates.extend((option['id'],m['model_type']) for m in bridge.models(option['id']) if m['ready'])
-                except (ValueError,RuntimeError):continue
-            if not candidates:raise ValueError('RefMod created, but no compatible image checkpoint is available for the test portrait')
-            board,checkpoint=next((c for c in candidates if c[1]==item.model_type),candidates[0])
+            if not any(c['model']==board and c['model_type']==checkpoint for c in workshop_portrait_candidates(bridge,item.family)):
+                raise ValueError('Selected test portrait model is no longer available; no substitute was used')
             stat=expected.stat()
             def validate(sub):
                 assert_public_name(item.person)

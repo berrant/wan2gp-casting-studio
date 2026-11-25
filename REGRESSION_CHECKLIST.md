@@ -1,3 +1,15 @@
+# v1.0.0-rc.12.10 — People library reliability release gate
+
+- [x] Explicit public registration persists after RefMod removal; saved public profiles support markers and identity correction without a RefMod.
+- [x] Repeated aliases, distinct-profile collisions, private-name rejection, categories, markers, optional profile symbol and current search preservation.
+- [x] Reject punctuation-only names; canonical identity used for H3 and FLUX edits; fictional-character human profile/credit lookup guards.
+- [x] Eleven new targeted regression cases passed separately on the final code.
+- [x] Complete cumulative native suite on the final corrected code: 338 passed, 0 failed, 2 retired Docker cases skipped (190.49 seconds wall time, four disjoint test groups covering 340 collected cases). All four exit codes zero; application and test fingerprints unchanged.
+- [x] Native mount, actual source-tree Git fast-forward from RC12.9, restart and synthetic external data preservation, clean working tree.
+- [x] Python and inline JavaScript syntax checks.
+- [ ] Live WanGP update, GPU generation and actual user library verification.
+- Final source and installation archive privacy checks and exact staged source index audit are required before delivery. See TEST_RESULTS.txt.
+
 # v1.0.0-rc.12.9 — People library release gate
 
 - [x] Direct local public performer registration; independent of productions and installed RefMods.
@@ -360,3 +372,5 @@ Use a Python environment with plugin dependencies, pytest and optional Playwrigh
 - [x] Percentage handoff: 75% switches at step 6/8 and 30/40, not at 29/40. Unknown totals and newer progress events do not prematurely advance the displayed frame. Static mode, old preference migration, numeric bounds and collapsed media suspension tested.
 - [ ] Live WanGP event timing, hardware-specific behavior and arbitrary untested input sequences remain unverified.
 - [x] Final combined cumulative regression gate: 80 passed; Python and JavaScript syntax checked.
+
+- [x] Workshop optional test image: explicit image checkpoint choice (not encoder), family/readiness filters, stale discovery rejection, exact second checkpoint dispatch, unavailable-at-dispatch handling, and unchecked creation with no image task.

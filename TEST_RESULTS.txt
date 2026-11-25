@@ -1,30 +1,19 @@
-Casting Studio v1.0.0-rc.12.9 — People library
+Casting Studio v1.0.0-rc.12.11 — Reference collection and test image controls
 Measured release verification (2026-11-25)
 
-FINAL COMPLETE REGRESSION GATE — python run_regression.py
-327 passed, 2 skipped, 457 warnings in 325.19s (0:05:25)
-Exit status: 0. No failures. Both skips are explicitly retired standalone Docker tests, not applicable to the native WanGP distribution. No applicable test was skipped.
-The run began after the last application and test changes. Fingerprints verified unchanged afterward.
+FINAL COMPLETE CUMULATIVE REGRESSION GATE
+348 collected, 346 passed, 0 failed, 2 retired standalone Docker checks skipped.
+Group 1: 86 passed, 114 warnings in 164.29s (0:02:44)
+Group 2: 85 passed, 2 skipped, 121 warnings in 155.19s (0:02:35)
+Group 3: 87 passed, 106 warnings in 136.21s (0:02:16)
+Group 4: 88 passed, 138 warnings in 149.16s (0:02:29)
+Wall time: 170.61 seconds. All four exit codes: 0.
+Application and regression source fingerprints matched before and after the final gate. Preliminary runs were superseded and do not contribute to release approval.
 
-FINAL TARGETED REGRESSION — tests/test_rc129_people_library.py
-7 passed, 6 warnings in 14.59s. Exit status 0.
-Includes direct registration without a role/model, duplicate normalization, private/invalid name rejection, concurrent additions, failed-save recovery, explicit credit research, and delayed saves during search, Clear and navigation.
-Earlier preliminary full run intentionally stopped when the Clear-button context issue was corrected; the final complete gate supersedes it.
-
-SUPPLEMENTAL CHROMIUM WORKFLOW CHECKS
-Registration controls remained within the viewport at 1440, 800 and 420 pixels.
-Synthetic library: 1,343 saved profiles plus three installed; first page limited to 20 cards, role search found the correct person, one library request and no page errors.
+New targeted coverage: eleven RC12.10 identity regressions, three multi-file reference picker browser cases, three explicit Workshop picker cases, and two new API variations for exact checkpoint selection and model disappearance after extraction. These cases are included in the final complete gate.
 
 FINAL GIT UPGRADE SIMULATION
-RC12.8 seed mount, version and external state PASS
-Clean installed Git working tree PASS
-Actual source-tree fast-forward PASS
-RC12.9 update mount, version and external state PASS
-Clean installed Git working tree PASS
-RC12.9 restart mount, version and external state PASS
-Clean installed Git working tree PASS
+RC12.10 baseline seed/mount PASS; actual source-tree fast-forward PASS; RC12.11 mount and restart PASS. Synthetic external public profile, production role, personal profile and custom prompt settings preserved. Clean installed Git working tree. Python and inline JavaScript syntax checks PASS. Visual browser check of new test-image section PASS.
 
-Python source and inline JavaScript syntax checks: PASS.
-The complete suite includes all maintained earlier adversarial tests. No artificial repetition count used.
-Outstanding: real WanGP update and GPU generation, actual model/photo library and user data verification. FastAPI/Pillow deprecation warnings remain.
-Distribution audit: final source and installation archives and exact staged source index checked separately; empty factory public catalog. The audit does not cover Git history or author metadata.
+Distribution guard checks source archive, wrapped installation archive and staged source index independently before delivery. Factory public catalog remains empty; the guard does not establish the privacy of any remote Git history or author account metadata.
+Outstanding: actual WanGP host update, GPU generation and real personal model/photo library verification; dependency deprecation warnings remain. This is not a guarantee of zero undiscovered defects.

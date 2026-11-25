@@ -1,5 +1,6 @@
 """RC12.8 local persistence and Workshop workflow regressions."""
 import copy,json
+import pytest
 from types import SimpleNamespace as NS
 from PIL import Image
 from test_native_plugin import installation
@@ -76,12 +77,13 @@ def test_workshop_preselects_unique_ranked_photos(tab):
     assert tab.locator('#workshopPhotos .workshopPhotoCheck:checked').evaluate_all('es=>es.map(e=>e.value)')==['best','unique']
     assert tab.locator('#workshopTestPortrait').is_checked() is False
 
-def test_optional_workshop_test_portrait_exact_refmod(installation,monkeypatch):
+@pytest.mark.parametrize("explicit", [False, True, "disappears"])
+def test_optional_workshop_test_portrait_exact_refmod(installation,monkeypatch,explicit):
     from test_dev510 import mod
     c,p,root,_=installation;s=server();b=p.queue_bridge;source=root/'source.png';Image.new('RGB',(40,40)).save(source)
     monkeypatch.setattr(s,'workshop_photo_rows',lambda *a:[{'id':'abc','person':'Ada Test','production':'Example Show','character':'Captain','path':source,'width':800,'height':800,'quality':'passed'}])
     monkeypatch.setattr(p.adapter,'discover',lambda:{'fork_revision':58,'installed':True})
-    monkeypatch.setattr(b,'models',lambda board:[{'model_type':'flux-test','name':'FLUX','ready':True}] if board=='flux2_klein9' else [])
+    monkeypatch.setattr(b,'models',lambda board:([{'model_type':'flux-other','name':'Other','ready':True}] if explicit else [])+[{'model_type':'flux-test','name':'FLUX','ready':True}] if board=='flux2_klein9' else [])
     b.dispatch_mode='gradio';sent=[]
     class Session:
         def list_model_defs(self):return [{'model_type':'flux-test','architecture':'flux2_klein9','custom_settings':[{'id':'flux_refmod_state'}]}]
@@ -95,7 +97,18 @@ def test_optional_workshop_test_portrait_exact_refmod(installation,monkeypatch):
             return NS(result=lambda:res,cancel=lambda:None,webui_client_ids=[])
     session=Session();b.api_session=session
     req={'person':'Ada Test','production':'Example Show','character':'Captain','image_ids':['abc'],'name':'Ada_Test_New_FLUX','model_type':'flux-test','family':'flux2','test_portrait':True}
-    r=c.post(API+'/workshop/create',json=req);assert r.status_code==200,r.text;jid=r.json()['job_id'];b.process_pending_in_gradio(session)
+    if explicit:
+        assert c.post(API+'/workshop/create',json=req).status_code==400
+        assert c.post(API+'/workshop/create',json={**req,'test_portrait_model':'h3_video','test_portrait_model_type':'flux-test'}).status_code==400
+        req.update(test_portrait_model='flux2_klein9',test_portrait_model_type='flux-test')
+    r=c.post(API+'/workshop/create',json=req);assert r.status_code==200,r.text;jid=r.json()['job_id']
+    if explicit=='disappears':
+        monkeypatch.setattr(b,'models',lambda board:[{'model_type':'flux-other','name':'Other','ready':True}] if board=='flux2_klein9' else [])
+    b.process_pending_in_gradio(session)
+    if explicit=='disappears':
+        status=c.get(API+'/workshop/jobs/'+jid).json();assert status['state']=='completed' and status.get('test_portrait_state')=='failed',status
+        assert 'no substitute' in status['test_portrait_error'] and len(sent)==1
+        return
     status=c.get(API+'/workshop/jobs/'+jid).json();assert status['state']=='completed' and status.get('test_portrait_state')=='completed',status
     assert len(sent)==2 and 'Ada_Test_New_FLUX' in sent[1]['custom_settings']['flux_refmod_state']
     assert c.get(API+'/choices').json()==[]
