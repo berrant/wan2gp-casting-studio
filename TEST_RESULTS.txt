@@ -1,20 +1,18 @@
-Casting Studio v1.0.0-rc.12.15 — Sequel-oriented character prompts
+Casting Studio v1.0.0-rc.12.16 — Spit and polish
 Measured release verification (2026-11-25)
 
 FINAL COMPLETE CUMULATIVE REGRESSION GATE
-374 collected, 372 passed, 0 failed, 2 retired standalone Docker checks skipped.
-Group 1: 90 passed, 128 warnings in 149.05s (0:02:29)
-Group 2: 103 passed, 2 skipped, 156 warnings in 120.15s (0:02:00)
-Group 3: 89 passed, 100 warnings in 178.69s (0:02:58)
-Group 4: 90 passed, 129 warnings in 163.22s (0:02:43)
-Wall time: 182.44 seconds. All four exit codes: 0.
+381 collected, 379 passed, 0 failed, 2 retired standalone Docker checks skipped.
+Group 1: 94 passed, 124 warnings in 148.03s (0:02:28)
+Group 2: 99 passed, 2 skipped, 150 warnings in 169.88s (0:02:49)
+Group 3: 91 passed, 101 warnings in 164.68s (0:02:44)
+Group 4: 95 passed, 138 warnings in 177.19s (0:02:57)
+Wall time: 180.4 seconds. All four exit codes: 0.
 Application and regression source fingerprints matched before and after the final gate.
 
-Three new permanent regressions: six-section H3 prompt and single invariant definition, model-specific still prompting and caption round trip for all eight image options, and final prompt preservation with export headings removed from native model input. Older assertions were updated for the intended behavior; superseded failed gates are not counted. Focused corrected regression group: 5 passed. Additional independent Chromium check: both caption controls persist and still-image count changes retain the caption setting.
+Seven new permanent Chromium regressions: explicit model selection when the preferred engine is missing, valid role/photo selections, dated-card identity routing, previous review retention, transient monitor recovery, out-of-order status rejection and missing-job polling termination. Five preliminary regressions reproduced defects on RC12.15. Seven targeted tests passed after final changes. Earlier focused run (before final two cases): 23 passed.
 
-RC12.14 -> RC12.15 Git fast-forward, native mount and restart simulation PASS; synthetic external state preserved, SQLite integrity and clean installed Git tree PASS. Python and inline JavaScript syntax PASS.
+RC12.15 -> RC12.16 Git fast-forward, native mount and restart simulation PASS; synthetic external state preserved, SQLite integrity and clean installed Git tree PASS. Python and inline JavaScript syntax PASS.
 
-A synthetic prompt comparison with the same traits found H3 video 354 -> 295 words (traits repeated twice -> once), FLUX.2 Klein 9B 221 -> 220 words (both excluding export heading). Not model-token or generation-time benchmarks.
-
-Live WanGP GPU generation, visual likeness, actual runtime reference numbering, mixed-reference role assignment and Safari remain unverified. The default public fictional-character prompts cover one subject per task. The revised code does not change WanGP global model settings, enable prompt upsampling independently, or add a runtime label parser. Personal, game and broadcast templates retain their existing content; their still generation also removes export headings.
-Distribution privacy audit covers both archives and a staged synthetic Git index. This is a release candidate, not public v1 approval.
+No prompt defaults, generation settings, native GPU operations or persistent schema changed. Live WanGP GPU inference/conversion/rendering, runtime reference numbering, Safari and model downloads remain unverified. Model-family selection preservation, licensing, first-run UX and public documentation remain open v1 concerns.
+Distribution privacy audit covers both archives and staged synthetic Git index. This is an installation-test candidate, not public v1 approval.

@@ -1,3 +1,11 @@
+# v1.0.0-rc.12.16 — Spit and polish
+
+- [x] Seven permanent Chromium regressions for missing preferred engine, valid selections, explicit portrayal year, old review, temporary monitor disconnect, out-of-order status and missing job.
+- [x] Final cumulative gate: 379 passed, zero failed, two retired Docker skips, 381 collected; fingerprints unchanged. See TEST_RESULTS.txt.
+- [x] Git fast-forward, restart, external state preservation and syntax.
+- [ ] Live GPU, real WanGP download/reference paths, Safari, public licensing and documentation.
+- Distribution ZIP and staged Git index privacy gate required before delivery.
+
 # v1.0.0-rc.12.15 — Sequel-oriented character prompts
 
 - [x] H3 six ordered sections, fixed portrayal traits once per shot, reference-role separation, independent scene actions and nested wardrobe.

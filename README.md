@@ -1,8 +1,15 @@
 # Casting Studio for WanGP
 
-Version: v1.0.0-rc.12.15
+Version: v1.0.0-rc.12.16
 Date: 2026-11-25
 
+
+## RC12.16 — Impatient-user polish
+
+- A missing preferred vision engine now requires explicit selection; no automatic switch to a larger model. Analysis is disabled for empty/invalid role and image selections.
+- A dated character card never resolves to an undated casting choice. Previous appearance reviews are preserved and labeled when a different character is requested; choose another batch before starting new analysis.
+- Generation monitor retries temporary status failures without resubmitting, ignores out-of-order replies, and stops polling missing jobs.
+- No changes to default prompts, model settings, native GPU operations, schema, or upstream files.
 
 ## RC12.15 — Sequel-oriented character prompts
 
