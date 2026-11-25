@@ -1,0 +1,302 @@
+# v1.0.0-rc.12.4 — Cast workflow and private settings
+
+- [x] Cast collector reachable without leaving production; no search before explicit choice; performer/character scopes and Workshop return tested.
+- [x] Separate role photo collections and duplicate matching, role-aware export, filtered Workshop sources; legacy collection behavior retained in targeted tests.
+- [x] Prompt backup round trip; malformed template and final edit rejected; previous settings retained; private edits require matching local profile consent.
+- [x] Browser backup format/export, rollback after rejected import and prototype-key rejection.
+- [x] Persistent model preference storage with session fallback, image model recall, separate checkpoint memory.
+- [x] Final targeted test run: 31 passed, including 18 MOAB cases; earlier 13 targeted and six new-feature cases passed separately.
+- [ ] Full cumulative gate: timed out without completion after 14 cases; rerun before declaring a complete release gate pass.
+- [ ] Actual native host, GPU/Refmod-Fork, Safari, real photo search quality and storage under an actual browser/server restart require live testing.
+
+# v1.0.0-rc.12.3 — Workflow edition
+
+Before the final playback-only change: 204 cumulative tests and four additional workflow-action tests passed separately (208 distinct gate cases). Ten MOAB backend rounds passed. After the playback change: four targeted browser tests passed, including one new test (209 distinct gate cases across the staged runs). Python and JavaScript syntax checks passed. The complete gate and MOAB were not rerun after the playback-only change.
+
+- [x] Completed video loads paused; live inference autoplay retained; manual playback is not restarted by identical status polls; retained results remain paused on new load (Chromium with simulated media methods).
+- [x] Batch preflight: ready tasks and missing-RefMod blocking; no submission side effects; blocked UI cannot submit.
+- [x] Exact failure retry: explicit indices, correct original prompt, duplicate-retry guard, no retry when outcomes are ambiguous; history retained when in-memory state is cleared.
+- [x] Preset save/load round-trip with isolated browser Storage fixture.
+- [x] Undo individual and production-wide removals; retain unrelated roles; select-all behavior remains functional.
+- [x] Basic/Advanced toggle, diagnostics and single-image submission; no automatic queueing from setup.
+- [x] Keyboard shortcut submits only outside editable fields.
+- [x] Batch history UI only offers retry for explicitly retryable jobs.
+- [x] Selected cards: buttons remain within card bounds at 1400, 700 and 420 pixel viewports; visual inspection in Chromium.
+- [x] Targeted workflow/production browser tests: 12 passed; additional workflow-action tests: 4 passed.
+- [x] MOAB backend suite: ten fresh-process rounds, 18 tests per round, 180 successful executions.
+- [ ] Live WanGP v20.20 host/GPU and Refmod-Fork validation, cross-browser storage and shortcut behavior, real user observation and independent security assessment.
+
+# v1.0.0-rc.12.2 — Persona audit and live monitor
+
+- [x] Six failures reproduced against untouched RC12.1; all six repaired in targeted tests.
+- [x] Power user: temporary image-count reduction preserves hidden shot drafts; closing dirty image editor prompts; failed video override deletion preserves the override and reports failure.
+- [x] Novice: failed image template load blocks stale saves; failed reset reports error; failed video template load blocks saves.
+- [x] Image-set, generator settings, production selection, model-family, long-video and conversion regression checks: 17 passed, 18 warnings in 32.89s.
+- [x] Retained media metadata stays with the corresponding completed task even while another task is selected or running; live task identity follows the active preview. Unknown identity is not guessed.
+- [x] Compact responsive preview details; long prompts collapsed by default; empty metadata hidden. Optional metadata does not prevent generation. Final monitor and MOAB combined gate: 28 passed, 48 warnings in 13.48s.
+- [x] Final ten consecutive MOAB fresh-process runs: 18 cases per round; 180 passing executions, zero failures or skips.
+- [x] Final cumulative release gate: 192 passed, 326 warnings in 159.90s (0:02:39); Python and JavaScript syntax checked.
+- [ ] Actual WanGP v20.20 host/GPU integration, Refmod-Fork integration, cross-platform installs, Safari, real user observation and independent security assessment.
+
+# v1.0.0-rc.12.1 — MOAB Edition
+
+- [x] 17 failing test cases reproduced against uploaded RC12 across two baseline runs; one valid-preview control passed.
+- [x] 18 new permanent cases cover conflicting native metadata, malformed artwork cache, failed worker startup, failed portrait write and oversized status.
+- [x] 31 targeted regression tests passed, including related cancellation and preview handoff tests.
+- [x] Ten consecutive fresh-process MOAB runs, 18 tests each, hash seeds 1–10, zero failures or skips (180 executions). Existing startup warnings remained.
+- [x] Full cumulative gate: 183 passed, 324 warnings, exit 0, 143.92 seconds. Python and JavaScript syntax checked. No runtime changes after gate.
+- [ ] Exact WanGP v20.20 and live GPU/Refmod-Fork integration, Safari, Windows/macOS installs, actual power loss and independent security assessment. Simulated native sessions are not equivalent to hardware integration testing.
+
+# v1.0.0-rc.12 Nuclear Edition
+
+- [x] Six failures reproduced against untouched RC11, subsequently repaired.
+- [x] Single cancellation before/during native handle submission; batch cancellation during preparation; conversion cancellation after decode; Workshop cancellation during native submit; missing native session handled.
+- [x] Terminal history retains 100 most recently completed jobs plus active jobs; long-running jobs retained when completed.
+- [x] Photo cache SQLite rejection, interrupted downloads, disk-full simulation, same-URL concurrent requests (32), and untracked filename collision preservation.
+- [x] 12 new targeted tests pass; full cumulative gate 161 passed, exit 0.
+- [x] Four additional distinct clean adversarial rounds on final runtime: network (3), concurrency (8), storage (4), UI and recovery (5). 2,048 concurrent completions across 12 workers; 180 seeded navigation/resizes; real SQLite competing write lock. All 20 executions passed, including four newly added probes. 165 distinct tests verified across separate runs. Future runner includes all 165.
+- [ ] Live GPU, actual power interruption, Safari, cross-platform installations, independent security assessment; startup deprecation warnings remain.
+
+# v1.0.0-rc.11 Failure Cascade Testing
+
+- [x] Accepted whole-batch cancellation is retained even when a native chunk finishes successfully; no later chunk submitted in the tested case; prior file records preserved.
+- [x] Native success plus cancellation stops the batch unless the errors are explicitly confirmed individual skips.
+- [x] Delayed task-indexed progress and status events cannot overwrite current task telemetry in the tested sequence.
+- [x] Native cancellation exception returns controlled HTTP 409; retry succeeds; duplicate rejected.
+- [x] Cancellation during native handle creation attempts cancellation when the handle becomes available and prevents later chunks in the tested case.
+- [x] Cancellation during revalidation between chunks leaves the finished handle alone and preserves completed files.
+- [x] Final targeted run 20 passed; complete final cumulative gate 149 passed, exit 0, no runtime modifications after gate.
+- [ ] Live GPU/native cancellation timing, real power loss, Safari, cross-platform installs and independent security review.
+
+# v1.0.0-rc.10 Nitroglycerin edition
+
+- [x] Privacy transition after the first 250-job manifest chunk prevents subsequent invalid submission and retains previous outputs.
+- [x] Exception during a later chunk retains previously completed output records.
+- [x] NaN, infinity and malformed native progress/step values cannot break status JSON; valid progress remains intact.
+- [x] Real SQLite trigger rejects a reference upload: controlled 503, previous files unchanged, no abandoned image and SQLite integrity OK.
+- [x] Preview progress does not replace aggregate batch progress.
+- [x] Delayed callbacks cannot mutate completed job status.
+- [x] 120 parallel telemetry/poll operations, eight workers, all returned valid status.
+- [x] 16 simultaneous conversion apply attempts: one success, fifteen conflicts; original model library remains separate.
+- [x] Initial cumulative gate: 140 passed; final 27 targeted tests passed after terminal-state and conversion-apply adjustments.
+- [ ] Full final cumulative rerun, actual native GPU, abrupt power loss, Safari, cross-platform and independent security testing.
+
+# v1.0.0-rc.9 Demolition edition
+
+- [x] Corrupt public/local categories and cast JSON preserve original records; valid catalog remains usable.
+- [x] Stale settings temporary symlink does not modify unrelated sentinel.
+- [x] Actual SQLite insert rejection returns controlled error, preserves existing artwork mapping and removes uncommitted image.
+- [x] Injected settings rename failure retains committed bytes and removes temporary file.
+- [x] Catalog and Workshop scan-history writes bypass stale temporary symlinks.
+- [x] Chromium warning appears on default workspace and disappears on recovery.
+- [x] Final targeted tests: 11 passed, including all seven RC9 tests.
+- [x] Cumulative gate: 134 passed before final warning adjustments; final adjustments covered by targeted tests.
+- [ ] Actual abrupt power-loss, native GPU, Safari and other OS integration testing; independent security assessment.
+
+# v1.0.0-rc.8 Jackhammer round two
+
+- [x] Damaged selection JSON, null and invalid shape preserve original bytes, load valid choices, block affected preview and unsafe bulk queue, and survive reconciliation.
+- [x] Damaged unrelated choices do not prevent Personal rename or deletion.
+- [x] Stale public selections cannot generate or export using a Personal profile; explicit private selection works with consent.
+- [x] Registered alias privacy prevents public reference access and Workshop enumeration after Personal registration.
+- [x] Native handoff revalidates a staged public task after Personal registration; model bytes preserved.
+- [x] Workshop rejects duplicate physical reference sources even when IDs differ.
+- [x] Chromium recovery warning and explicit reset with zero valid selections; cancelled reset preserves rows.
+- [x] 120 malformed requests on eight workers: controlled 4xx, no choices/profiles/queue jobs, SQLite integrity OK.
+- [x] Non-finite numeric inputs return controlled 422 instead of response serialization error.
+- [x] Empty profile markers on fresh install; explicit user marker changes persist.
+- [x] Cumulative regression run (before final validation/marker changes): 122 passed. Final targeted test run: 19 passed. Full final cumulative gate not rerun; all new tests registered for future gates.
+
+# v1.0.0-rc.7 recovery and reference integrity
+
+- [x] Shared reference files survive deletion of one record; last record deletion removes file.
+- [x] Stale audit result cannot overwrite repaired reference; changed-file count returned.
+- [x] Personal registration blocks public reference serving, approval and deletion without deleting existing photos.
+- [x] Corrupt video settings return safe editor view with warning, original row retained; preview and queue blocked until explicit repair. Corrupt image settings produce actionable error; reset recovers. Damaged per-role override blocks only the affected selection.
+- [x] Phone image and portrait EXIF rotation preserved, metadata removed.
+- [x] Chromium: disable quick music during recovery; explicit reset restores it; delayed reference response cannot paint the wrong collection.
+- [x] Cumulative gate 116 passed before final browser adjustment; 23 final targeted tests passed (including eight new tests). Full gate with eighth test and final HTML not rerun.
+- [ ] Actual WanGP/GPU execution, Safari and cross-platform behavior, independent security review.
+
+# v1.0.0-rc.6 upgrade cache
+
+- [x] Native iframe URL contains the current release version; old RC1 URL serves current shell with no-store headers.
+- [x] Integration status and changelog no-store; native relay, version consistency and fresh namespace preserved.
+- [x] RC5 public prompt tests retained and passed; icon caching preserved. Eight targeted tests passed. Python and JavaScript syntax checked.
+- [ ] Full cumulative gate not rerun; verify actual upgrade and browser reload in Safari/WanGP.
+
+# v1.0.0-rc.5 public cinematic factory defaults
+
+- [x] Verify five scenes across all eight image-model options and four H3 video definitions; two videos enabled and music off by default.
+- [x] Verify identity, reference syntax, production year, wardrobe and caption preservation; no former scenario directions in generated defaults.
+- [x] Neutral Personal video/image defaults and unchanged dedicated portrait prompts.
+- [x] Save/reset behavior preserves customized templates for other models and saved final prompts; arbitrary scene edits do not inherit prior actions.
+- [x] Browser-added slots 1–10 match server defaults; historical fictional-game-character regression passes after shared wardrobe wording correction.
+- [x] Final cumulative gate: 108 passed; Python and JavaScript syntax verified.
+- [ ] Actual generated imagery, live host integration and cross-platform behavior remain unverified.
+
+# v1.0.0-rc.4 illustrated navigation
+
+- [x] All five People categories have distinct bundled leading artwork; selected icon visible when closed; Productions, Workshop and logo retained.
+- [x] Keyboard selection, arrow keys, Home/End, Escape, focus restoration and responsive widths 360–1440 px tested.
+- [x] Eight distinct mounted PNG responses verified and decoded in Chromium from exact response bytes; direct browser navigation restricted by test environment.
+- [x] RC3 unified native root and GPU temperature tests included in the cumulative gate.
+- [x] 104 cumulative tests passed; 16 separately executed targeted tests passed. Python and JavaScript syntax checked.
+- [ ] Real Safari/WanGP rendering, hardware temperature readings and cross-platform installations remain unverified.
+
+# v1.0.0-rc.3 unified root and GPU telemetry
+
+- [x] Single root field, detected-root reset, read-only derived paths, native mount equivalence and linked-family handling.
+- [x] Reject invalid or unrelated root without overwriting the prior settings; preserve model bytes and private/public separation; support legacy FLUX root files.
+- [x] Simulated GPU sensor readings: threshold boundaries, multiple GPUs, invalid rows, cache reuse, timeout and missing executable.
+- [x] Chromium: GPU numbers and their color classes visible both collapsed and expanded, N/A on unavailable data.
+- [x] Root-change cumulative gate: 100 passed; final targeted root and GPU checks: 7 passed; Python and JavaScript syntax verified.
+- [ ] Actual hardware sensor readings, native WanGP integration, non-NVIDIA telemetry and cross-platform behavior remain unverified or unsupported.
+
+# v1.0.0-rc.2 adversarial additions
+
+- [x] Corrupt scan paths (wrong JSON type, invalid values, malformed submissions) recover without destroying the settings file.
+- [x] Hard-rejected/pending/missing reference states cannot bypass approval. Hard audit failures take precedence over duplicate detection.
+- [x] Corrupt reference and portrait records and symlink-shaped photos cannot read or delete unrelated sentinel files in the tested scenarios.
+- [x] Invalid upload length and image decompression errors produce client errors.
+- [x] 120 simultaneous-scheduled requests across 12 workers yield 20 unique profiles, 100 duplicate conflicts, and a clean SQLite integrity check.
+- [x] Recover corrupt browser preferences, preserve a valid unrelated preference, and complete 250 seeded workspace switches without lost selections or JavaScript errors.
+- [x] Four extra historical tests passed: browser session restoration, model path isolation, cancellation before native trigger, Workshop file preservation.
+- [x] Cumulative regression gate: 95 passed in 77.85 seconds; Python and JavaScript syntax checks passed. Distribution privacy guard verified on the final ZIP.
+- [ ] Actual WanGP/Refmod-Fork/GPU integration, full historical suite outside the gate, Windows/macOS and independent security review.
+
+# v1.0.0-rc.1 additions
+
+- [x] RC1 metadata, native route, tab and displayed version agree.
+- [x] New icon renders in native tab and application asset.
+- [x] New namespace initializes cleanly without touching beta data or model files.
+- [x] Cumulative regression gate: 87 passed; 4 additional targeted checks passed. Distribution privacy guard passed on release ZIP. Python and JavaScript syntax checked.
+- [ ] Live WanGP/Refmod-Fork integration on actual installation (manual).
+
+# v1b5.2.18 additions
+
+- Tested: hidden relay remains mounted; manual retry does not duplicate a staged job.
+- Tested: fresh external data directory and restoration preserve model file bytes and existing records.
+- Tested: native queue listing, exact task cancellation, stale status rejection, batch skip bookkeeping, text-only prompt rendering and collapsed manager behavior in Chromium with simulated host.
+- Tested: navigation category icons, minimum 16px text, native selection/keyboard behavior and no horizontal overflow at five viewport widths.
+- Cumulative gate before the footer addition: 86 passed (69.92 seconds). Seven targeted tests passed after adding the footer. Footer visibility, fixed positioning and dialog clearance checked across all workspaces at three viewport widths. Python and JavaScript syntax verified.
+- Open: actual WanGP host relay, queue operations and cross-platform native picker appearance; full historical suite beyond cumulative gate.
+
+# Regression checklist — v1b5.2.15
+
+Legend: Tested = current local automated check; inspected = present in code but not fully re-executed; open = needs additional verification. GPU completion is outside the plugin's acceptance criterion.
+
+Current cumulative gate (v1b5.2.15): 70 passed, 122 warnings, 46.29 seconds. Two additional historical tests passed. Live WanGP and full historical tests outside the gate remain unverified.
+
+| Requirement | Current status |
+|---|---|
+| Television Personalities: public discovery, confirm registration, station cast and actual-person prompts | Tested using API and simulated public lookup |
+| Television workflow: no startup lookup; private-profile rejection; batch reference selection and quality rejection | Tested in Chromium/API; live public providers and image downloads not exercised |
+| No legacy header or selection JSON/CSV/TXT export buttons; About SVG icon | Tested by HTML structure and Chromium regressions |
+| Productions startup, blank search, explicitly added synthetic cast, People dropdown | Tested in Chromium harness and API |
+| Discovery without installed RefMods, public credits and private exclusion | Tested in API |
+| Personal consent gate, linked private file browsing, private notes excluded | Tested API and Chromium harness |
+| Personal shared templates with neutral studio | Tested: shared video action/wardrobe and studio in export and preview; image parity inspected |
+| Global LoRA exact-model picker, local storage and default entry | Tested in Chromium harness; real model catalogs and cross-model switching need live verification |
+| Per-window LoRA native prompt directives and validation | Tested with simulated native queue; sequence mode only |
+| H3/FLUX native queue handoff and consent revalidation | Tested with fake WanGP session |
+| 1–10 independent images and 128×5 batching | Tested using simulated queue |
+| 15–60s sliding window controls and continuous native job | Tested with simulated queue |
+| H3→FLUX conversion, yellow status and Workshop | Tested: six conversion and three picture-stack/Workshop/game classification checks |
+| Monitor starts collapsed; current prompt/stage timeline visible; no stale job/task preview | Tested in Chromium and API; maintenance colors, cinematic layout and tooltips inspected |
+| No automatic network research or production prepopulation | Inspected; initial empty search tested |
+| Empty catalog and no private runtime state in ZIP | Package inspection |
+| macOS and Windows native host acceptance | Open — only local Linux simulated host tested |
+| Live provider results and coverage | Open — external sources not exercised; coverage not guaranteed |
+| Existing installation HTTP 500 and legacy database | Open — path handling and schema initialization hardened; actual user's database/traceback unavailable |
+
+## Repeatable local gate
+Use a Python environment with plugin dependencies, pytest and optional Playwright/Chromium. The older test files are historical regression references, some assert previous UI layouts or removed packaging; don't interpret them as a current full-suite certification. See `run_regression.py` for the current targeted gate.
+
+
+## Personal portrait regression checks
+- Personal cards show Upload/Replace portrait actions.
+- Personal cards show Generate portrait when consent is recorded and a linked or convertible Personal RefMod exists.
+- Generate portrait opens a dedicated compatible image-model picker and submits exactly one native task without modifying selections/templates. Successful output is saved to the profile; missing/multiple outputs, duplicate requests and consent revocation are tested.
+- Personal portrait generation remains blocked when consent is not recorded.
+
+- v1b5.2.3: 34 tests passed in the cumulative gate, including Chromium portrait workflow and repeated portrait replacements. Actual WanGP runtime and Windows/macOS remain unverified.
+
+- v1b5.2.4: 36 cumulative tests passed; additional preview-streaming check passed. Actual WanGP callback ordering and Status Lite host rendering still require live testing. Untagged late callbacks within one manifest chunk cannot always be distinguished by task; previews reset when the native task transition is observed.
+
+- v1b5.2.5: 39 cumulative tests passed; television source discovery, confirmed registration, and bulk collection tested against simulated providers. Real public search availability and downloads remain unverified.
+
+## v1b5.2.6 final prompt editing
+- [x] Persist edited prompt by role/model/scene, keep other prompts unchanged, reset to template.
+- [x] Batch preview and native manifest use the edit; staged prompt survives later edits.
+- [x] Sequence window count and LoRA command validation; private consent and removal.
+- [x] Chromium edit, refresh, scene switch and reset with mocked API.
+- Gate: 42 passed, 78 FastAPI deprecation warnings, 40.67 seconds. Actual WanGP and public providers remain unverified.
+
+## v1b5.2.7 sliding windows
+- [x] Browser: add/remove windows with collapsed session settings; four-window limit; add LoRA to Window 2, retain zero elsewhere.
+- [x] API: explicit two-window schedule, one queue job, correct LoRA order and strengths, 690 requested output frames, reject conflicting duration commands.
+- [x] Standard geometry defaults override competing model defaults for new sessions; missing fixed-window API geometry uses 362/18/8.
+- Gate: 44 passed, 80 warnings, 41.23 seconds before final default changes; both targeted tests rerun successfully afterward. Live WanGP scheduling, native frame alignment and rendered duration unverified.
+
+## v1b5.2.8 Workshop path repair
+- [x] H3 and FLUX extraction in ordinary, linked family, and linked public directories; mocked native output, inventory discovery and logical identifiers.
+- [x] Existing file and dangling destination symlink rejection; public/Personal overlap; linked decompile listing/download and retargeted destination rejection.
+- Gate: 52 passed, 96 warnings, 41.43 seconds. Native execution on user installation remains unverified.
+
+## v1b5.2.9 manual image workflow
+- URL and upload controls appear before online results; explicit Load more only.
+- Manual URL save requires a local archived image; failed retrieval preserves existing selection.
+- Manual images take priority over suggestions, including legacy name and role aliases.
+- Browser shows save failures without dismissing the dialog.
+
+## v1b5.2.9 responsiveness
+- [x] Synthetic 1,500 RefMods and 20,000 roles; reuse indexed snapshot and unchanged card elements across five tab switches; invalidate on catalog replacement.
+- [x] 100 collapsed progress updates without media sources; unchanged Status Lite stage nodes retained; expanded monitor requests new preview.
+- [x] 100 disabled preview callbacks produce no stored image; enabled bursts throttled; new task resets throttling; expired interest stops capture.
+- Gate: 59 passed, 106 warnings, 45.87 seconds. Native WanGP performance and live source availability remain unverified.
+
+## v1b5.2.10 legacy export cleanup
+- Verify no legacy selection TXT, JSON or CSV export controls or TXT export handler; retain queue, prompt editors and reference downloads.
+
+## v1b5.2.11 preview handoff and abort
+- [x] Actual completed output retained across task boundaries; stale callbacks and unregistered output paths rejected.
+- [x] Exact native queue task cancellation; duplicate and stale requests rejected; unsupported task cancellation does not cancel an entire batch.
+- [x] Simulated three-task batch continues after cancellation of task two, with the completed third output retained.
+- [x] Chromium: default retain/step 1, configurable step 6, static waiting mode, saved preferences, final result display, collapsed media suspension, Abort POST identity.
+- [ ] Real WanGP server: verify native current-task cancellation and live output/preview events with installed model and browser.
+
+## Documentation gate
+- README contains responsible-use disclaimer, AI collaboration acknowledgment, user responsibility and legally qualified warranty/liability limits. Verified by archive inspection.
+
+## Distribution privacy
+- [x] Source, seed catalog schema, test fixtures, README, historical changelog and all seven icon assets inspected; no private runtime files or developer-specific identifiers found.
+- [x] Synthetic workload counts generalized; normalized ZIP metadata; automated archive allowlist and privacy checks added.
+- [ ] Public release outside ZIP: audit repository history, publisher account/profile, commit identity, release attachments and any screenshots/logs separately.
+
+- [x] Privacy-release targeted regression: 12 passing tests across batch, image-set and performance modules; Python/JavaScript syntax and ZIP gate passed. Full cumulative runtime suite not rerun for this packaging-focused release.
+
+## v1b5.2.14 Workshop visibility
+- [x] Chromium: hide selection panel completely in Workshop, restore it in Productions and all People categories; retain selections, model, expansion and live monitor.
+- [x] Five targeted regression checks passed; new navigation test included in cumulative runner.
+
+## v1b5.2.15 empty catalog and reference recovery
+- [x] Fresh installation contains no bundled casting or alias records; existing user data survives startup.
+- [x] Runtime storage resolves outside the plugin, including symlink checks.
+- [x] Same collection duplicate returns the existing record; another collection can reuse its pixels; missing files can be restored.
+- [x] Cleanup is manual and age-limited; preserve final images, unknown files and linked files.
+
+## v1b5.2.16 cast actions and character identity
+- [x] Chromium: installed and convertible cast rows hide collection, creation and download controls; missing roles retain preparation actions.
+- [x] Synthetic character encyclopedia and Wikipedia fixture: species, skin and anatomy extracted, unrelated characters and wardrobe excluded, cached by production, propagated through image/video prompts.
+- [x] Manual identity override, privacy guard and failed-refresh preservation tested.
+- [x] Chromium: delayed automatic character lookup completes before showing the generated prompt; trait panel opens when populated.
+- [ ] Verify live public-source results and generated appearance in the user's WanGP installation.
+- [x] Cumulative regression gate: 73 passed; Python/JavaScript syntax and distribution privacy checked.
+
+## v1b5.2.17 misuse resistance and percentage preview
+- [x] Seeded Chromium stress: 160 randomized keystrokes, 140 rapid workspace switches, 50 concurrent queue attempts and 50 concurrent Workshop attempts. No duplicate writes in the tested click storms.
+- [x] Modal focus and Escape behavior, malformed API parameters, Unicode identity keys, Workshop destination reservation, invalid draft recovery, and exact image-set counts despite inherited native repeat settings.
+- [x] Percentage handoff: 75% switches at step 6/8 and 30/40, not at 29/40. Unknown totals and newer progress events do not prematurely advance the displayed frame. Static mode, old preference migration, numeric bounds and collapsed media suspension tested.
+- [ ] Live WanGP event timing, hardware-specific behavior and arbitrary untested input sequences remain unverified.
+- [x] Final combined cumulative regression gate: 80 passed; Python and JavaScript syntax checked.

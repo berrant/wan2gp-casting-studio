@@ -1,0 +1,100 @@
+RC12.4 final targeted run (exit 0):
+...............................                                          [100%]
+=============================== warnings summary ===============================
+tests/test_rc121_moab.py: 18 warnings
+tests/test_rc124_cast_backup.py: 3 warnings
+tests/test_beta5216_character_identity.py: 2 warnings
+tests/test_beta5215_empty_and_references.py: 4 warnings
+  app/server.py:335: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    @app.on_event('startup')
+
+tests/test_rc121_moab.py: 18 warnings
+tests/test_rc124_cast_backup.py: 3 warnings
+tests/test_beta5216_character_identity.py: 2 warnings
+tests/test_beta5215_empty_and_references.py: 4 warnings
+  site-packages/fastapi/applications.py:4579: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    return self.router.on_event(event_type)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+31 passed, 54 warnings in 14.83s
+
+Earlier targeted run:
+.............                                                            [100%]
+=============================== warnings summary ===============================
+tests/test_rc124_cast_backup.py::test_role_collections_do_not_mix
+tests/test_rc124_cast_backup.py::test_backup_roundtrip_and_atomic_validation
+tests/test_rc124_cast_backup.py::test_backup_private_edits_require_existing_consent
+tests/test_beta5215_empty_and_references.py::test_empty_catalog_and_external_state
+tests/test_beta5215_empty_and_references.py::test_resume_and_cross_collection_upload
+tests/test_beta5215_empty_and_references.py::test_reuse_url_without_network
+tests/test_beta5215_empty_and_references.py::test_cleanup_only_recognized_old_temps
+tests/test_beta5216_character_identity.py::test_automatic_traits_and_local_cache
+tests/test_beta5216_character_identity.py::test_failed_refresh_preserves_cache_and_private_guard
+  app/server.py:335: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    @app.on_event('startup')
+
+tests/test_rc124_cast_backup.py::test_role_collections_do_not_mix
+tests/test_rc124_cast_backup.py::test_backup_roundtrip_and_atomic_validation
+tests/test_rc124_cast_backup.py::test_backup_private_edits_require_existing_consent
+tests/test_beta5215_empty_and_references.py::test_empty_catalog_and_external_state
+tests/test_beta5215_empty_and_references.py::test_resume_and_cross_collection_upload
+tests/test_beta5215_empty_and_references.py::test_reuse_url_without_network
+tests/test_beta5215_empty_and_references.py::test_cleanup_only_recognized_old_temps
+tests/test_beta5216_character_identity.py::test_automatic_traits_and_local_cache
+tests/test_beta5216_character_identity.py::test_failed_refresh_preserves_cache_and_private_guard
+  site-packages/fastapi/applications.py:4579: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    return self.router.on_event(event_type)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+13 passed, 18 warnings in 13.06s
+
+Additional six feature tests:
+......                                                                   [100%]
+=============================== warnings summary ===============================
+tests/test_rc124_cast_backup.py::test_role_collections_do_not_mix
+tests/test_rc124_cast_backup.py::test_backup_roundtrip_and_atomic_validation
+tests/test_rc124_cast_backup.py::test_backup_private_edits_require_existing_consent
+  app/server.py:335: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    @app.on_event('startup')
+
+tests/test_rc124_cast_backup.py::test_role_collections_do_not_mix
+tests/test_rc124_cast_backup.py::test_backup_roundtrip_and_atomic_validation
+tests/test_rc124_cast_backup.py::test_backup_private_edits_require_existing_consent
+  site-packages/fastapi/applications.py:4579: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    return self.router.on_event(event_type)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+6 passed, 6 warnings in 7.70s
+
+Cumulative gate: timed out, no completion or exit result.
+..............

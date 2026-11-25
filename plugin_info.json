@@ -1,0 +1,13 @@
+{
+  "name": "Casting Studio for WanGP",
+  "author": "Casting Studio Community",
+  "version": "1.0.0-rc.12.4",
+  "description": "Casting, role discovery, RefMod Workshop, local image inspection, secure path scanning and WanGP queue integration.",
+  "app_url": "/casting-studio",
+  "app_tab": "casting_studio",
+  "fullscreen": true,
+  "type": [
+    "app"
+  ],
+  "date": "2026-11-25"
+}

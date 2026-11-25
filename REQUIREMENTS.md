@@ -1,0 +1,176 @@
+# Casting Board — cumulative requirements
+
+Authoritative development baseline: v1.0.0-rc.12.4 (Casting Studio for WanGP, release candidate 12.4). Do not build from earlier ZIPs. Before making a release, compare this document and REGRESSION_CHECKLIST.md with the working tree; retain user data outside the package. The requirements below were recovered from development chats and earlier release notes, not inferred from the newest code alone.
+
+## Integration and packaging
+- Native WanGP plugin only, no Docker distribution, no patches to WanGP or Refmod-Fork core. Use documented native session/Gradio queue integration; check installed models and custom settings. Correct native queue submission is the acceptance criterion, not whether a GPU can render it. Target portable Windows/macOS/Linux paths, UTF-8, no developer machine paths, private databases, identity mappings, photos, selections, LoRA preferences or inventory shipped. Preserve external user data. Full cumulative ZIP. Use v1b5.x.x until explicitly authorized to change milestone/release candidate.
+- Dynamic model and RefMod discovery including supported H3 and FLUX families and nested folders. Reject missing or ambiguous models/invalid files. Do not silently substitute identities. Keep path checks and private/public separation.
+
+## Workspace and discovery
+- Productions first; People dropdown (Performers, Personal, Adult Entertainment, Models / Influencers, Television Personalities); RefMod Workshop. Compact, cinematic styling, no navigation counts, no collisions or excessive scroll. Header settings, About, changelog, hover explanations. No legacy Export JSON button in the main header or JSON/CSV/TXT selection export buttons. Retain native queue review manifest export. About uses an inline SVG information icon. Native queue relay mounted but hidden; retry available in Settings → Troubleshooting; separate collapsed native Queue Manager below the live monitor; expandable live preview initially collapsed; Status Lite active prompt/stage names and timings remain visible while collapsed, with detailed metrics when expanded. Clear media at new job/task, terminal state, or unavailable status; reject stale task preview requests and superseded job responses. Maintenance indicator green idle/red running, running banner with Manage/Stop.
+- Productions is universal discovery, independent of installed RefMods. Blank at startup; debounced search after typing; match films/TV/games/characters/people; show local titles, years, cast and public credits. Explicit online title/cast/credit lookup; do not fabricate unknown roles. Show production/character art where available, manual lookup/upload, enlarge/inspect. Missing art is honest. View cast or credits opens role selection and image collection/Workshop; show installed green, convertible yellow (selectable including Select All), missing red. No requirement to have RefMods to discover. People browsing retains category filters and identity/role management.
+- No automatic network research or background classification, prefetch, bulk maintenance or credit sync on opening a workspace. Manual maintenance in Settings; show activity and stop option. Initial inventory and read-only telemetry are allowed; cached inventory, explicit rescans.
+
+- Television Personalities: a distinct People workspace for anchors, reporters, presenters and other on-air talent; local name/station search independent of installed RefMods; no lookup on blank entry or startup. Explicit online lookup uses public search leads and suggested roles, user confirms name and station/program/role before registration. Registration preserves categories and existing credits; user-confirmed broadcast credits enter the shared Productions cast catalog. After confirmation, offer credit discovery and automatically open targeted reference-image search. Source leads and suggested roles are not proof. Never send Personal names to public research. Broadcast credits describe the real person as themselves rather than a fictional character.
+
+## Generation and prompts
+- Shared editable global/per-role video templates, independent 1–10 still image prompts (wardrobe, action, framing, expression, setting). Each role/image is a separate real queue task. Bulk scope all/production/current role; e.g. 128 × 5 = 640 tasks with distinct prompts; ordered manifests; Queue & Next. Model-specific resolution categories and budgets, steps, seed, RefMod strength, LoRA selections and native settings. Session settings persist per exact model. No still-image audio or music controls.
+- Character-first prompts with named production and recorded year; game characters anchored to actual game world and references, manual setting overrides retained. Identity based on all images provided. Wardrobe details in wardrobe_description, independent actions and continuity. Captions identify person/role/production/year where known. Personal profiles use shared action and wardrobe templates, neutral seamless studio backdrop and appropriate lighting; no production theme music; caption Name – Relationship; notes not exported. Private profiles require consent for export and queue; revocation revalidated server-side. Red no consent, green consent obtained. Private reference file dropdown and local portrait; no private public research.
+- Model-specific global LoRA defaults in main Settings, populated from installed LoRA catalog, file + strength + enabled state. Local persistence; no bundled personal defaults. Queue reminder and override checkbox. Duplicate defaults merge deterministically. For long H3 sequence videos, per-window strengths using native [/loras_mult=...] directives, zero disables, blank inherits. Validate selected LoRAs and strength. Never fake unsupported queue capabilities.
+- H3 long videos 15/30/45/60 seconds; sequence of editable Video 1–4 or repeat selected prompt; one continuous job, not multiple independent movies. Expose native sliding settings including size, overlap, color, noise and trimming; reject unsupported/invalid configuration. Actual window durations depend on WanGP frame settings. Native handoff and preview should use same prompts.
+
+## Reference images and Workshop
+- Reference collections for public performer and character/production; inspect, review, upload, export image packs. Direct path into Workshop. Allow the user to check up to 20 reference candidates and submit one batch for sequential quality screening; do not automatically approve borderline results or infer identity from image quality. Report saved/skipped counts, then offer direct Workshop access. H3 create/decompile, FLUX creation, native status, safe names, no overwrite. Select model, review photos, extraction settings. Conversion H3 picture stacks to FLUX when supported; don't convert video/audio stacks or destroy source; validate result, preserve selections, report errors. Personal files kept private.
+
+## Release process
+- Update version identifiers, cumulative changelog, requirements and regression checklist together. Retain test sources; execute current regression gate, inspect browser navigation and queue payloads. Record actual pass/fail counts and outstanding tests. Never claim actual macOS/Windows or live queue acceptance without testing. No release candidate until explicit authorization.
+
+
+## Personal portrait workflow
+- Personal profile cards must allow the user to upload their own portrait directly.
+- If a Personal RefMod already exists and the profile has no suitable portrait, the UI should offer AI portrait generation.
+- AI portrait generation for Personal profiles must require consent.
+- Generated Personal portraits should be treated as neutral-studio profile pictures with appropriate lighting.
+- The portrait-generation entry point must use a dedicated compact image-model picker and the existing native WanGP queue bridge, not the casting queue dialog. Submit exactly one image using an independent neutral studio portrait prompt; no shared template or selections altered. Apply model-specific LoRA defaults with an override. Automatically save the successful output to the profile, with confirmation before replacement. Preserve existing portrait on failure or intervening identity/consent/portrait changes.
+
+## Final prompt editing
+- The native queue Prompt Preview is editable and auto-saves locally in SQLite by casting selection, exact installed model and image/video segment (continuous scripts separately by duration). Refresh preserves custom edits; Reset to template is explicit. Flush pending saves before review, queue submission or dialog close. Edits are used by single and batch queue paths without changing shared templates or other scenes; queued prompts remain fixed while consent and RefMod paths are revalidated. Window LoRA commands are applied separately.
+
+## Explicit sliding-window editor
+- Expose the window builder and per-window LoRA controls outside collapsed session settings. Add/remove up to four sections. Newly selected window-only LoRAs default to zero in all other windows. Keep existing base and global LoRAs.
+- H3 sequence mode: one explicit native duration per window, no extra window to reach nominal seconds. Standard geometry 362 frames, 18 overlap, 8 discard; retain saved custom settings and provide a standard-settings action. Display approximate duration accounting for the native per-window discard and alignment.
+
+## Workshop linked storage
+- Accept configured family/public directory symlinks using resolved physical roots while retaining logical Refmod-Fork identifiers. Reject overlapping Personal folders, unexpected destination links and existing output files; revalidate staged destinations. Newly created mods must be discoverable and usable via the native queue.
+
+## Manual public artwork persistence
+- Paste direct HTTPS image URLs and upload local pictures at the top of the image picker, before search results. Additional search pages load by explicit request.
+- Save a validated local copy before committing a manual image selection, return its local URL and keep the previous picture if retrieval fails. Manual selections survive restart and take priority over automated suggestions. Preserve legacy keys and resolve known aliases. Do not bundle user images or source URLs.
+
+## Interface performance
+- Cache performer/model/role indexes until inventory changes. Debounce search, paginate cards, reuse unchanged markup and defer offscreen layout. No external favicon fetches during ordinary performer browsing.
+- Keep lightweight stage telemetry visible while collapsed; suppress hidden media downloads and Casting Board preview encoding, expire preview interest when browser disconnects, and limit preview capture rate. Avoid redundant DOM updates and overlapping scheduled status polls.
+
+- Native queue is the primary prompt workflow. Remove the legacy selected-model TXT export control and browser handler. Keep reference-image pack downloads, native batch review manifests and server-side compatibility endpoints.
+
+## Live monitor handoff and Abort
+- Show a prominent red Abort button while a Casting Board generation is running, including when the monitor is collapsed. Target only the tracked native generation, not the remaining batch; reject stale task identities and unsupported native per-task cancellation. Never silently fall back to cancelling a manifest.
+- Distinguish a completed native output (image or video) from transient inference previews. Default to retaining the last completed result until the first available preview (0%). Settings must allow a configurable handoff percentage (0–100% of the current model’s denoising steps) or a static waiting placeholder until the first available preview; persist preferences locally. Never use overall queue progress as the threshold. Preserve legacy display mode, reset obsolete step thresholds to 0%, and do not switch prematurely when the step total is unknown. Label retained results clearly and keep progress associated with the current generation.
+- The displayed preview metadata must follow the exact submitted task or retained native output, not the current editor or newest queued selection. Unknown native outputs must not be assigned a guessed identity; missing display metadata must never stop the queue. Keep the identity compact, with submitted prompt expandable and progress independently labeled.
+- Preserve collapsed/hidden media suspension. Only expose completed native outputs using opaque references, not arbitrary request paths. Keep previous transient task previews invalidated.
+
+## Responsible use documentation
+- Keep the README responsible-use, ethics and disclaimer section, including acknowledgment of AI-assisted development, user responsibility for consent and permissions, prohibition of harmful or unlawful use, and liability limitations subject to applicable law. Do not present the disclaimer as a guarantee of immunity or imply endorsement by third parties.
+
+## Distribution privacy gate
+- Package only explicitly approved source, empty catalog placeholders, generic assets, documentation and synthetic tests. Never ship local databases, selected portraits, generated media, private filenames or aliases, machine identifiers, credentials, personal contact details, user-specific inventory counts, development logs or Git metadata. Normalize ZIP entry timestamps and omit comments/extra fields. Run `python check_release_privacy.py <release.zip>` on every release; separately review public metadata and source for indirect identifying details. Do not add private search terms or identifiers to the distributed audit script or report.
+
+## Workshop workspace visibility
+- Hide the complete My Selections panel in RefMod Workshop. Restore it in Productions and every People category, preserving all casting selections, model choice and expanded/collapsed state. Keep the live monitor independent.
+
+## Empty distribution and external runtime state
+- Ship zero performer, production, role, identity-alias and named curated prompt-default records. No developer-selected starter catalog. Retain empty placeholders to replace earlier packaged catalogs when unzipping over an installation; runtime ignores old packaged seed data. Do not seed or clear the user SQLite database. Existing saved records remain external.
+- All persisted user data must live outside the plugin directory; validate resolved data paths. Browser preferences and host-managed RefMods remain separate.
+- Reference photos are persistent, not temporary. Duplicate matching is scoped to the same normalized person and production. Existing valid images return success and the stored ID; a missing saved file must not block recollection. Reuse an approved saved image from another collection only when the user explicitly requests that same source URL for the same person. Keep independent collection files.
+- Provide opt-in Settings cleanup with a count, size and confirmation; remove only recognized abandoned temporary writes older than 24 hours, not final images, records, unknown files, symlinks or models. Never run cleanup at startup.
+
+## Cast actions and researched character appearance
+- Installed or convertible cast roles show selection and character artwork controls, without unnecessary reference-collection, image-pack or create-RefMod buttons. Missing roles retain preparation actions.
+- Automatically research public character appearance when opening a character queue editor; use production-scoped, locally cached descriptions, including structured species, skin, eyes and distinguishing anatomy fields when available. Retry outdated cache entries and preserve useful results after failed refresh. No bundled character presets or private-profile research.
+- Character-specific on-screen anatomy and coloration take precedence over performer everyday appearance in all template-generated images and video segments. Keep wardrobe separate; preserve manual identity overrides and custom final prompts. Wait for the selected role lookup before preview or staging. Bulk jobs use available local traits; no automatic bulk network research.
+
+## Misuse resistance and recovery
+- Queue controls must reject concurrent repeated submissions while asynchronous validation or prompt persistence is pending. Still-image jobs must force native repeat and batch size to one per independent prompt. Revalidate video settings before staging and in the native callback.
+- Workshop controls block repeated requests during active work; duplicate destination reservations are rejected across requests. Invalid layout, token budget, photo selection and paths produce client errors, not server crashes.
+- Modal dialogs contain keyboard focus; Escape closes only the topmost dialog. Cancelling production creation never saves an entry. Empty identifiers are rejected. Names written entirely in non-Latin scripts have distinct keys; legacy mixed-script normalization remains.
+- Failed preview requests do not permit editing an old prompt as the new selection. Invalid unsaved prompt edits can be explicitly discarded without erasing saved prompts.
+- Portrait uploads must reject oversized decoded images and preserve a newer portrait if concurrent uploads conflict.
+- Every cumulative release retains deterministic misuse tests and the empty-catalog privacy gate.
+
+- Keep the native Gradio relay mounted but hidden from the normal workspace. Provide manual retry of staged work under Settings → Troubleshooting; do not create a new job on retry.
+
+- Provide a separate collapsed native WanGP queue manager below the live monitor, listing shared native tasks and supporting exact-task cancellation where available. No secondary queue; no polling while closed. Keep unsupported editing and ordering in WanGP.
+- Use larger legible navigation text for Productions, People and Workshop; category-specific leading icons in the keyboard-accessible People picker; keep narrow layouts within the viewport.
+
+- Permanent red responsible-use footer visible across all Casting Board workspaces and dialogs, with reserved layout space; no alteration of WanGP tab ordering or host screens. Keep the full README disclaimer.
+
+## RC1 branding and clean-install namespace
+- Public name Casting Studio for WanGP; tagline Discover. Cast. Create.
+- Consistent vector tab icon and raster application mark; keep Workshop identity distinct.
+- New plugin folder `wan2gp-casting-studio`, route `/casting-studio`, tab `casting_studio`, data folder `data/casting-studio` and browser namespace `casting-studio:`. No automatic beta migration or deletion. Disable and move the old plugin out of the host plugin directory before RC1 installation.
+- Preserve Refmod-Fork model paths and native queue contracts; external user data and empty shipped catalog remain mandatory.
+
+## RC2 adversarial recovery
+- Validate the shape and contents of stored scan paths and browser model/LoRA preferences. Fall back for malformed entries without deleting the external database or valid unrelated preferences.
+- Hard-rejected, missing and unaudited references cannot be promoted via review toggles; hard audit failures take priority over near-duplicate warnings. Require actual saved file on approval.
+- Constrain local media reads, export, audit and portrait deletion to their owned directories; reject invalid filenames and symlinks. Portrait deletion requires matching profile ID.
+- Malformed upload length and oversized image decoding errors must return controlled client errors. Retain the adversarial regression fixtures in the cumulative gate.
+- RC upgrades preserve the RC1 data namespace and model paths. Do not reset the catalog on upgrade.
+
+## RC3 single-root configuration
+
+- One editable server-side RefMod library root, detected from the native mount; standard H3 and FLUX public/personal paths are derived automatically and displayed read-only. Preserve native logical identifiers, directory symlinks and older flat FLUX files. Never change model mounts, create directories, or move model files from Settings. Reject roots that do not resolve to the native model library. Replace legacy per-folder filters with the standard root layout without touching model files or saved catalog records; save only the root in external storage.
+
+## RC3 unified library and GPU temperature
+- Default to the native `WanGP/loras/refmods_plugin` root, retaining logical link paths. Derive the standard H3 and FLUX public/private directories from that library. Accept only roots resolving to the same native mount, never move models, preserve old FLUX root files and keep all persistent settings external. Retire per-folder scan filters; the former settings file is retained until the user saves the root.
+- Display server GPU core temperature in the live monitor header, collapsed or expanded, including while idle. Use cached, bounded NVIDIA driver readings, no CUDA initialization or inference interference. Show advisory green below 75°C, amber 75–84°C, red at 85°C or above; unavailable data is N/A. No automatic generation cancellation.
+
+## RC4 illustrated category navigation
+
+- Use locally bundled distinct artwork to the left of every People category, including Television Personalities, and show the selected category icon in the closed picker. Preserve Productions, Workshop and Casting Studio artwork. Do not rely on emoji fonts for category icons. Keep the picker accessible to keyboard and touch users, close on Escape or outside interaction, and fit narrow displays. Retain the RC3 single native root and GPU temperature header.
+
+## RC5 public factory scenarios
+
+- Supply five independent generic cinematic image scenarios for all eight image models; all four video segment definitions for H3, with two enabled by default. Preserve exact reference syntax, identity traits, production/year captions, model-specific rendering directions and optional music behavior.
+- Remove scene-specific assumptions from runtime prompt builders and browser-added image slots. Wardrobe instructions stay in the wardrobe field. Keep factory Personal actions and settings neutral, and preserve explicitly customized actions and wardrobe. Dedicated Personal profile portrait prompts are unchanged.
+- Never overwrite saved template or final prompt records during an upgrade. Existing explicit reset operations restore the new defaults at their respective scopes. No previous factory scenario archive or user data is distributed.
+
+- RC6: Embedded application URL includes the current release version; HTML, integration status and changelog must not be cached. Keep browser storage namespace and external user data unchanged.
+
+## RC7 recovery and reference integrity
+- Corrupt global video settings must not prevent workspace startup; show a warning, disable quick music writes, and require explicit correction/reset before generation. Invalid image settings and affected role overrides must produce actionable errors, without rewriting original values or blocking unrelated roles. Native submission must revalidate.
+- Deleting a shared reference record must not remove the file while another record points to it. Audit results must match the current stored filename, not simply an ID that could have been reused by a repair. Ignore obsolete collection responses after switching targets.
+- Recheck public identity eligibility for reference file viewing, review, deletion and collection persistence; no automatic deletion or migration on a move to Personal. Apply source EXIF orientation before saving derived images without metadata.
+
+## RC8 recovery, input validation and privacy
+- Preserve malformed selection rows without crashing the catalog or silently submitting a partial batch. Show a warning, allow unrelated valid selections and require explicit reselection or reset. Never silently convert a public selection to Personal; require explicit private selection and revalidate at the native queue handoff. Protect both ends of registered identity aliases from public research/reference access.
+- Malformed API requests including non-finite numbers must produce controlled validation responses without echoing raw invalid inputs. Ship no identity/category seeds or preassigned public identity markers; enforce this in the release privacy guard.
+
+## RC9 demolition and interrupted-write recovery
+- Preserve malformed catalog rows without blocking unrelated catalog, production, category or prompt reads. Report the damaged-record count to the user without exposing the corrupt payload. Invalid local classifications must not trigger automated human-performer research or silently classify a character as fictional. Explicit user corrections may replace the affected rows.
+- Settings and scan-history writes must use exclusively created same-directory temporary files and atomic replacement; stale temporary-file links must not overwrite unrelated files. On a failed settings save, preserve the last committed configuration. Failed manual artwork uploads must preserve the previous mapping and remove only the new uncommitted file when cleanup is possible. Keep persistent storage external and never modify RefMod files during these operations.
+- Regression gate includes malformed categories/cast, stale temporary links, SQLite insert rejection, interrupted rename, scan-history link isolation and visible recovery warning.
+
+## RC10 simultaneous failure recovery
+
+- Before submitting a later native manifest chunk, revalidate all its casting tasks against current selections, permissions, and RefMod links; keep the already staged prompt/settings rather than silently adopting edits. A failed revalidation stops later submission; jobs already accepted by WanGP are not retroactively cancelled. Preserve known completed-file records on exceptions in later chunks.
+- Treat malformed/non-finite native progress and step telemetry as unavailable, not as valid JSON or new progress; preserve aggregate batch progress independently of preview updates. Late native callbacks must not modify terminal job state or its results.
+- Reference uploads must exclusively create temporary files and roll back newly published files if SQLite rejects the write. Return an actionable 503 while retaining the existing collection. Run reference quality analysis/saving off the HTTP event loop.
+- Retain the RC9 application identity, data paths, model files, saved prompts, and empty distributed catalog. Include fault-injection and concurrent telemetry regression tests in every future release gate.
+- Serialize conversion result application and its applied marker; duplicate concurrent apply requests must not repeat changes. Terminal-job protection must allow this explicit bookkeeping operation.
+
+## RC11 — cancellation and telemetry
+Whole-batch cancellation is latched across manifest boundaries; native cancellation flags are authoritative except explicitly confirmed individual skips. Never submit subsequent chunks after an accepted whole-batch cancel. Preserve completed output records. Ignore explicitly stale or conflicting task telemetry. Return controlled cancellation errors and allow retries after native refusal.
+
+## RC12 — cancellation, cache integrity and bounded history
+- Accept cancellation during preparation and native handle creation; honor cancellation at subsequent native operation boundaries. Native work already accepted may require native cancellation and can leave output files. Never delete generated model files on cancellation. Retain up to 100 terminal jobs in completion order plus active jobs.
+- Serialize final same-URL cache publication, exclusively create temporary files, preserve existing untracked files, and roll back newly published cache files after a failed database write. Do not overwrite committed photos or delete unrelated files.
+- For this reliability milestone, require four consecutive distinct adversarial rounds without a new reproducible defect; restart count after a fix. Preserve all new probes and run cumulative tests against the release runtime. Report testing limitations explicitly.
+
+## Template-editor recovery (RC12.2)
+- Preserve temporarily hidden image-shot edits when resizing an image set within the same editor session; confirm discarding unsaved image edits on close. Only the active image count is persisted when saved.
+- Failed template loads must not enable writes of stale or defaulted editor data; bind image-template writes to the loaded model; serialize in-flight editor mutations; report unsuccessful resets and preserve existing drafts.
+
+## Workflow and novice guidance (RC12.3)
+
+- Provide optional getting-started steps and on-demand diagnostics without automatic public research or downloads. Keep Advanced mode as the default, with Basic mode reversible and existing generation settings intact.
+- Provide named browser-local presets of model type, steps, resolution, seed, effective LoRAs and multipliers, sliding windows and additional settings. Reject unavailable checkpoints and require live validation.
+- Review batch preflight before staging any work; report blocked tasks and keep the original native preparation validation.
+- Keep a bounded local SQLite generation history; use confirmed failure indices only for explicit user-initiated retries in the same process, and revalidate consent and paths. Do not infer missing-task failures or persist full prompt snapshots.
+- Support undo of individual or production-wide selection removals for the current page session; preserve destructive Remove all confirmation.
+- Offer keyboard shortcuts that do not intercept text entry, plain-language explanations, clear empty-state guidance, and responsive selected-card controls.
+
+## Cast reference flow and private settings (RC12.4)
+- Reference photo collection must be available on production cast cards, even if a RefMod exists. Separate performer and role-specific photos; no automatic collection. Return from Workshop to cast context and refresh inventory.
+- Provide explicit settings/prompt export/import under Settings. Never ship user backups or prompts in distribution ZIPs. Restore validated matching entries, never grant consent or copy model/photo files, and report skipped private edits.
+- Persist model preferences across restarts using browser local storage, preserve independent image/video and checkpoint choices, read legacy session settings when needed, and indicate unavailable models.
