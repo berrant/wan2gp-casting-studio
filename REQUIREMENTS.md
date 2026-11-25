@@ -1,6 +1,6 @@
 # Casting Board — cumulative requirements
 
-Authoritative development baseline for the next candidate: v1.0.0-rc.12.13 (Casting Studio for WanGP, release candidate 12.13), only after its release gate passes. Do not build from earlier ZIPs. Before making a release, compare this document and REGRESSION_CHECKLIST.md with the working tree; retain user data outside the package. The requirements below were recovered from development chats and earlier release notes, not inferred from the newest code alone.
+Authoritative development baseline for the next candidate: v1.0.0-rc.12.14 (Casting Studio for WanGP, release candidate 12.13), only after its release gate passes. Do not build from earlier ZIPs. Before making a release, compare this document and REGRESSION_CHECKLIST.md with the working tree; retain user data outside the package. The requirements below were recovered from development chats and earlier release notes, not inferred from the newest code alone.
 
 ## Integration and packaging
 - Native WanGP plugin only, no Docker distribution, no patches to WanGP or Refmod-Fork core. Use documented native session/Gradio queue integration; check installed models and custom settings. Correct native queue submission is the acceptance criterion, not whether a GPU can render it. Target portable Windows/macOS/Linux paths, UTF-8, no developer machine paths, private databases, identity mappings, photos, selections, LoRA preferences or inventory shipped. Preserve external user data. Full cumulative ZIP. Use the current v1.0.0-rc.12.x release sequence; synchronize metadata at release boundaries.
@@ -198,3 +198,7 @@ Whole-batch cancellation is latched across manifest boundaries; native cancellat
 ## Character appearance profiles (RC12.13)
 - Optional explicit native local vision bridge, Qwen3.5VL 4B preferred; let users choose compatible WanGP variants. Show actual checkpoint format. No new ML dependency, upstream edits, external vision call, silent download, automatic analysis or persistent plugin model. Fail closed if the shared GPU lock, model assets or supported interface are missing. Do not interrupt active generation; release resources on completion or cancellation.
 - Store traits by performer, character, production and portrayal year. Preserve legacy broad descriptions as fallback and manual final prompts. Batch selected roles sequentially using one temporary runtime, with up to 20 roles and four user-reviewed local reference pictures per role. Require individual draft approval, revalidate role, images and saved profile before writing; retain manual edits on errors. Inject approved traits into image and video templates without re-analysis. Maintain local provenance and preserve descriptions in prompt backup.
+
+## RC12.14
+- Direct character-name navigation opens the portrayal-specific identity editor independent of casting selection.
+- Manual bulk library conversion previews missing supported formats, uses native relay, revalidates source and consent, skips existing counterparts, preserves choices and original files, and supports cancellation. Personal conversion is explicit.

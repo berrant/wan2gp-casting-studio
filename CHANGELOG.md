@@ -1,3 +1,8 @@
+# v1.0.0-rc.12.14 — Direct character editing and library conversion (2026-11-25)
+
+- Make public character names on cast cards, selections, credits and preview metadata open the portrayal-specific identity and AI appearance editor, without adding a casting selection.
+- Settings: manually preview and convert missing H3 still-picture RefMods to shared FLUX format using the native queue; existing counterparts are skipped, source files and choices retained. Optional consented Personal sources; no automatic linking. Limit each reviewed batch to 500. Unsupported reverse and video/audio conversions are explicitly identified.
+
 # v1.0.0-rc.12.13 — Experimental AI character appearance profiles (2026-11-25)
 
 - Add optional local WanGP vision compatibility bridge with Qwen3.5 4B preferred, compatible model discovery and explicit batch execution. Verify assets and shared idle GPU state; no automatic downloads, global LLM configuration changes or background model loading.

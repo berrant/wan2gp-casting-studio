@@ -28,6 +28,7 @@ class ConversionTask:
     h3_model_type: str
     flux_model_type: str
     items: tuple[ConversionItem, ...]
+    library: bool = False
 
 
 def conversion_settings(session, model_type: str, family: str, spec: dict) -> dict:

@@ -1,8 +1,12 @@
 # Casting Studio for WanGP
 
-Version: v1.0.0-rc.12.13
+Version: v1.0.0-rc.12.14
 Date: 2026-11-25
 
+
+## RC12.14 — Character shortcuts and bulk conversion
+
+Click a public character name to open its portrayal-specific appearance editor, even before selecting the role. In Settings → Convert RefMods, preview the missing supported formats and explicitly start a native conversion job. H3 still-picture RefMods can be converted to the shared FLUX format; reverse conversion and H3 temporal/audio RefMods are not supported. Existing files are skipped, originals and casting selections remain unchanged, and completed conversions survive cancellation. Personal files are opt-in and require linked consent; link new files manually. Up to 500 per reviewed batch, with progress and error reporting. GPU use and disk space depend on the installed encoders and source sizes.
 
 ## RC12.13 Experimental character appearance profiles
 

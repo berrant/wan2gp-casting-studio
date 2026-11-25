@@ -748,7 +748,7 @@ def get_profile_link(name:str=Query(min_length=1,max_length=180)):
         return {'provider':'imdb','url':row[0],'verified':True} if row[0] else default
     imdb=''
     try:
-        with httpx.Client(timeout=5,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.13 (personal catalog)'}) as client:
+        with httpx.Client(timeout=5,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.14 (personal catalog)'}) as client:
             resp=client.get('https://www.wikidata.org/w/api.php',params={'action':'wbsearchentities','search':name,'language':'en','format':'json','limit':6,'type':'item'})
             resp.raise_for_status()
             candidates=[v for v in resp.json().get('search',[]) if token(v.get('label'))==token(name)]
@@ -850,7 +850,7 @@ def wikidata_get(client,params):
     raise last_error
 
 def wikidata_profile(name):
-    with httpx.Client(timeout=20, headers={'User-Agent':'CastingStudio/1.0.0-rc.12.13 (public performer metadata; respectful research)'}) as client:
+    with httpx.Client(timeout=20, headers={'User-Agent':'CastingStudio/1.0.0-rc.12.14 (public performer metadata; respectful research)'}) as client:
         search=wikidata_get(client,{
             'action':'wbsearchentities','search':name,'language':'en','format':'json','type':'item','limit':8})
         candidates=[c for c in search.get('search',[]) if token(c.get('label',''))==token(name) or
@@ -1642,6 +1642,122 @@ def prepare_auto_conversion(req:AutoConversionRequest):
     except (ValueError,RuntimeError) as exc:raise HTTPException(400,str(exc))
     return {'id':job_id,'count':len(items),'not_convertible':not_convertible}
 
+# Explicit library-wide conversion: no temporary casting choices, no automatic
+# profile linking, no downloads requested by this planner, no background startup.
+class LibraryConversionRequest(BaseModel):
+    include_personal:bool=False
+    plan_token:str=Field(default='',max_length=64)
+    model_config={'extra':'forbid'}
+
+
+def library_conversion_key(path):
+    # Preserve role-specific suffixes; normalize only the format suffix.
+    stem=Path(path).stem.casefold()
+    return re.sub(r'(?:_h3(?:_v\d+)?|_flux(?:2|3)?|_klein(?:4b|9b)?)$', '', stem)
+
+
+def library_source_check(entry, bridge):
+    from ..conversion_bridge import safetensors_metadata,is_h3_picture_refmod
+    from ..queue_bridge import refmod_identifier
+    private=bool(entry.personal_id)
+    if private:
+        profile=personal_row_by_id(entry.personal_id)
+        if not profile or not profile['consent'] or profile['h3_refmod']!=entry.source:
+            raise PermissionError('Personal consent or linked source changed')
+        if profile['flux_refmod']:
+            try:bridge.adapter.validate_refmod(relative_path=profile['flux_refmod'],family='flux2',personal=True)
+            except ValueError:pass
+            else:raise ValueError('Personal FLUX link already exists')
+    elif token(entry.person) in personal_name_keys() or token(canonical_name(entry.person)) in personal_name_keys():
+        raise PermissionError('Private identity excluded from public conversion')
+    path=bridge.adapter.validate_refmod(relative_path=entry.source,family='minimax_h3',personal=private)
+    name=refmod_identifier(path,bridge.adapter.refmod_root,'minimax_h3')
+    root=bridge.adapter.refmod_root/'flux2'
+    dest=root/(name+'.safetensors')
+    approved=effective_local_paths()['personal_flux' if private else 'public_flux'].resolve()
+    if not dest.resolve().is_relative_to(approved):raise ValueError('Destination is outside the approved library')
+    if dest.exists() or dest.is_symlink():raise ValueError('Destination already exists')
+    for folder in {dest.parent, root} if not private else {dest.parent}:
+        if folder.is_dir() and any(p.is_file() and library_conversion_key(p.name)==library_conversion_key(entry.source) for p in folder.glob('*.safetensors')):
+            raise ValueError('Existing FLUX counterpart')
+    if not is_h3_picture_refmod(safetensors_metadata(path,'refmod_meta')):
+        raise ValueError('Not a convertible H3 still-picture RefMod')
+    return path
+
+
+def library_conversion_plan(include_personal):
+    from ..conversion_bridge import ConversionItem,ConversionTask
+    bridge=_casting_bridge()
+    public=scan(force=True)
+    private=personal_refmod_inventory() if include_personal else []
+    existing={library_conversion_key(m['path']) for m in public if m['family']=='flux2'}
+    private_existing={library_conversion_key(m['path']) for m in private if m['family']=='flux2'}
+    profiles={p['h3_refmod']:p for p in get_personal_rows() if p['consent'] and p['h3_refmod']} if include_personal else {}
+    items=[];skipped=[];fingerprints={}
+    for m in public+private:
+        if m['family']!='minimax_h3':continue
+        path=m['path'];personal=path.startswith('personal/');profile=profiles.get(path) if personal else None
+        if personal and not profile:
+            skipped.append({'source':path,'reason':'No linked Personal profile with consent'});continue
+        if library_conversion_key(path) in (private_existing if personal else existing):
+            skipped.append({'source':path,'reason':'Existing FLUX counterpart'});continue
+        item=ConversionItem('library:'+path,path,profile['name'] if profile else m['name'],profile['id'] if profile else '')
+        try:
+            f=library_source_check(item,bridge);st=f.stat()
+            fingerprints[path]=(st.st_size,st.st_mtime_ns,st.st_ino)
+            items.append(item)
+        except (OSError,ValueError,PermissionError,TypeError,AttributeError) as exc:
+            skipped.append({'source':path,'reason':str(exc)[:200]})
+    def ready_models(board):
+        try:return [m for m in bridge.models(board) if m.get('ready')]
+        except (RuntimeError,ValueError,AttributeError):return []
+    h3=next(iter(ready_models('h3_video')),None)
+    # Prefer smaller compatible FLUX model definitions to avoid unnecessary
+    # full Dev model loading. Native readiness does not prove weights cached.
+    target=next(((board,m) for board in ('flux2_klein4','flux2_klein9','flux3_klein','pi_flux2','flux2_dev') for m in ready_models(board)),None)
+    reason=''
+    if not bridge.live_session_ready or bridge.dispatch_mode!='gradio':reason='Native WanGP queue relay unavailable'
+    elif (bridge.adapter.discover().get('fork_revision') or 0)<58:reason='Refmod-Fork fork.58 or newer required'
+    elif not h3 or not target:reason='Compatible H3 and FLUX model definitions required'
+    task=ConversionTask(target[0],h3['model_type'],target[1]['model_type'],tuple(items),library=True) if h3 and target else None
+    # Existing native relay limits a single job to 500. Subsequent scans pick up
+    # the remainder; never silently run an unreviewed extra batch.
+    preview={'count':len(items),'batch_count':min(500,len(items)),'skipped':skipped,'items':[{'source':i.source,'person':i.person} for i in items],
+             'ready':not reason,'reason':reason,'h3_model':h3['model_type'] if h3 else None,'flux_model':target[1]['model_type'] if target else None}
+    signature=hashlib.sha256(json.dumps([include_personal,preview,fingerprints],sort_keys=True).encode()).hexdigest()
+    preview['plan_token']=signature
+    return preview,task,fingerprints
+
+
+@app.get('/api/settings/conversion/plan',include_in_schema=False)
+def preview_library_conversion(include_personal:bool=False):
+    return library_conversion_plan(include_personal)[0]
+
+
+@app.get('/api/settings/conversion/status',include_in_schema=False)
+def library_conversion_status():
+    return {'job':_casting_bridge().library_conversion_status()}
+
+
+@app.post('/api/settings/conversion/start',include_in_schema=False)
+def start_library_conversion(req:LibraryConversionRequest):
+    bridge=_casting_bridge()
+    preview,task,fingerprints=library_conversion_plan(req.include_personal)
+    if not req.plan_token or req.plan_token!=preview['plan_token']:
+        raise HTTPException(409,'Library or encoder availability changed; preview again.')
+    if not preview['ready'] or not task or not task.items:
+        raise HTTPException(409,preview['reason'] or 'No missing supported formats')
+    from dataclasses import replace
+    task=replace(task,items=task.items[:500])
+    def validate(item):
+        path=library_source_check(item,bridge);st=path.stat()
+        if fingerprints.get(item.source)!=(st.st_size,st.st_mtime_ns,st.st_ino):raise ValueError('Source changed since preview')
+        return path
+    try:job_id=bridge.enqueue_conversion(task,validate)
+    except (OSError,ValueError,RuntimeError) as exc:raise HTTPException(409,str(exc))
+    return {'id':job_id,'count':len(task.items)}
+
+
 @app.post('/api/choices/conversion/apply',include_in_schema=False)
 def apply_auto_conversion(req:AutoConversionApply):
     """Attach only verified native conversion outputs to their original roles."""
@@ -1968,7 +2084,7 @@ def download_image(url):
         if cached and safe_media_file(PHOTO_DIR,cached[0],r'[0-9a-f]{64}\.jpg'):return 'api/photos/'+cached[0]
         validate_public_url(url)
         # Disable proxies and redirects; redirects must not reach private network addresses.
-        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.0-rc.12.13)'}) as client:
+        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.0-rc.12.14)'}) as client:
             with client.stream('GET',url) as res:
                 if res.status_code!=200 or not res.headers.get('content-type','').lower().startswith('image/'):
                     return ''
@@ -3660,7 +3776,7 @@ def search_production_online(q:str=Query(min_length=2,max_length=120)):
 # Key-free film credit source. Match exact title or explicit "(film)" titles;
 # treat cast lists as suggestions for human review, not verified installed mods.
 WIKIPEDIA_API='https://en.wikipedia.org/w/api.php'
-WIKI_AGENT='CastingStudio/1.0.0-rc.12.13 (personal local catalog; Wikimedia public credits)'
+WIKI_AGENT='CastingStudio/1.0.0-rc.12.14 (personal local catalog; Wikimedia public credits)'
 def wiki_api(client,params):
     r=client.get(WIKIPEDIA_API,params={**params,'format':'json','formatversion':2},headers={'User-Agent':WIKI_AGENT})
     r.raise_for_status();return r.json()
@@ -3999,7 +4115,7 @@ def save_reference_image(item:ReferenceImageRequest):
             return {**result,'reused_local':True}
         try:validate_public_url(item.image_url)
         except Exception as e:raise HTTPException(400,str(e))
-        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.13'}) as client:
+        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.14'}) as client:
             with client.stream('GET',item.image_url) as r:
                 if r.status_code!=200 or not r.headers.get('content-type','').lower().startswith('image/'):
                     raise HTTPException(422,'Image host did not return an image')
@@ -4303,11 +4419,28 @@ def appearance_bridge():
     return bridge
 
 def appearance_role(key):
-    with connect() as db:
-        row=db.execute('SELECT payload FROM choices WHERE key=?',(key,)).fetchone()
-    choice=decoded_choice(key,row[0]) if row else None
+    if key.startswith('catalog:'):
+        # Resolve the displayed portrayal from the local catalog, not a fabricated
+        # casting choice. No model scan, selection mutation or online research.
+        try:
+            person,character,production,year=json.loads(key[len('catalog:'):])
+            if not all(isinstance(v,str) and v.strip() for v in (person,character,production)) or (year is not None and (type(year) is not int or not 1880<=year<=2100)):raise ValueError()
+        except (ValueError,TypeError,RecursionError):raise HTTPException(400,'Invalid catalog portrayal')
+        wanted=canonical_role_key(person,character,production)
+        _,roles=normalized_catalog(models=[],discovery=True)
+        choice=None
+        for role in roles:
+            if canonical_role_key(role['actress'],role['character'],role['production'])!=wanted:continue
+            candidate={**role,'person':role['actress']}
+            label=portrayal_production_label(candidate)
+            if year is not None and not label.endswith(f'({year})'):continue
+            choice=candidate;break
+    else:
+        with connect() as db:
+            row=db.execute('SELECT payload FROM choices WHERE key=?',(key,)).fetchone()
+        choice=decoded_choice(key,row[0]) if row else None
     if not choice or choice.get('personal_id') or not choice.get('character') or not choice.get('production') or is_broadcast_credit(choice):
-        raise HTTPException(400,'Choose a saved public character role, not a personal or broadcast profile.')
+        raise HTTPException(400,'Choose a known public character role, not a personal or broadcast profile.')
     for name in (choice['person'],choice['character'],choice['production']):assert_public_name(name)
     label=portrayal_production_label(choice)
     match=re.search(r'\((\d{4})\)$',label)
@@ -4342,7 +4475,7 @@ def appearance_options():
     return bridge.options() if bridge else {'ready':False,'models':[],'reason':'Native WanGP vision bridge unavailable.'}
 
 @app.get('/api/appearance/references')
-def appearance_references(choice_key:str=Query(min_length=1,max_length=500)):
+def appearance_references(choice_key:str=Query(min_length=1,max_length=1200)):
     role=appearance_role(choice_key)
     rows=appearance_photo_rows(role)
     with connect() as db:
@@ -4350,7 +4483,7 @@ def appearance_references(choice_key:str=Query(min_length=1,max_length=500)):
     return {'role':role,'photos':[{k:v for k,v in r.items() if k!='path'} for r in rows], 'saved':json.loads(saved[0]) if saved else None}
 
 class AppearanceSelection(BaseModel):
-    choice_key:str=Field(min_length=1,max_length=500)
+    choice_key:str=Field(min_length=1,max_length=1200)
     image_ids:list[str]=Field(min_length=1,max_length=4)
 class AppearanceBatch(BaseModel):
     engine:str=Field(min_length=1,max_length=20)

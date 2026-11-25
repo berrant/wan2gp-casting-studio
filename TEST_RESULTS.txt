@@ -1,19 +1,18 @@
-Casting Studio v1.0.0-rc.12.13 — Local AI character appearance profiles
+Casting Studio v1.0.0-rc.12.14 — Direct character editing and library conversion
 Measured release verification (2026-11-25)
 
 FINAL COMPLETE CUMULATIVE REGRESSION GATE
-362 collected, 360 passed, 0 failed, 2 retired standalone Docker checks skipped.
-Group 1: 86 passed, 108 warnings in 175.60s (0:02:55)
-Group 2: 89 passed, 2 skipped, 110 warnings in 159.55s (0:02:39)
-Group 3: 91 passed, 123 warnings in 126.81s (0:02:06)
-Group 4: 94 passed, 152 warnings in 124.54s (0:02:04)
-Wall time: 178.92 seconds. All four exit codes: 0.
+371 collected, 369 passed, 0 failed, 2 retired standalone Docker checks skipped.
+Group 1: 88 passed, 126 warnings in 142.15s (0:02:22)
+Group 2: 102 passed, 2 skipped, 148 warnings in 128.98s (0:02:08)
+Group 3: 89 passed, 106 warnings in 172.45s (0:02:52)
+Group 4: 90 passed, 127 warnings in 162.82s (0:02:42)
+Wall time: 182.22 seconds. All four exit codes: 0.
 Application and regression source fingerprints matched before and after the final gate.
 
-Seven new regression cases: native local vision adapter, model selection, exact portrayal identity, reference checks, batch approval and cancellation, stale draft and image handling, prompt integration, and browser controls.
-Earlier focused run: 10 passed; final cumulative gate supersedes it.
+Nine new tests: direct card identity navigation without selection, exact local catalog portrayal, library preview and start, existing counterparts, exclusion of temporal and unconsented private sources, cancellation, unsupported model handling and changed source validation. Focused conversion/appearance run: 23 passed.
 
-FINAL GIT UPGRADE SIMULATION
-RC12.12 baseline seed/mount PASS; RC12.13 fast-forward, mount and restart PASS. External public profile, role, private profile, legacy identity traits and custom wardrobe settings preserved; SQLite integrity PASS; clean installed Git tree. Python and inline JavaScript syntax PASS. Actual Gradio 6.5.1 Blocks native callback registration smoke PASS (no inference).
+RC12.13 -> RC12.14 Git fast-forward, native mount and restart simulation PASS; synthetic external state preserved, SQLite integrity and clean installed Git tree PASS. Python and inline JavaScript syntax PASS.
 
-Distribution guard is executed on source and installation ZIPs and a staged copy of source. Real WanGP/GPU inference, actual model assets, memory use, shared-lock behavior with real generation, Safari and character fidelity remain unverified. Host private interfaces are capability checked; future host versions may disable the feature. Deprecation warnings remain. This is a release candidate, not public v1 approval.
+Real WanGP GPU inference and VAE conversion, model asset availability and download behavior, Safari, actual user library and output quality remain unverified. The conversion planner prefers smaller compatible FLUX definitions, but native readiness does not establish local weight availability. H3 still-image -> FLUX only; reverse and temporal/audio conversion unavailable. No automatic linking of Personal outputs. Maximum 500 per reviewed batch.
+Distribution privacy audit covers both archives and a staged synthetic Git index. This is a release candidate, not public v1 approval.

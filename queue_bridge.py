@@ -1149,12 +1149,19 @@ class QueueBridge:
             validate(entry)
         job_id = uuid.uuid4().hex
         with self._lock:
-            self._jobs[job_id]={'id':job_id,'state':'queued','operation':'auto_convert',
+            if any(j.get('state') in ('queued','running') and (j.get('operation')=='library_convert' or (task.library and j.get('operation')=='auto_convert')) for j in self._jobs.values()):
+                raise RuntimeError('A RefMod conversion is already active')
+            self._jobs[job_id]={'id':job_id,'state':'queued','operation':'library_convert' if task.library else 'auto_convert',
                 'message':'Waiting for native WanGP relay to convert H3 pictures to FLUX',
                 'model_type':task.flux_model_type,'total_tasks':len(task.items),
                 'completed_tasks':0,'converted':[],'failures':[], 'files':[], 'error':''}
             self._pending.append((job_id,task,validate))
         return job_id
+
+    def library_conversion_status(self):
+        with self._lock:
+            ids=[k for k,v in self._jobs.items() if v.get('operation')=='library_convert']
+        return self.status(ids[-1]) if ids else None
 
     def _run_conversion(self, job_id:str, task:ConversionTask, validate:Callable):
         """Execute the fork's own decode + encode jobs, safely and serially.
@@ -1177,7 +1184,7 @@ class QueueBridge:
                 self._change(job_id,error=str(getattr(message,'message',message))[:700])
         converted=[];failures=[]
         successful_sources={};failed_sources={}
-        self._change(job_id,state='running',message='Converting selected H3 picture RefMods')
+        self._change(job_id,state='running',message='Converting library H3 picture RefMods' if task.library else 'Converting selected H3 picture RefMods')
         for number,item in enumerate(task.items,1):
             if self._cancelled(job_id):break
             source_name=None
@@ -1218,6 +1225,8 @@ class QueueBridge:
                     raise ValueError('H3 decoding produced no new pictures')
                 validate(item)  # Consent can be revoked during the H3 VAE step
                 target_name,target_path=free_destination(root,source_name)
+                if task.library and target_name!=source_name:
+                    raise ValueError('Destination now exists; no duplicate or overwrite created')
                 self._change(job_id,message=f'{number}/{len(task.items)}: encoding {item.person} for FLUX')
                 spec={'name':target_name,'images':[str(p) for p in pictures],
                       'budget':4096,'layout':'separate',

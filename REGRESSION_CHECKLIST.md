@@ -1,3 +1,12 @@
+# v1.0.0-rc.12.14 — Direct character editing and library conversion
+
+- [x] Direct character navigation independent of casting selection; catalog portrayal/year validation and existing identity/vision regression coverage.
+- [x] Explicit library scan, plan fingerprint, native conversion, existing counterpart skip, private consent, source-change validation, unsupported model handling and cancellation.
+- [x] Final cumulative gate: 369 passed, zero failed, two retired Docker skips, 371 collected; fingerprints unchanged. See TEST_RESULTS.txt.
+- [x] Git fast-forward, restart, external state preservation and syntax checks.
+- [ ] Actual WanGP GPU/VAE conversion, downloads, real library and Safari validation.
+- Distribution ZIP and staged Git index privacy gate required before delivery.
+
 # v1.0.0-rc.12.13 — Character appearance profiles
 
 - [x] Full cumulative test collection on final source: 360 passed, zero failed, two retired Docker skips; fingerprints unchanged. See TEST_RESULTS.txt.
