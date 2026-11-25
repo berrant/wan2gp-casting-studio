@@ -1,3 +1,10 @@
+## RC12.25 — Deferred appearance analysis
+
+- Retain an explicitly submitted appearance batch while generation or its GPU lock is busy; retry only transient contention without interrupting generation.
+- Expose waiting, running, cancellation and review in the header and a distinct queue-manager row. Reopen the current server-side batch after page reload.
+- Recheck the native queue after acquiring the non-interrupting lock, reject duplicate batches, and revalidate model and reference inputs at execution.
+- Keep approval explicit, retain existing saved profiles, and do not persist pending jobs across host restart.
+
 ## RC12.24 — Physical identity, not wardrobe
 
 - Strengthen native vision instructions to distinguish stable character anatomy and pigmentation from removable wardrobe, equipment and lighting. Avoid contradictory iris colors and unsupported hidden traits. Flag obvious wardrobe terms on review, reject flagged approvals without modifying saved profiles, preserve editable drafts. Existing manual profiles and final prompts are untouched; no extra inference or model loads.

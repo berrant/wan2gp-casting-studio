@@ -28,6 +28,9 @@ INSTRUCTIONS = (
 )
 
 class VisionUnavailable(RuntimeError): pass
+class VisionBusy(VisionUnavailable): pass
+
+ACTIVE_STATES = ('staged','waiting','running')
 
 class NativeVision:
     def __init__(self, host): self.host = host
@@ -67,6 +70,9 @@ class NativeVision:
         options = {x['id']:x for x in self.options()}
         if engine not in options: raise VisionUnavailable('Selected vision engine is not supported by this WanGP version.')
         choice = options[engine]
+        if stop(): raise InterruptedError('Cancelled')
+        if getattr(self.host, 'global_queue_ref', None) or state['gen'].get('queue'):
+            raise VisionBusy('WanGP has queued work')
         locks = importlib.import_module('shared.utils.process_locks')
         acquire = getattr(locks, 'try_acquire_GPU_ressources', None)
         release = getattr(locks, 'release_GPU_ressources', None)
@@ -89,7 +95,7 @@ class NativeVision:
         loader.ensure_prompt_enhancer_assets(check_assets, enhancer_enabled=int(engine), qwen_backend=choice['backend'], speculative_decoding=False)
         if stop(): raise InterruptedError('Cancelled')
         if getattr(self.host, 'global_queue_ref', None) or state['gen'].get('queue'):
-            raise VisionUnavailable('WanGP has queued work. Retry appearance analysis when the queue is idle.')
+            raise VisionBusy('WanGP has queued work')
         process = 'casting_appearance_' + uuid.uuid4().hex
         try:
             acquired=acquire(state, process, 'Casting Studio appearance analysis')
@@ -97,10 +103,13 @@ class NativeVision:
             if state['gen'].get('process_status')=='process:'+process: release(state,process)
             raise
         if not acquired:
-            raise VisionUnavailable('GPU is busy. No generation was interrupted; retry when idle.')
+            raise VisionBusy('GPU is busy')
         runtime = manager = None
         try:
             if stop(): raise InterruptedError('Cancelled')
+            # A generation may have joined the queue between the first check and acquisition.
+            if getattr(self.host, 'global_queue_ref', None) or state['gen'].get('queue'):
+                raise VisionBusy('WanGP has queued work')
             unload_guard.wait_for_model_unload()
             # Existing main model can stay in host-managed RAM, but relinquish VRAM.
             main = getattr(self.host, 'offloadobj', None)
@@ -148,8 +157,8 @@ class VisionBridge:
         except Exception as exc: return {'ready':False,'models':[],'reason':str(exc)[:300]}
     def stage(self, engine, tasks):
         with self.lock:
-            if self.job and self.job['state'] in ('staged','running'):
-                if self.job['state']!='staged' or time.monotonic()-self.job['_created']<90: raise ValueError('An appearance analysis is already staged or running.')
+            if self.job and self.job['state'] in ACTIVE_STATES:
+                if self.job['state']!='staged' or time.monotonic()-self.job['_created']<90: raise ValueError('An appearance analysis is already staged, waiting or running.')
             options={x['id']:x for x in self.native.options()} if self.ready else {}
             if engine not in options: raise ValueError('Select a supported local WanGP vision model.')
             self.stop.clear(); self.job={'id':uuid.uuid4().hex,'state':'staged','engine':engine,'backend':options[engine]['backend'],'tasks':copy.deepcopy(tasks),'results':[], 'message':'Waiting for native handoff','_created':time.monotonic()}
@@ -159,35 +168,58 @@ class VisionBridge:
             if not self.job or self.job['id']!=job_id: return None
             if self.job['state']=='staged' and time.monotonic()-self.job['_created']>=90: self.job.update(state='failed',message='Native handoff timed out; reopen the WanGP tab and retry.')
             return copy.deepcopy({k:v for k,v in self.job.items() if k not in ('tasks','_created')})
+    def summary(self):
+        with self.lock:
+            if not self.job: return None
+            job=self.status(self.job['id'])
+            return {**{k:job[k] for k in ('id','state','message','engine')},
+                    'total':len(self.job['tasks']),'done':len(job['results']),
+                    'review':sum(r['state']=='review' for r in job['results']),
+                    'cancelling':self.stop.is_set() and job['state'] in ACTIVE_STATES}
     def cancel(self, job_id):
         with self.lock:
             if not self.job or self.job['id']!=job_id: return False
             if self.job['state']=='staged': self.job.update(state='cancelled',message='Cancelled before inference')
-            elif self.job['state']=='running': self.stop.set(); self.job['message']='Cancelling at next safe point'
+            elif self.job['state'] in ('waiting','running'): self.stop.set(); self.job['message']='Cancelling at next safe point'
             return True
     def run(self, job_id, state, resolve):
         with self.lock:
             if not self.status(job_id) or self.job['state']!='staged': return 'No pending appearance analysis'
             self.job.update(state='running',message='Checking local vision model and GPU'); job=self.job
         try:
-            current={x['id']:x for x in self.native.options()}.get(job['engine'])
-            if not current or current['backend']!=job['backend']: raise VisionUnavailable('Selected model format changed; select the engine again.')
-            with self.native.session(state,job['engine'],self.stop.is_set) as analyze:
-                for i, task in enumerate(job['tasks']):
-                    if self.stop.is_set(): break
-                    with self.lock: job['message']=f'Analyzing {i+1}/{len(job["tasks"])} · {task["character"]}'
-                    try:
-                        images, fingerprints=resolve(task)
-                        try: traits=analyze(task['label'],images)
-                        finally:
-                            for image in images: image.close()
-                        if self.stop.is_set(): break
-                        if not traits or len(traits)>2200: raise ValueError('Description empty or too long; retry or enter manually.')
-                        result={**task,'traits':traits,'fingerprints':fingerprints,'state':'review','index':i}
-                    except InterruptedError: self.stop.set(); break
-                    except Exception as exc: result={**task,'state':'failed','error':str(getattr(exc,'detail',exc))[:400],'index':i}
-                    with self.lock: job['results'].append(result)
-            with self.lock: job.update(state='cancelled' if self.stop.is_set() else 'completed',message='Review drafts before saving')
+            while not self.stop.is_set():
+                current={x['id']:x for x in self.native.options()}.get(job['engine'])
+                if not current or current['backend']!=job['backend']: raise VisionUnavailable('Selected model format changed; select the engine again.')
+                entered=False
+                try:
+                    with self.native.session(state,job['engine'],self.stop.is_set) as analyze:
+                        entered=True
+                        with self.lock:
+                            job.update(state='running',message='Analyzing character references')
+                        for i, task in enumerate(job['tasks']):
+                            if self.stop.is_set(): break
+                            with self.lock: job['message']=f'Analyzing {i+1}/{len(job["tasks"])} · {task["character"]}'
+                            try:
+                                images, fingerprints=resolve(task)
+                                try: traits=analyze(task['label'],images)
+                                finally:
+                                    for image in images: image.close()
+                                if self.stop.is_set(): break
+                                if not traits or len(traits)>2200: raise ValueError('Description empty or too long; retry or enter manually.')
+                                result={**task,'traits':traits,'fingerprints':fingerprints,'state':'review','index':i}
+                            except InterruptedError: self.stop.set(); break
+                            except Exception as exc: result={**task,'state':'failed','error':str(getattr(exc,'detail',exc))[:400],'index':i}
+                            with self.lock: job['results'].append(result)
+                    break
+                except VisionBusy as exc:
+                    # Never replay an inference or cleanup failure after entering the session.
+                    if entered: raise
+                    with self.lock:
+                        if not self.stop.is_set(): job.update(state='waiting',message='Waiting for GPU · '+str(exc))
+                    self.stop.wait(1.0)
+            with self.lock:
+                cancelled=self.stop.is_set()
+                job.update(state='cancelled' if cancelled else 'completed',message='Analysis cancelled; review any completed drafts' if cancelled else 'Review drafts before saving')
         except InterruptedError:
             with self.lock: job.update(state='cancelled',message='Analysis cancelled')
         except Exception as exc:

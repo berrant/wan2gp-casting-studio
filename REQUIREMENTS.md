@@ -1,6 +1,6 @@
 # Casting Board — cumulative requirements
 
-Authoritative development baseline for the next candidate: v1.0.0-rc.12.24 (Casting Studio for WanGP, release candidate 12.24), only after its release gate passes. Do not build from earlier ZIPs. Before making a release, compare this document and REGRESSION_CHECKLIST.md with the working tree; retain user data outside the package. The requirements below were recovered from development chats and earlier release notes, not inferred from the newest code alone.
+Authoritative development baseline for the next candidate: v1.0.0-rc.12.25 (Casting Studio for WanGP, release candidate 12.25), only after its release gate passes. Do not build from earlier ZIPs. Before making a release, compare this document and REGRESSION_CHECKLIST.md with the working tree; retain user data outside the package. The requirements below were recovered from development chats and earlier release notes, not inferred from the newest code alone.
 
 ## Integration and packaging
 - Native WanGP plugin only, no Docker distribution, no patches to WanGP or Refmod-Fork core. Use documented native session/Gradio queue integration; check installed models and custom settings. Correct native queue submission is the acceptance criterion, not whether a GPU can render it. Target portable Windows/macOS/Linux paths, UTF-8, no developer machine paths, private databases, identity mappings, photos, selections, LoRA preferences or inventory shipped. Preserve external user data. Full cumulative ZIP. Use the current v1.0.0-rc.12.x release sequence; synchronize metadata at release boundaries.
@@ -226,3 +226,6 @@ Whole-batch cancellation is latched across manifest boundaries; native cancellat
 Manual appearance edits: save automatically for the exact loaded portrayal in character-card, still-image and video editors. Save pending edits before closing, switching roles or opening AI analysis; preserve failures for retry and do not interpret an empty draft as an implicit reset. AI-inferred descriptions remain unapproved until explicitly approved. Do not automatically rewrite custom final prompts or apply autosave to unrelated settings.
 
 - AI appearance analysis must describe the physical identity independently of wardrobe; retain integrated anatomy and character-specific markings. Flag obvious removable clothing/equipment in drafts, reject flagged AI approvals until corrected, never silently strip or rewrite existing saved/manual identity or final prompts. Explicit approval remains mandatory.
+
+## Deferred appearance analysis (RC12.25)
+One explicit in-memory batch may wait for native queue/GPU idle without model loading or generation interruption. Show the batch separately from native tasks; cancel cooperatively; no automatic restart replay. Keep approval explicit, revalidate inputs and fail closed on permanent errors.

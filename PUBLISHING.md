@@ -9,6 +9,6 @@
 - See `TEST_RESULTS.txt` for current measured results. The maintainer reported successful RC12.22 live generation, preview, conversion, Workshop, appearance analysis and Git update on WanGP v20.20. Verify RC12.23 inventory changes, appearance navigation and autosave, active-generation protection, clean live installation and public installation separately. Do not claim compatibility across every host/version.
 - Run `python check_release_privacy.py --git-index` after staging. The checker also supports normalized source and installation ZIP files with the ZIP path as argument. This guard does not inspect prior Git history or author metadata.
 - Before changing visibility, review the actual repository history, author/committer metadata, branches, tags, prior release assets, issues and settings for private data. The local staged-index guard cannot inspect these.
-- Once ready, create tag `v1.0.0-rc.12.24` and mark the GitHub release as a pre-release. Upload the unchanged installation ZIP as the release asset.
+- Once ready, create tag `v1.0.0-rc.12.25` and mark the GitHub release as a pre-release. Upload the unchanged installation ZIP as the release asset.
 
 - Verify RC12.24 live vision drafts remain independent of wardrobe, and review existing saved profiles manually where needed.

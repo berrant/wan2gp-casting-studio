@@ -1169,7 +1169,10 @@ def maintenance_activity():
         jobs.append({'id':'workshop','label':'Workshop RefMod validation',
                      'done':w.get('checked',0),'total':w.get('total',0),
                      'detail':w.get('phase','')})
-    return {'running':bool(jobs),'count':len(jobs),'jobs':jobs}
+    bridge=getattr(app.state,'casting_vision_bridge',None)
+    result={'running':bool(jobs),'count':len(jobs),'jobs':jobs}
+    if bridge and (appearance:=bridge.summary()):result['appearance']=appearance
+    return result
 
 @app.get('/api/enrichment/status')
 def enrichment_status():

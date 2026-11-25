@@ -1,3 +1,8 @@
+# RC12.25 — Deferred appearance analysis
+- Waiting batch visible independently of native generation queue; one batch only; cancel while waiting and running; reject permanent errors; stale reference/model checks; no retry of completed inference; release lock if generation joins before model load; reopen review from server status.
+- [x] Eight permanent deferred-analysis cases, native lock acquisition race, 23 related focused checks, synthetic exact Git upgrade and fresh installation. Full gate: 434 passed, 0 failed, two approved skips, 436 collected, 93 modules. Final fingerprints and syntax checks passed.
+- [ ] Live WanGP callback lifetime, lock fairness, browser reload and actual GPU behavior require verification.
+
 # v1.0.0-rc.12.24 — Physical identity review
 
 - [x] Complete cumulative regression gate on final code: 426 passed, zero failed, two approved skips, 428 collected, 92 modules. Final fingerprints, syntax, synthetic exact Git upgrade and fresh installation passed.

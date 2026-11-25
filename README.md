@@ -1,6 +1,6 @@
 # Casting Studio for WanGP
 
-Version: v1.0.0-rc.12.24
+Version: v1.0.0-rc.12.25
 Date: 2026-11-25
 
 
@@ -16,7 +16,7 @@ Casting Studio is a native local WanGP plugin for building a cast, organizing re
 2. Open Casting Studio inside WanGP. In **Getting started**, run the local checks. Use Settings to verify the RefMod root, then **Rescan RefMods** if files were added or moved. Choose an installed compatible model/checkpoint rather than guessing from the family name.
 3. Find a production or public performer, choose a role and exact RefMod, or manage a consented Personal profile separately. Use explicit research or collection controls to add reference images. The initial catalog is empty except for locally discovered information.
 4. Open the generator, review model settings and each image or video prompt, adjust the wardrobe/action fields, and submit. Identity captions are optional; saved manual final prompts are preserved. Track the active task in the live monitor or inspect the native queue. Do not resubmit simply because a status request is temporarily unavailable.
-5. Use the Workshop to create or inspect RefMods and compatible conversion tools. For AI character appearance analysis, explicitly choose the portrayal, local character reference images and available vision engine. Review before approving; wait for an idle native queue. No automatic model downloads or background vision runs.
+5. Use the Workshop to create or inspect RefMods and compatible conversion tools. For AI character appearance analysis, explicitly choose the portrayal, local character reference images and available vision engine. Review before approving; the submitted analysis waits for an idle native queue. No automatic model downloads or background vision runs.
 
 ### Supported generation options
 
@@ -42,6 +42,10 @@ These are recognized options, not a guarantee that every checkpoint, encoder, GP
 | Damaged settings or data | Back up external storage first; follow the recovery note below. Do not delete the database or reset all browser data as a first step. |
 
 For bug reports, provide plugin, WanGP and Refmod-Fork versions, platform/browser, a reproducible sequence and sanitized errors. Do not post private photographs, identities, prompts, tokens or raw databases. This is a trusted local, single-user workflow; do not expose the service to untrusted users or the public internet.
+
+## RC12.25 — Deferred appearance analysis
+
+Submit one appearance batch at a time. If native generation or its GPU lock is busy, the batch waits without interrupting generation or loading the vision model. The header activity button and separate Casting Studio row in the WanGP queue manager show status and allow review or cancellation. Native generation jobs retain priority; analysis is not a native generation task and is not reorderable there. Waiting batches are in-memory and do not survive a WanGP restart. Inference cancellation is cooperative. Missing assets or unsupported model formats fail rather than retry indefinitely.
 
 ## RC12.24 — Physical identity review
 
@@ -107,7 +111,7 @@ Click a public character name to open its portrayal-specific appearance editor, 
 
 - In the character information editor or the selected combinations workspace, choose **Analyze with AI** / **AI appearance profiles**. The selected character must have a known production year and saved local character artwork or approved character reference images. Collect photos with the existing reference tools first; no photos are fetched by analysis.
 - Select a native local WanGP vision model (Qwen3.5 4B preferred on first use). Other compatible variants and checkpoint formats are discovered from the running host. If the selected checkpoint files are missing, install them through WanGP's own model configuration, then retry. No downloads or external model services are initiated by this bridge.
-- Review the portrayal and 1–4 pictures per role; include up to 20 selected roles. Start analysis only when WanGP is idle. A single temporary native runtime services the batch sequentially, then is released. Cancel stops at the next safe inference boundary. Individual failed roles do not discard successful drafts. No background inference or startup model load.
+- Review the portrayal and 1–4 pictures per role; include up to 20 selected roles. Submit analysis when ready; it waits for an idle native queue and GPU. A single temporary native runtime services the batch sequentially, then is released. Cancel stops at the next safe inference boundary. Individual failed roles do not discard successful drafts. No automatic inference or startup model load.
 - Review and edit each proposed description, then approve explicitly. Approved traits are stored for the performer, character, production and year, not the performer's everyday identity. New template-generated H3 video, H3 still-image and FLUX prompts reuse the text without inference. Existing final custom prompt edits are not rewritten. Existing broad character/production descriptions remain fallback text. Analysis provenance (engine, checkpoint format, date and selected image hashes) is kept in the local database; standard prompt backup includes the traits, not provenance. Unapproved drafts are in memory only and are lost on host restart.
 - References without a year require your visual confirmation; saved artwork can be shared by same-title remakes in the current catalog. The selection workspace retains its existing role keys; different portrayals of an identically titled production can be analyzed separately by selecting the intended year. The bridge targets current WanGP shared-state, prompt-enhancer and MMGP internals, and fails closed when they are unavailable. The real GPU integration and quality of inferred traits require live testing; see TEST_RESULTS.txt.
 

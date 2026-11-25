@@ -1,3 +1,18 @@
+Casting Studio v1.0.0-rc.12.25 — Deferred character appearance analysis
+Measured verification (2026-11-25)
+
+FINAL COMPLETE CUMULATIVE REGRESSION GATE
+436 collected, 434 passed, zero failures, two approved retired standalone Docker skips.
+Group 1: 120 passed, 163 warnings in 131.79s.
+Group 2: 103 passed, 112 warnings in 133.83s.
+Group 3: 103 passed, 160 warnings in 117.01s.
+Group 4: 108 passed, 2 skipped, 144 warnings in 101.06s.
+All four exit codes zero; 93 test modules each included exactly once. 579 non-failing warnings. Final Python, HTML and JSON fingerprints match the tested tree. Python and inline JavaScript syntax passed.
+
+Exact RC12.24 baseline reproduced a terminal GPU-busy failure. Eight new permanent tests cover deferred single execution, duplicate and stale callbacks, waiting and running cancellation, changed model backend, permanent errors, changed reference bytes, cleanup failure without replay, and browser queue/review recovery. Existing native adapter test also exercises queue arrival immediately before GPU acquisition completion and verifies release without loading a model. Final focused run: 23 passed, 32 warnings. Initial fixture-registration error was corrected before the final run. Native lock semantics reviewed against WanGP 72d50753. Synthetic Git upgrade from exact RC12.24 and separate fresh installation passed, including existing custom templates, approved profile, reference/model bytes and SQLite integrity. No tracked-file deletions. Waiting work is a separate in-memory Casting Studio job, not a native WanGP generation task; only one batch, native generation takes priority, no restart persistence, cooperative cancellation. Browser queue UI verified with mocked API; real callback lifetime, Safari, native GPU scheduling and model inference remain live checks. No upstream modifications or extra model downloads.
+
+Previous release record follows.
+
 Casting Studio v1.0.0-rc.12.24 — Physical identity review
 Measured verification (2026-11-25)
 

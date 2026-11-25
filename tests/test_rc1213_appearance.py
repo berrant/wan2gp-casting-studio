@@ -146,6 +146,20 @@ def test_native_adapter_load_and_release_once_and_fail_closed(app,monkeypatch):
     assert events==['acquire','main-unload','registry-unload',('load',3),'infer','infer','unload','offload-release','release']
     assert host.server_config=={'prompt_enhancer_quantization':'gguf_q3'}
     events.clear()
+    # A queued generation takes priority, even if it arrives during lock acquisition.
+    host.global_queue_ref.append('synthetic queued generation')
+    with pytest.raises(mod.VisionBusy,match='queued'):
+        with native.session(state,'3',lambda:False):pass
+    assert not events
+    host.global_queue_ref.clear()
+    def acquire_race(st,process,label):
+        events.append('acquire');state['gen']['queue']=['synthetic queued generation'];return True
+    modules['shared.utils.process_locks'].try_acquire_GPU_ressources=acquire_race
+    with pytest.raises(mod.VisionBusy,match='queued'):
+        with native.session(state,'3',lambda:False):pass
+    assert events==['acquire','release']
+    state['gen'].pop('queue');events.clear()
+    modules['shared.utils.process_locks'].try_acquire_GPU_ressources=acquire
     with pytest.raises(mod.VisionUnavailable,match='state'):
         with native.session({'gen':{}},'3',lambda:False):pass
     assert not events
