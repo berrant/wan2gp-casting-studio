@@ -204,3 +204,9 @@ Whole-batch cancellation is latched across manifest boundaries; native cancellat
 ## RC12.14
 - Direct character-name navigation opens the portrayal-specific identity editor independent of casting selection.
 - Manual bulk library conversion previews missing supported formats, uses native relay, revalidates source and consent, skips existing counterparts, preserves choices and original files, and supports cancellation. Personal conversion is explicit.
+
+
+## RC12.17 Character analysis collection round trip
+- Explicit character-only collection from within appearance analysis. Return with local selections, engine and unsaved drafts intact. Never auto-fetch on analysis opening or run inference on collection return. Show original stored size, source, quality and selected image count; warn for a sole low-resolution portrait. Exclude corrupt artwork; keep other dated portrayals separate while marking legacy undated sources for confirmation. Preserve the approval workflow and native model limits.
+
+- Native vision relay readiness follows actual successful callback registration inside the owning Gradio UI. Main-form hooks may run before plugin tab creation (verified against WanGP 20.20 commit `72d50753`); callback registration cannot depend on their order. Preserve queue callbacks and fail closed when binding fails.

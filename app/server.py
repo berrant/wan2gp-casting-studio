@@ -748,7 +748,7 @@ def get_profile_link(name:str=Query(min_length=1,max_length=180)):
         return {'provider':'imdb','url':row[0],'verified':True} if row[0] else default
     imdb=''
     try:
-        with httpx.Client(timeout=5,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.16 (personal catalog)'}) as client:
+        with httpx.Client(timeout=5,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.17 (personal catalog)'}) as client:
             resp=client.get('https://www.wikidata.org/w/api.php',params={'action':'wbsearchentities','search':name,'language':'en','format':'json','limit':6,'type':'item'})
             resp.raise_for_status()
             candidates=[v for v in resp.json().get('search',[]) if token(v.get('label'))==token(name)]
@@ -850,7 +850,7 @@ def wikidata_get(client,params):
     raise last_error
 
 def wikidata_profile(name):
-    with httpx.Client(timeout=20, headers={'User-Agent':'CastingStudio/1.0.0-rc.12.16 (public performer metadata; respectful research)'}) as client:
+    with httpx.Client(timeout=20, headers={'User-Agent':'CastingStudio/1.0.0-rc.12.17 (public performer metadata; respectful research)'}) as client:
         search=wikidata_get(client,{
             'action':'wbsearchentities','search':name,'language':'en','format':'json','type':'item','limit':8})
         candidates=[c for c in search.get('search',[]) if token(c.get('label',''))==token(name) or
@@ -2084,7 +2084,7 @@ def download_image(url):
         if cached and safe_media_file(PHOTO_DIR,cached[0],r'[0-9a-f]{64}\.jpg'):return 'api/photos/'+cached[0]
         validate_public_url(url)
         # Disable proxies and redirects; redirects must not reach private network addresses.
-        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.0-rc.12.16)'}) as client:
+        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.0-rc.12.17)'}) as client:
             with client.stream('GET',url) as res:
                 if res.status_code!=200 or not res.headers.get('content-type','').lower().startswith('image/'):
                     return ''
@@ -3811,7 +3811,7 @@ def search_production_online(q:str=Query(min_length=2,max_length=120)):
 # Key-free film credit source. Match exact title or explicit "(film)" titles;
 # treat cast lists as suggestions for human review, not verified installed mods.
 WIKIPEDIA_API='https://en.wikipedia.org/w/api.php'
-WIKI_AGENT='CastingStudio/1.0.0-rc.12.16 (personal local catalog; Wikimedia public credits)'
+WIKI_AGENT='CastingStudio/1.0.0-rc.12.17 (personal local catalog; Wikimedia public credits)'
 def wiki_api(client,params):
     r=client.get(WIKIPEDIA_API,params={**params,'format':'json','formatversion':2},headers={'User-Agent':WIKI_AGENT})
     r.raise_for_status();return r.json()
@@ -4080,12 +4080,22 @@ def reference_file_exists(filename):
     return safe_media_file(REFERENCE_DIR,filename) is not None
 
 
+def compatible_reference_year(requested, stored):
+    # Legacy undated references remain eligible for manual confirmation, but
+    # explicitly different adaptations must not collide or be audited together.
+    def year(value):
+        match=re.search(r'\b((?:18|19|20)\d{2})\)?\s*$',value or '')
+        return match.group(1) if match else None
+    a,b=year(requested),year(stored)
+    return not (a and b and a!=b)
+
+
 def same_reference_collection(person,production,character=None):
     # Normalize aliases, case and a trailing production year consistently with casting.
     wanted=(token(canonical_name(person)),token(canonical_production(production)))
     with connect() as db:
         rows=db.execute('SELECT id,person,production,source_url,filename,width,height,quality_status,perceptual_hash,character FROM reference_images').fetchall()
-    return [r for r in rows if (token(canonical_name(r[1])),token(canonical_production(r[2])))==wanted and (character is None or token(r[9])==token(character))]
+    return [r for r in rows if (token(canonical_name(r[1])),token(canonical_production(r[2])))==wanted and (character is None or token(r[9])==token(character)) and compatible_reference_year(production,r[2])]
 
 
 def existing_reference_response(row):
@@ -4150,7 +4160,7 @@ def save_reference_image(item:ReferenceImageRequest):
             return {**result,'reused_local':True}
         try:validate_public_url(item.image_url)
         except Exception as e:raise HTTPException(400,str(e))
-        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.16'}) as client:
+        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.17'}) as client:
             with client.stream('GET',item.image_url) as r:
                 if r.status_code!=200 or not r.headers.get('content-type','').lower().startswith('image/'):
                     raise HTTPException(422,'Image host did not return an image')
@@ -4256,7 +4266,7 @@ def list_reference_images(person:str=Query(min_length=2),production:str='',chara
         rows=db.execute('SELECT '+','.join(cols)+' FROM reference_images').fetchall()
     result=[]
     for r in rows:
-        if (token(canonical_name(r[1])),token(canonical_production(r[2])))!=wanted or (character is not None and token(r[3])!=token(character)):continue
+        if (token(canonical_name(r[1])),token(canonical_production(r[2])))!=wanted or (character is not None and token(r[3])!=token(character)) or not compatible_reference_year(production,r[2]):continue
         item=dict(zip(cols,r))
         if not reference_file_exists(item['filename']):item.update(quality_status='missing',quality_notes='Saved image file missing; add it again or remove this record.')
         result.append(item)
@@ -4486,12 +4496,21 @@ def appearance_role(key):
             'profile_key':portrayal_identity_key(choice['character'],choice['production'],choice['person'],year)}
 
 def appearance_photo_rows(role):
-    rows=rank_reference_photos(workshop_photo_rows(role['person'],role['production'],role['character']))
+    rows=rank_reference_photos([r for r in workshop_photo_rows(role['person'],role['production'],role['character']) if compatible_reference_year(str(role['year']),r['production'])])
     out=[]
+    with connect() as db:
+        sources={r[0]:r[1:] for r in db.execute('SELECT id,source_url,page_url,quality_notes FROM reference_images')}
     for row in rows:
         explicit=re.search(r'\b((?:18|19|20)\d{2})\)?\s*$',row['production'])
         if explicit and int(explicit.group(1))!=role['year']:continue
-        out.append({'id':row['id'],'path':row['path'],'url':'api/reference-images/file/'+row['id'],'label':'Approved character reference '+str(row['quality_rank']),'dated':bool(explicit)})
+        source,page,notes=sources.get(row['id'],('','',''))
+        from urllib.parse import urlsplit
+        try:host=urlsplit(page or source).hostname if (page or source).startswith('https://') else None
+        except ValueError:host=None
+        origin='Local upload' if source.startswith('local-upload:') else ('Collected from '+host if host else 'Saved character collection')
+        out.append({'id':row['id'],'path':row['path'],'url':'api/reference-images/file/'+row['id'],'label':'Approved character reference '+str(row['quality_rank']),'dated':bool(explicit),
+                    'source':origin,'width':row['width'],'height':row['height'],'quality':row['quality'],'quality_rank':row['quality_rank'],
+                    'sharpness':row['sharpness'],'face_count':row['face_count'],'quality_notes':notes})
     # Only already archived local character artwork. Never download an image to run analysis.
     with connect() as db:
         row=db.execute('SELECT url FROM images WHERE key=?',('role|'+canonical_role_key(role['person'],role['character'],role['production']),)).fetchone()
@@ -4501,7 +4520,14 @@ def appearance_photo_rows(role):
     if row and row[0].startswith('api/photos/'):
         filename=row[0].removeprefix('api/photos/')
         path=safe_media_file(PHOTO_DIR,filename,r'[0-9a-f]{64}\.jpg')
-        if path:out.insert(0,{'id':'portrait','path':path,'url':row[0],'label':'Saved character artwork','dated':False})
+        if path:
+            width=height=None
+            try:
+                with Image.open(path) as image:width,height=image.size
+            except (OSError,ValueError,Image.DecompressionBombError):return out
+            out.insert(0,{'id':'portrait','path':path,'url':row[0],'label':'Saved character artwork','dated':False,
+                          'source':'Local character portrait','width':width,'height':height,'quality':None,
+                          'low_resolution':bool(width and height and (min(width,height)<600 or width*height<500_000))})
     return out
 
 @app.get('/api/appearance/options')

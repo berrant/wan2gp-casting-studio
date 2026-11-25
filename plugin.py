@@ -25,7 +25,7 @@ class CastingStudioPlugin(WAN2GPPlugin):
     def __init__(self):
         super().__init__()
         self.name='Casting Studio for WanGP'
-        self.version='1.0.0-rc.12.16'
+        self.version='1.0.0-rc.12.17'
         self.description='Native casting, reference-photo curation, and prompt management for Refmod-Fork.'
         self.wangp_root=Path(__file__).resolve().parents[2]
         self.adapter=RefmodForkAdapter(self.wangp_root)
@@ -51,6 +51,8 @@ class CastingStudioPlugin(WAN2GPPlugin):
         # pending job but must not call submit_task directly.
         self.queue_bridge.api_session=api_session
         self.queue_bridge.dispatch_mode='gradio'
+        # Readiness belongs to the actual registered event, not a later host hook.
+        self.vision_bridge.ready=False
         with gr.Blocks() as ui:
             # CSS hides the relay visually while keeping real Gradio components
             # mounted: visible=False can prevent DOM click dispatch on some hosts.
@@ -82,6 +84,16 @@ class CastingStudioPlugin(WAN2GPPlugin):
                 return self.queue_bridge.process_pending_in_gradio(api_session)
             run_button.click(fn=run_casting_submission, outputs=status,
                              show_progress='hidden', concurrency_limit=1)
+            # Register in the owning Blocks context, just like the native queue.
+            # Some hosts skip or invoke post_ui_setup before plugin tabs exist.
+            def analyze_native(job_id):
+                from .app import server
+                native_state=self.vision_bridge.native.shared_state()
+                return self.vision_bridge.run(job_id,native_state,server.resolve_appearance_images)
+            self.vision_button.click(fn=analyze_native,inputs=self.vision_request,outputs=self.vision_response,
+                js="(unused) => [document.querySelector('#casting_vision_button')?.dataset.jobId || '']",
+                show_progress='hidden',concurrency_limit=1)
+        self.vision_bridge.ready=True
         return ui
 
     def post_ui_setup(self, components):
@@ -91,15 +103,6 @@ class CastingStudioPlugin(WAN2GPPlugin):
             for key in ('list_model_defs', 'get_model_def', 'get_factory_settings', 'get_lora_dir')
             if callable(getattr(self, key, None))
         }
-        if self.vision_button is not None:
-            def analyze_native(job_id):
-                from .app import server
-                native_state=self.vision_bridge.native.shared_state()
-                return self.vision_bridge.run(job_id,native_state,server.resolve_appearance_images)
-            self.vision_button.click(fn=analyze_native,inputs=self.vision_request,outputs=self.vision_response,
-                js="(unused) => [document.querySelector('#casting_vision_button')?.dataset.jobId || '']",
-                show_progress='hidden',concurrency_limit=1)
-            self.vision_bridge.ready=True
         return {}
 
     # Do not use on_tab_select to create a second WanGPSession. That session

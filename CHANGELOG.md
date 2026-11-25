@@ -1,3 +1,11 @@
+## RC12.17 — Character image review and collection
+
+- Open the existing character-only reference collector directly from each AI analysis portrayal, including roles with no usable local pictures. Return to the same analysis dialog with the engine, prior selections and unsaved review drafts intact. No automatic collection or analysis.
+- Inspect every available local image at fit-to-window or actual saved size; show image source, dimensions, available technical quality, and whether portrayal confirmation is needed. The analysis button shows the total number of selected images. Warn when relying solely on a character portrait under 600 pixels on its short side or 500,000 total pixels. Technical quality is not identity validation.
+- Explicitly dated character reference collections exclude other explicitly dated adaptations. Legacy undated images and portraits remain eligible for visual confirmation; portraits are not year-specific. A removed selection is never silently replaced, and an unreadable portrait is excluded.
+- Preserve the existing four-images-per-role, 20-role batch limits, native vision bridge, Qwen3.5VL 4B preference, explicit approval, and customized prompt behavior. No schema, generation prompt, native model, or upstream edits.
+- Fix live WanGP 20.20 (`72d50753`) empty vision-engine picker: register the Gradio vision event inside the owning tab constructor, not the earlier main-form `post_ui_setup` hook. No inference or asset discovery is triggered by registration. Live GPU inference remains an installation check.
+
 ## RC12.16 — Impatient-user polish
 
 - A missing preferred vision engine now requires explicit selection; no automatic switch to a larger model. Analysis is disabled for empty/invalid role and image selections.

@@ -419,3 +419,11 @@ Use a Python environment with plugin dependencies, pytest and optional Playwrigh
 - [x] Final combined cumulative regression gate: 80 passed; Python and JavaScript syntax checked.
 
 - [x] Workshop optional test image: explicit image checkpoint choice (not encoder), family/readiness filters, stale discovery rejection, exact second checkpoint dispatch, unavailable-at-dispatch handling, and unchecked creation with no image task.
+
+
+## RC12.17 Character analysis collection
+- [x] Synthetic API: local portrait dimensions, source/quality metadata, performer-photo exclusion, wrong-year collection isolation, wrong-year analysis rejection, corrupt portrait fallback.
+- [x] Chromium: inspect/actual-size view, no automatic search on analysis open, explicit count/warning, character-only collector, preserve selections/engine/drafts, empty collection recovery, refresh failure, mutation guard, removed selection not silently replaced.
+- [ ] Actual WanGP GPU inference, character pigmentation quality and Safari verification remain live-installation checks.
+
+- [x] Native lifecycle: omitted, early, late and repeated hooks; actual host-order nested Blocks/tab simulation; exactly one registered event for each native relay; failed binding cannot report ready. No GPU inference in synthetic tests.

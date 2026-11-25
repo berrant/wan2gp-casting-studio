@@ -8,4 +8,4 @@
 - Do not package or deliver a candidate until the complete cumulative regression gate and all relevant new regression/adversarial tests pass against the final corrected source. Rerun the complete gate after any application or test correction.
 - See `TEST_RESULTS.txt` for current measured results. Live WanGP v20.20, GPU, private-repository authentication, and Safari integration require installation testing.
 - Run `python check_release_privacy.py --git-index` after staging. The checker also supports normalized source and installation ZIP files with the ZIP path as argument. This guard does not inspect prior Git history or author metadata.
-- Once ready, create tag `v1.0.0-rc.12.16` and mark the GitHub release as a pre-release. Upload the unchanged installation ZIP as the release asset.
+- Once ready, create tag `v1.0.0-rc.12.17` and mark the GitHub release as a pre-release. Upload the unchanged installation ZIP as the release asset.

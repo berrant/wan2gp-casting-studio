@@ -1,18 +1,21 @@
-Casting Studio v1.0.0-rc.12.16 — Spit and polish
+Casting Studio v1.0.0-rc.12.17 — Character image review and collection + native relay correction
 Measured release verification (2026-11-25)
 
 FINAL COMPLETE CUMULATIVE REGRESSION GATE
-381 collected, 379 passed, 0 failed, 2 retired standalone Docker checks skipped.
-Group 1: 94 passed, 124 warnings in 148.03s (0:02:28)
-Group 2: 99 passed, 2 skipped, 150 warnings in 169.88s (0:02:49)
-Group 3: 91 passed, 101 warnings in 164.68s (0:02:44)
-Group 4: 95 passed, 138 warnings in 177.19s (0:02:57)
-Wall time: 180.4 seconds. All four exit codes: 0.
+392 collected, 390 passed, 0 failed, 2 retired standalone Docker checks skipped.
+Group 1: 102 passed, 145 warnings in 112.75s (0:01:52)
+Group 2: 88 passed, 94 warnings in 120.07s (0:02:00)
+Group 3: 93 passed, 144 warnings in 114.60s (0:01:54)
+Group 4: 107 passed, 2 skipped, 146 warnings in 102.28s (0:01:42)
+All four exit codes: 0. All 83 test modules included exactly once.
 Application and regression source fingerprints matched before and after the final gate.
 
-Seven new permanent Chromium regressions: explicit model selection when the preferred engine is missing, valid role/photo selections, dated-card identity routing, previous review retention, transient monitor recovery, out-of-order status rejection and missing-job polling termination. Five preliminary regressions reproduced defects on RC12.15. Seven targeted tests passed after final changes. Earlier focused run (before final two cases): 23 passed.
+Untouched RC12.16 baseline: 379 passed, 0 failed, 2 retired checks skipped.
+Earlier image collection and polish regressions: 12 passed. Six dedicated native lifecycle tests passed, including a nested Gradio host simulating the actual generator/edit hooks before plugin tab construction. Five new permanent cases cover source/quality metadata, explicitly dated collection separation, wrong-year exclusion, corrupt portrait fallback, actual-size inspection, no automatic search, character-only collector return, preservation of model/selections/unsaved drafts, refresh failure, mutation blocking and no silent replacement after removal.
 
-RC12.15 -> RC12.16 Git fast-forward, native mount and restart simulation PASS; synthetic external state preserved, SQLite integrity and clean installed Git tree PASS. Python and inline JavaScript syntax PASS.
+Exact RC12.16 -> RC12.17 local Git fast-forward and startup/restart simulation passed; external runtime state, custom templates, final prompt edits, approved traits, source images and SQLite integrity preserved. Clean installed Git tree. Cumulative suite includes simulated native mount. Python and inline JavaScript syntax passed.
 
-No prompt defaults, generation settings, native GPU operations or persistent schema changed. Live WanGP GPU inference/conversion/rendering, runtime reference numbering, Safari and model downloads remain unverified. Model-family selection preservation, licensing, first-run UX and public documentation remain open v1 concerns.
-Distribution privacy audit covers both archives and staged synthetic Git index. This is an installation-test candidate, not public v1 approval.
+The optional native vision callback now registers in its owning tab constructor, confirmed against the exact WanGP 20.20 source at 72d50753. No default generation prompts, native inference implementation, model selection limits, persistent schema or upstream files changed. Low-resolution warning threshold: short edge below 600 pixels or area below 500,000 pixels. Legacy undated references and role portraits still require manual portrayal confirmation. Actual-size inspection shows the stored local image, not a potentially larger remote original.
+
+Live native relay registration and GPU inference/conversion/rendering, character pigmentation quality, Safari, runtime reference numbering and model downloads remain unverified. No changes to generation prompt wording were made. Model-family selection preservation, licensing, first-run UX and public documentation remain open v1 concerns.
+Distribution privacy audit covers both archives and staged synthetic Git index. Installation-test candidate, not public v1 approval.
