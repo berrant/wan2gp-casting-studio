@@ -1,3 +1,10 @@
+## RC12.26 — Pre-release reference validation
+
+- Exclude unreadable or oversized character artwork and approved reference images from AI appearance selection; cache bounded file metadata, not pixels, with file-change invalidation.
+- Decode actual selected bytes before staging; handle references removed between listing and reading without an unhandled server error. Preserve valid alternatives, stored photos and approved profiles.
+- Report all-failed analysis batches as failed; retain successful drafts and describe partial failures. No upstream, model, schema or default-prompt changes.
+- Record the maintainer's 13/13 RC12.25 live acceptance results. Full cumulative gate passed (440 passed, two approved skips, zero failures). Public release remains gated on focused live checks, final rights/attribution and publisher-account review. Maintainer confirmed ChatGPT-created artwork; independent historical creation records were not examined.
+
 ## RC12.25 — Deferred appearance analysis
 
 - Retain an explicitly submitted appearance batch while generation or its GPU lock is busy; retry only transient contention without interrupting generation.

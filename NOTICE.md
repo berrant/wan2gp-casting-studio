@@ -10,10 +10,10 @@ Casting Studio for WanGP is a community plugin, not an official WanGP, Refmod-Fo
 
 Required Notice: Copyright (c) 2026 Casting Studio's respective copyright holders (https://github.com/berrant/wan2gp-casting-studio).
 
-The publisher has selected PolyForm Noncommercial License 1.0.0 for the portions it has rights to license. See LICENSE for the authoritative terms. Third-party materials retain their own applicable terms. Private testing only pending confirmation of attribution, contribution rights and bundled asset provenance. The repository handle is a contact identifier, not proof of exclusive ownership.
+The publisher has selected PolyForm Noncommercial License 1.0.0 for the portions it has rights to license. See LICENSE for the authoritative terms. Third-party materials retain their own applicable terms. Private testing only pending final attribution, contribution rights and publisher clearance. The repository handle is a contact identifier, not proof of exclusive ownership.
 
 For uses outside permitted purposes, obtain separate written permission from applicable rights holders through the project maintainer (https://github.com/berrant/wan2gp-casting-studio). No commercial license is granted by this notice. The plugin does not claim ownership of independently generated outputs; software, upstream terms and rights in source materials and outputs remain separate.
 
 ## Public-release provenance gate
 
-The archive contains eight generic PNG navigation/branding assets and inline interface SVGs. Metadata inspection does not establish origin, authorship or redistribution rights. The maintainer must confirm the origin and applicable rights of each bundled asset, and confirm the notice attribution and contributor rights, or replace any asset without sufficient provenance before public release. No attribution or ownership change is asserted by this release candidate.
+The archive contains eight generic PNG navigation/branding assets and inline interface SVGs. On November 25, 2026 the maintainer confirmed that ChatGPT created the bundled artwork during development. This is maintainer-reported provenance, not independent verification of historical creation records or a guarantee of copyright protection or exclusivity. The maintainer must confirm applicable rights, including rights to any external inputs, notice attribution and contributor rights before public release. No attribution or ownership change is asserted by this release candidate.

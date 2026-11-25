@@ -1,12 +1,18 @@
+# RC12.26 — Reference integrity and failure reporting
+- Six permanent tests: truncated portrait, corrupt approved reference, replacement recovery, exact selected-byte validation, disappearing file, complete and partial failure (some tests cover multiple checks).
+- [x] Final complete cumulative gate: 442 collected, 440 passed, zero failures, two approved skips; 94 test modules; three zero exit codes. See TEST_RESULTS.txt.
+- [x] Maintainer confirmed artwork was created by ChatGPT during development; historical creation records not independently examined.
+- [ ] Focused live checks, final rights/attribution and publisher review remain pending.
+
 # RC12.25 — Deferred appearance analysis
 - Waiting batch visible independently of native generation queue; one batch only; cancel while waiting and running; reject permanent errors; stale reference/model checks; no retry of completed inference; release lock if generation joins before model load; reopen review from server status.
 - [x] Eight permanent deferred-analysis cases, native lock acquisition race, 23 related focused checks, synthetic exact Git upgrade and fresh installation. Full gate: 434 passed, 0 failed, two approved skips, 436 collected, 93 modules. Final fingerprints and syntax checks passed.
-- [ ] Live WanGP callback lifetime, lock fairness, browser reload and actual GPU behavior require verification.
+- [x] Maintainer reported 13/13 RC12.25 live acceptance checks, including deferred scheduling, cancellation, Safari refresh, autosave/navigation and wardrobe separation.
 
 # v1.0.0-rc.12.24 — Physical identity review
 
 - [x] Complete cumulative regression gate on final code: 426 passed, zero failed, two approved skips, 428 collected, 92 modules. Final fingerprints, syntax, synthetic exact Git upgrade and fresh installation passed.
-- [ ] Live vision inference and character wardrobe separation on native host.
+- [x] Maintainer verified RC12.24 wardrobe separation on RC12.25.
 
 # v1.0.0-rc.12.23 — Final stabilization
 
@@ -15,7 +21,8 @@
 - [x] Initial inventory-only candidate: 412 passed, zero failed, two approved retired Docker skips, 414 collected, 89 modules. Superseded by navigation changes; not the final gate.
 - [x] Focused browser tests for exact appearance navigation, approved/unapproved reviews and manual character identity autosave (debounce, flush on close/switch, failure recovery, empty draft, concurrent edits).
 - [x] Final complete cumulative regression gate: 423 passed, zero failed, two approved retired Docker skips, 425 collected, 91 modules. Final fingerprints, Python/JS syntax, synthetic exact Git upgrade and fresh native mount passed. See TEST_RESULTS.txt.
-- [ ] Live RC12.23 scan, idle vision lock behavior and clean install; final public provenance and publisher review.
+- [x] Maintainer verified correct character navigation and autosave on RC12.25; active-generation protection and deferred scheduling passed.
+- [ ] Separate explicit inventory scan check, public provenance and publisher review remain pending where not independently verified.
 
 # v1.0.0-rc.12.22 — Live generation monitor recovery
 

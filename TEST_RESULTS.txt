@@ -1,3 +1,19 @@
+Casting Studio v1.0.0-rc.12.26 — Pre-release reference validation
+Measured verification (2026-11-25)
+
+FINAL COMPLETE CUMULATIVE REGRESSION GATE
+442 collected, 440 passed, zero failures, two approved retired standalone Docker skips.
+Group 1: 152 passed, 2 skipped, 217 warnings in 131.17s.
+Group 2: 131 passed, 142 warnings in 159.84s.
+Group 3: 157 passed, 232 warnings in 136.27s.
+All three exit codes zero; all 94 test modules covered exactly once. 591 non-failing FastAPI startup-hook and Pillow getdata deprecation warnings. Final Python, HTML and JSON fingerprints match the tested tree. No application or test-fixture changes after the gate. Python and inline JavaScript syntax passed.
+
+Two defects reproduced on unchanged RC12.25: truncated character portrait and corrupted previously approved reference passed listing and submission, then failed after simulated model initialization; all-failed analysis reported completed. Six permanent tests cover corrupt/repairable portraits, corrupt approved reference and profile preservation, actual selected bytes, all-failed and partially failed batches, and disappearance between listing and reading. Earlier focused gate (five new and twenty existing cases) passed 25 tests with 40 warnings; all six new cases passed the final gate. Exact RC12.25 synthetic Git upgrade and separate fresh installation preserved external custom templates, approved profile, reference/model bytes and SQLite integrity. No tracked-file deletions. Six deliberately contaminated archive probes rejected. Final release archive and staged-index privacy checks are separate packaging gates. No upstream, prompt, database-schema or model changes.
+
+Maintainer reported 13/13 RC12.25 live acceptance checks passed, covering native installation, deferred analysis, status, cancellation, Safari refresh, correct portrayal navigation, autosave and wardrobe separation. RC12.26 focused live reference validation, recovery and failure reporting remain unverified. The maintainer confirmed artwork was created by ChatGPT during development; historical creation records were not independently inspected. Final copyright attribution, contributor rights, applicable asset rights and actual private GitHub history/account review remain publisher-side checks. Private installation testing only; no public launch authorized. Trusted local use only; existing DNS-validation limitation unchanged. Synthetic tests are not live GPU tests.
+
+Previous release record follows.
+
 Casting Studio v1.0.0-rc.12.25 — Deferred character appearance analysis
 Measured verification (2026-11-25)
 

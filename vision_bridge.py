@@ -219,7 +219,10 @@ class VisionBridge:
                     self.stop.wait(1.0)
             with self.lock:
                 cancelled=self.stop.is_set()
-                job.update(state='cancelled' if cancelled else 'completed',message='Analysis cancelled; review any completed drafts' if cancelled else 'Review drafts before saving')
+                failures=sum(r['state']=='failed' for r in job['results'])
+                if cancelled:job.update(state='cancelled',message='Analysis cancelled; review any completed drafts')
+                elif failures==len(job['tasks']):job.update(state='failed',message='All character analyses failed; inspect the errors and retry.')
+                else:job.update(state='completed',message=(f'{failures} character analysis failed; review successful drafts before saving' if failures==1 else f'{failures} character analyses failed; review successful drafts before saving' if failures else 'Review drafts before saving'))
         except InterruptedError:
             with self.lock: job.update(state='cancelled',message='Analysis cancelled')
         except Exception as exc:

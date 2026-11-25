@@ -1,6 +1,6 @@
 # Casting Studio for WanGP
 
-Version: v1.0.0-rc.12.25
+Version: v1.0.0-rc.12.26
 Date: 2026-11-25
 
 
@@ -26,7 +26,7 @@ Casting Studio is a native local WanGP plugin for building a cast, organizing re
 | MiniMax H3 stills | H3-Image 33B, H3-Image Pruned 20B, Pruna P-H3-Image 20B |
 | FLUX stills | FLUX.2 Dev, Klein 4B, Klein 9B, pi-FLUX.2, FLUX.3 Klein |
 
-These are recognized options, not a guarantee that every checkpoint, encoder, GPU or operating system combination is installed or has been tested. Refmod-Fork compatibility is checked using metadata and live capabilities; an unsupported model or unavailable exact checkpoint is not silently substituted. Vision uses the compatible locally installed WanGP engines discovered by the bridge. The maintainer reported successful live RC12.22 tests of image/video previews, cancellation, bidirectional RefMod conversion, Workshop creation/decompilation, appearance inference, GPU cleanup, prompt/caption behavior and Git update on WanGP 20.20 (revision 72d50753). Independent testing of other configurations remains outstanding. Native vision locking during active generation still requires a live check.
+These are recognized options, not a guarantee that every checkpoint, encoder, GPU or operating system combination is installed or has been tested. Refmod-Fork compatibility is checked using metadata and live capabilities; an unsupported model or unavailable exact checkpoint is not silently substituted. Vision uses the compatible locally installed WanGP engines discovered by the bridge. The maintainer reported successful live RC12.22 tests of image/video previews, cancellation, bidirectional RefMod conversion, Workshop creation/decompilation, appearance inference, GPU cleanup, prompt/caption behavior and Git update on WanGP 20.20 (revision 72d50753). The maintainer subsequently reported 13/13 RC12.25 live checks passed, including deferred GPU scheduling, waiting/running cancellation, Safari reload recovery, correct portrayal navigation, autosave and wardrobe separation. Independent testing of other configurations remains outstanding. RC12.26 changes require focused live verification.
 
 ### Troubleshooting
 
@@ -42,6 +42,10 @@ These are recognized options, not a guarantee that every checkpoint, encoder, GP
 | Damaged settings or data | Back up external storage first; follow the recovery note below. Do not delete the database or reset all browser data as a first step. |
 
 For bug reports, provide plugin, WanGP and Refmod-Fork versions, platform/browser, a reproducible sequence and sanitized errors. Do not post private photographs, identities, prompts, tokens or raw databases. This is a trusted local, single-user workflow; do not expose the service to untrusted users or the public internet.
+
+## RC12.26 — Reference validation and analysis failure reporting
+
+Damaged local character artwork and reference images are excluded from AI appearance choices. If a selected file changes or becomes unreadable, refresh the collection and select a valid image; existing approved profiles are retained. Validation occurs only on explicit appearance workflows, and no models are loaded merely to list or validate images. All-failed batches report failure; partially successful batches retain reviewable drafts and identify failed roles.
 
 ## RC12.25 — Deferred appearance analysis
 

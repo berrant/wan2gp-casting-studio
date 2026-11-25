@@ -1,5 +1,6 @@
 import json, os, re, sqlite3, threading, time, random, hashlib, socket, ipaddress, io, shutil, zipfile, uuid, subprocess
 from pathlib import Path
+from functools import lru_cache
 from urllib.parse import quote, urlencode
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse, Response, StreamingResponse, JSONResponse
@@ -4565,6 +4566,25 @@ def appearance_role(key):
             'label':f"{choice['character']} portrayed by {choice['person']} in {label}",
             'profile_key':portrayal_identity_key(choice['character'],choice['production'],choice['person'],year)}
 
+# Bound image decoding to explicit appearance selection. Cache only dimensions,
+# not pixels, and invalidate on file replacement or edits. Always decode the
+# actual selected bytes again at submission, so a stale cache cannot stage bad data.
+@lru_cache(maxsize=256)
+def _appearance_dimensions(path, signature):
+    try:
+        with Image.open(path) as image:
+            if image.width*image.height>25_000_000:return None
+            image.load()
+            return image.size
+    except (OSError,ValueError,Image.DecompressionBombError):return None
+
+def appearance_dimensions(path):
+    try:
+        stat=path.stat()
+        if not 0<stat.st_size<=16_000_000:return None
+        return _appearance_dimensions(path,(stat.st_dev,stat.st_ino,stat.st_size,stat.st_mtime_ns,stat.st_ctime_ns))
+    except OSError:return None
+
 def appearance_photo_rows(role):
     rows=rank_reference_photos([r for r in workshop_photo_rows(role['person'],role['production'],role['character']) if compatible_reference_year(str(role['year']),r['production'])])
     out=[]
@@ -4573,6 +4593,9 @@ def appearance_photo_rows(role):
     for row in rows:
         explicit=re.search(r'\b((?:18|19|20)\d{2})\)?\s*$',row['production'])
         if explicit and int(explicit.group(1))!=role['year']:continue
+        dimensions=appearance_dimensions(row['path'])
+        if not dimensions:continue
+        row['width'],row['height']=dimensions
         source,page,notes=sources.get(row['id'],('','',''))
         from urllib.parse import urlsplit
         try:host=urlsplit(page or source).hostname if (page or source).startswith('https://') else None
@@ -4591,10 +4614,9 @@ def appearance_photo_rows(role):
         filename=row[0].removeprefix('api/photos/')
         path=safe_media_file(PHOTO_DIR,filename,r'[0-9a-f]{64}\.jpg')
         if path:
-            width=height=None
-            try:
-                with Image.open(path) as image:width,height=image.size
-            except (OSError,ValueError,Image.DecompressionBombError):return out
+            dimensions=appearance_dimensions(path)
+            if not dimensions:return out
+            width,height=dimensions
             out.insert(0,{'id':'portrait','path':path,'url':row[0],'label':'Saved character artwork','dated':False,
                           'source':'Local character portrait','width':width,'height':height,'quality':None,
                           'low_resolution':bool(width and height and (min(width,height)<600 or width*height<500_000))})
@@ -4631,7 +4653,10 @@ def appearance_source_bytes(task):
     data=[]; fingerprints=[]
     for i in task['image_ids']:
         path=available[i]['path']
-        with path.open('rb') as stream:raw=stream.read(16_000_001)
+        try:
+            with path.open('rb') as stream:raw=stream.read(16_000_001)
+        except OSError as exc:
+            raise HTTPException(409,'A selected reference is no longer readable; refresh character references and select again.') from exc
         if len(raw)>16_000_000:raise HTTPException(422,'Reference is too large for vision analysis.')
         data.append(raw);fingerprints.append(hashlib.sha256(raw).hexdigest())
     return data,fingerprints
@@ -4657,9 +4682,16 @@ def appearance_batch(req:AppearanceBatch):
         if role['profile_key'] in seen:raise HTTPException(400,'Duplicate portrayal in batch')
         seen.add(role['profile_key'])
         available={r['id'] for r in appearance_photo_rows(role)}
-        if len(set(selection.image_ids))!=len(selection.image_ids) or not set(selection.image_ids)<=available:raise HTTPException(400,'Select 1–4 available character-specific references per role')
+        if len(set(selection.image_ids))!=len(selection.image_ids) or not set(selection.image_ids)<=available:raise HTTPException(400,'Select 1–4 available, readable character-specific references per role; refresh if a reference was changed or damaged')
         task={**role,'image_ids':selection.image_ids,'baseline':exact_identity_snapshot(role['profile_key'])}
-        _,task['staged_fingerprints']=appearance_source_bytes(task)
+        raw_images,task['staged_fingerprints']=appearance_source_bytes(task)
+        try:
+            for raw in raw_images:
+                with Image.open(io.BytesIO(raw)) as image:
+                    if image.width*image.height>25_000_000:raise ValueError('Reference dimensions too large')
+                    image.load()
+        except (OSError,ValueError,Image.DecompressionBombError) as exc:
+            raise HTTPException(422,'A selected reference is damaged or too large; refresh the character references and select a readable image.') from exc
         tasks.append(task)
     try:return bridge.stage(req.engine,tasks)
     except Exception as exc:raise HTTPException(409,str(exc)[:400]) from exc
