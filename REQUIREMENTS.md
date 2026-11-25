@@ -1,6 +1,6 @@
 # Casting Board — cumulative requirements
 
-Authoritative development baseline for the next candidate: v1.0.0-rc.12.11 (Casting Studio for WanGP, release candidate 12.11), once its release gate passes. Do not build from earlier ZIPs. Before making a release, compare this document and REGRESSION_CHECKLIST.md with the working tree; retain user data outside the package. The requirements below were recovered from development chats and earlier release notes, not inferred from the newest code alone.
+Authoritative development baseline for the next candidate: v1.0.0-rc.12.12 (Casting Studio for WanGP, release candidate 12.12), once its release gate passes. Do not build from earlier ZIPs. Before making a release, compare this document and REGRESSION_CHECKLIST.md with the working tree; retain user data outside the package. The requirements below were recovered from development chats and earlier release notes, not inferred from the newest code alone.
 
 ## Integration and packaging
 - Native WanGP plugin only, no Docker distribution, no patches to WanGP or Refmod-Fork core. Use documented native session/Gradio queue integration; check installed models and custom settings. Correct native queue submission is the acceptance criterion, not whether a GPU can render it. Target portable Windows/macOS/Linux paths, UTF-8, no developer machine paths, private databases, identity mappings, photos, selections, LoRA preferences or inventory shipped. Preserve external user data. Full cumulative ZIP. Use the current v1.0.0-rc.12.x release sequence; synchronize metadata at release boundaries.
@@ -189,3 +189,8 @@ Whole-batch cancellation is latched across manifest boundaries; native cancellat
 - Native multiple-file selection for reference collections only. Preserve per-image validation, duplicate detection, and manual review; report failures without discarding successful files. Keep uploads scoped to the original collection; stop subsequent submissions when switching or closing the picker. Preserve single-image artwork behavior.
 
 - Workshop optional test image: explicit labeled enable control, independent exact compatible image checkpoint picker, no silent model substitution; revalidate after extraction and retain completed RefMod if test generation fails. Older API clients omitting the selection may proceed only if exactly one compatible checkpoint exists.
+
+## RC12.12 Pinned feedback and safe Workshop recovery
+- Keep a single pinned × in long dialogs; the last queue acknowledgement and reference collection save status must remain visible during scrolling. Queue & next setup must not erase the last job receipt.
+- Reject overlapping reference collection mutations from single, bulk or local image submission actions for the same collection. Only one explicit review override retry is allowed per single save; responses must not overwrite a newer target.
+- Workshop native task prompt field must label the operation, not inherit the previous generation prompt. Clear incompatible encoder selections while discovering models; a failed or unavailable status poll must not falsely enable a repeat submission. Retry status lookup, never automatically resubmit the job.

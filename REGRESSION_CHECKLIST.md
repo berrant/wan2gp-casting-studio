@@ -1,3 +1,15 @@
+# v1.0.0-rc.12.12 — Visible feedback and Workshop resilience release gate
+
+- [x] Pinned queue and reference collection feedback; one pinned dismiss control; last job receipt survives next-selection setup.
+- [x] Concurrent reference saves, bounded review retry and stale collection failures.
+- [x] Native Workshop operation label, stale encoder discovery and status retry without duplicate submission.
+- [x] Seven new targeted cases included in the cumulative suite; focused run 17 passed.
+- [x] Final complete suite: 353 passed, 0 failed, 2 retired Docker cases skipped, 355 collected, 167.42 seconds wall time. All four exit codes zero; unchanged application and test fingerprints.
+- [x] Git fast-forward upgrade from RC12.11, restart, external data preservation, SQLite integrity and clean installed working tree.
+- [x] Python and inline JavaScript syntax checks.
+- [ ] Live WanGP/GPU and actual user library verification.
+- Final source and installation archive privacy checks and exact staged source index audit required before delivery. See TEST_RESULTS.txt.
+
 # v1.0.0-rc.12.10 — People library reliability release gate
 
 - [x] Explicit public registration persists after RefMod removal; saved public profiles support markers and identity correction without a RefMod.

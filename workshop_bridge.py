@@ -101,7 +101,11 @@ def extract_job_settings(session, task: WorkshopTask):
         field=SETTING
         data={'model_type':task.model_type,'video_length':107,
               'custom_settings':{field:json.dumps({WRAPPER:task.spec},separators=(',',':'))}}
+    # Extraction uses the wrapper, not the previous generation prompt.
+    label={'extract_flux':'Creating FLUX RefMod','extract':'Creating H3 RefMod','decompile':'Decompiling H3 RefMod'}[task.op]
+    data['prompt']=label
     merged=session.merge_settings_with_defaults(data)
+    merged['prompt']=label
     merged['custom_settings']=dict(merged.get('custom_settings') or {})
     merged['custom_settings'][field]=data['custom_settings'][field]
     merged['model_type']=task.model_type

@@ -1,3 +1,11 @@
+# v1.0.0-rc.12.12 — Visible feedback and Workshop resilience (2026-11-25)
+
+- Remove redundant Close controls where the pinned × already dismisses the dialog; retain keyboard dismiss and existing save/confirmation workflows.
+- Pin queue acknowledgements and reference collection feedback, retaining the last submission receipt during next-selection setup and polling.
+- Serialize overlapping reference saves within the same collection, allow at most one explicit review override retry, and guard collection-specific responses after navigation.
+- Label native H3/FLUX extraction and H3 decompilation with their operation rather than an unrelated previous generation prompt. Clear stale Workshop encoder selections on failed discovery, block incompatible or unavailable encoder selection, and retry status polling without enabling duplicate submission after a transient failure.
+- Add seven targeted regression cases. See TEST_RESULTS.txt for measured verification and live-host limitations.
+
 # v1.0.0-rc.12.11 — Reference collection and test image controls (2026-11-25)
 
 - Enable native multi-file selection in reference collections, sequential validation and per-batch progress and outcome reporting.

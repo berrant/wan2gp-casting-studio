@@ -1,8 +1,15 @@
 # Casting Studio for WanGP
 
-Version: v1.0.0-rc.12.11
+Version: v1.0.0-rc.12.12
 Date: 2026-11-25
 
+
+## RC12.12 Visible feedback and Workshop resilience
+
+- The pinned × is the single dismiss control for the generator and reference picker. Queue acknowledgements stay in the sticky action bar, separate from next-selection setup messages.
+- Reference collection save/validation feedback remains visible while scrolling. Concurrent single, bulk and local-image saves for the same collection are blocked, repeated review requests terminate safely, and a delayed failure cannot overwrite a newly opened collection.
+- Native Workshop extraction uses explicit operation labels instead of inheriting the previous generation prompt. Failed encoder discovery clears stale choices; an unavailable job-status response keeps submission blocked while polling retries. The selected encoder and optional test-image checkpoint remain independent.
+- No changes to the extraction wrapper, underlying model format, persistent schema or generation defaults. Live GPU behavior and WanGP's model-download/initialization requirements must still be verified on an actual installation.
 
 ## RC12.11 Reference collection and test image controls
 
@@ -44,7 +51,7 @@ In Workshop, optionally enable **Generate one test portrait after creating the R
 
 **Discover. Cast. Create.**
 
-Native WanGP plugin · Release candidate 12.11.
+Native WanGP plugin · Release candidate 12.12.
 
 ## RC12.6 — prompt review and saved model settings
 

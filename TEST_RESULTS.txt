@@ -1,19 +1,18 @@
-Casting Studio v1.0.0-rc.12.11 — Reference collection and test image controls
+Casting Studio v1.0.0-rc.12.12 — Visible feedback and Workshop resilience
 Measured release verification (2026-11-25)
 
 FINAL COMPLETE CUMULATIVE REGRESSION GATE
-348 collected, 346 passed, 0 failed, 2 retired standalone Docker checks skipped.
-Group 1: 86 passed, 114 warnings in 164.29s (0:02:44)
-Group 2: 85 passed, 2 skipped, 121 warnings in 155.19s (0:02:35)
-Group 3: 87 passed, 106 warnings in 136.21s (0:02:16)
-Group 4: 88 passed, 138 warnings in 149.16s (0:02:29)
-Wall time: 170.61 seconds. All four exit codes: 0.
-Application and regression source fingerprints matched before and after the final gate. Preliminary runs were superseded and do not contribute to release approval.
+355 collected, 353 passed, 0 failed, 2 retired standalone Docker checks skipped.
+Group 1: 90 passed, 133 warnings in 129.73s (0:02:09)
+Group 2: 92 passed, 2 skipped, 118 warnings in 154.78s (0:02:34)
+Group 3: 80 passed, 88 warnings in 159.66s (0:02:39)
+Group 4: 91 passed, 142 warnings in 163.27s (0:02:43)
+Wall time: 167.42 seconds. All four exit codes: 0.
+Application and regression source fingerprints matched before and after the final gate. The focused tests do not substitute for this gate.
 
-New targeted coverage: eleven RC12.10 identity regressions, three multi-file reference picker browser cases, three explicit Workshop picker cases, and two new API variations for exact checkpoint selection and model disappearance after extraction. These cases are included in the final complete gate.
+New coverage: seven regression tests for pinned queue and photo acknowledgements, redundant Close controls, extraction prompt isolation, serialized reference saves and bounded manual review retry, stale collection failures, stale encoder discovery, and Workshop status recovery. Focused run: 17 passed.
 
 FINAL GIT UPGRADE SIMULATION
-RC12.10 baseline seed/mount PASS; actual source-tree fast-forward PASS; RC12.11 mount and restart PASS. Synthetic external public profile, production role, personal profile and custom prompt settings preserved. Clean installed Git working tree. Python and inline JavaScript syntax checks PASS. Visual browser check of new test-image section PASS.
+RC12.11 baseline seed/mount PASS; actual source-tree fast-forward PASS; RC12.12 mount and restart PASS. Synthetic external public profile, production role, personal profile and custom prompt settings preserved; SQLite integrity PASS. Clean installed Git working tree. Python and inline JavaScript syntax checks PASS.
 
-Distribution guard checks source archive, wrapped installation archive and staged source index independently before delivery. Factory public catalog remains empty; the guard does not establish the privacy of any remote Git history or author account metadata.
-Outstanding: actual WanGP host update, GPU generation and real personal model/photo library verification; dependency deprecation warnings remain. This is not a guarantee of zero undiscovered defects.
+Distribution guard checks source archive, wrapped installation archive and staged source index independently. Actual WanGP host/GPU and user library integration, Safari-specific behavior, and model download or initialization requirements remain unverified. Dependency deprecation warnings remain. A passing suite is not a guarantee of zero undiscovered defects.
