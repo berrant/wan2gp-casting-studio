@@ -649,7 +649,7 @@ class QueueBridge:
         job_id = uuid.uuid4().hex
         with self._lock:
             self._jobs[job_id] = {'id':job_id,'state':'queued','message':('Waiting for Casting Studio native queue trigger' if self.dispatch_mode=='gradio' else 'Waiting for the WanGP queue'),
-                                  'model_type':submission.model_type,'scene':submission.scene,
+                                  '_monitor_cast':True,'model_type':submission.model_type,'scene':submission.scene,
                                   'files':[], 'error':''}
         self._register_cast_history(job_id,[submission],validate)
         if self.dispatch_mode == 'gradio':
@@ -677,7 +677,7 @@ class QueueBridge:
         with self._lock:
             self._jobs[batch_id]={'id':batch_id,'state':'queued',
                 'message':f'{len(submissions)} tasks staged for one native WanGP manifest',
-                'total_tasks':len(submissions),'files':[],'error':'',
+                '_monitor_cast':True,'total_tasks':len(submissions),'files':[],'error':'',
                 'model_type':submissions[0].model_type,'scene':0,'batch':True}
         self._register_cast_history(batch_id,submissions,validate)
         with self._lock:self._pending.append((batch_id,list(submissions),validate))
@@ -703,7 +703,7 @@ class QueueBridge:
                 prepared.append(self.prepare(task,validate))
             settings_list=[x['settings'] for x in prepared]
             count=len(settings_list)
-            self._change(job_id,state='running',message=f'Submitting {count} individually prompted tasks to WanGP', task_index=1, _monitor_tasks=[x.get('monitor_details') for x in prepared])
+            self._change(job_id,state='running',message=f'Submitting {count} individually prompted tasks to WanGP', task_index=1, _monitor_cast=True, _monitor_tasks=[x.get('monitor_details') for x in prepared])
             confirmed_aborts=0
             # Prevent oversized manifests from consuming excessive memory or
             # exceeding WanGP's practical per-call task capacities.
@@ -890,6 +890,7 @@ class QueueBridge:
                 persist=bool(changes.get('state') and changes['state']!=current.get('state'))
                 current.update(changes)
                 if changes.get('state') in ('completed','failed','cancelled','partial'):
+                    self._previews.pop(job_id,None)
                     # Move completed entries to the end, independent of submission order.
                     self._jobs[job_id]=self._jobs.pop(job_id)
                     terminal=[key for key,item in self._jobs.items() if item.get('state') in ('completed','failed','cancelled','partial')]
@@ -950,6 +951,7 @@ class QueueBridge:
                 return
             self._previews.pop(job_id, None)
             current.pop('_preview_last',None)
+            current.pop('_monitor_activity',None)
             current.update(task_index=new_index, preview_rev=0,
                            preview_kind='', preview_task_index=None,
                            current_step=None, total_steps=None, progress=0, preview_step=None, preview_total_steps=None, abort_requested=False, native_task_active=False)
@@ -977,7 +979,7 @@ class QueueBridge:
         """
         with self._lock:
             current = self._jobs.get(job_id)
-            if current is None or current.get('state')!='running':
+            if current is None or current.get('state')!='running' or current.get('abort_requested') or current.get('cancel_requested'):
                 return
             captured_task = int(current.get('task_index') or 1)
             now=time.monotonic()
@@ -1018,10 +1020,11 @@ class QueueBridge:
             return
         with self._lock:
             current = self._jobs.get(job_id)
-            if current is None or current.get('state')!='running' or int(current.get('task_index') or 1) != captured_task:
+            if current is None or current.get('state')!='running' or current.get('abort_requested') or current.get('cancel_requested') or int(current.get('task_index') or 1) != captured_task:
                 return  # The next task began while we were encoding this preview.
             if '_preview_until' in current and time.monotonic()>=current['_preview_until']:return
             current['_preview_last']=time.monotonic()
+            current['_monitor_activity']=max(now,current.get('_monitor_activity',now))
             self._previews[job_id] = (payload, mime)
             # Bound memory use even after many casting submissions.
             for old in list(self._previews)[:-8]:
@@ -1038,12 +1041,38 @@ class QueueBridge:
             if progress is not None and not current.get('batch'):
                 current['progress']=progress
 
-    def preview(self, job_id, task_index=None):
+    def preview(self, job_id, task_index=None, revision=None):
         with self._lock:
             item=self._jobs.get(job_id)
-            if not item:return None
+            if not item or item.get('state')!='running' or item.get('abort_requested') or item.get('cancel_requested'):return None
+            if revision is not None and item.get('preview_rev')!=revision:return None
             if task_index is not None and (item.get('state')!='running' or item.get('preview_task_index')!=task_index or int(item.get('task_index') or 1)!=task_index):return None
             return self._previews.get(job_id)
+
+    def monitor_status(self, job_id, live_preview=None):
+        """Follow live casting work, not the most recently staged request.
+
+        Native submission may mark several jobs running before GPU work starts.
+        Prefer observed native activity; otherwise use submission order. Never
+        select conversion/analysis/Workshop jobs or expose unrelated native jobs.
+        """
+        with self._lock:
+            requested=self._jobs.get(job_id)
+            if requested is None:return None
+            candidates=[(key,item) for key,item in self._jobs.items()
+                        if (key==job_id or item.get('_monitor_cast'))
+                        and item.get('state') in ('queued','running')]
+            running=[(key,item) for key,item in candidates if item.get('state')=='running']
+            active=[(key,item) for key,item in running if item.get('_monitor_activity') is not None and not item.get('abort_requested') and not item.get('cancel_requested')]
+            if active:
+                selected=max(active,key=lambda pair:pair[1]['_monitor_activity'])[0]
+            elif running:selected=running[0][0]
+            elif candidates:selected=candidates[0][0]
+            else:selected=job_id
+            if live_preview is not None:self.set_preview_interest(selected,live_preview)
+            result=self.status(selected)
+            if selected!=job_id:result['monitor_followed']=True
+            return result
 
     @staticmethod
     def _task_monitor_details(item,index):
@@ -1072,7 +1101,7 @@ class QueueBridge:
             if self._cancelled(job_id):
                 self._change(job_id,state='cancelled',message='Cancelled before native submission');return
             self._change(job_id, state='running',message='Submitted to WanGP generation queue',
-                         refmod=prepared['refmod'], _monitor_tasks=[prepared.get('monitor_details')])
+                         refmod=prepared['refmod'], _monitor_cast=True, _monitor_tasks=[prepared.get('monitor_details')])
             outer = self
             class Callbacks:
                 def on_status(self, msg):
@@ -1382,6 +1411,12 @@ class QueueBridge:
                 item['_monitor_active_native']=str(native)
             phase=getattr(update,'phase',None)
             item['native_task_active']=bool(native and phase not in ('queued','cancelled','downloading_output'))
+            if phase not in ('queued','cancelled','downloading_output') and not item.get('abort_requested') and not item.get('cancel_requested'):
+                item['_monitor_activity']=time.monotonic()
+            else:item.pop('_monitor_activity',None)
+            if phase=='cancelled':
+                self._previews.pop(job_id,None)
+                item.update(preview_kind='',preview_task_index=None)
 
     def _observe_native_output(self, job_id, data):
         # WebUI output events identify the completed client, not necessarily
@@ -1393,7 +1428,9 @@ class QueueBridge:
             index=item.get('_monitor_native_ids',{}).get(str(data['client_id']))
             if index is None:return
             item.setdefault('_monitor_output_indices',set()).add(index)
-            if int(item.get('task_index') or 1)==index:item['native_task_active']=False
+            if int(item.get('task_index') or 1)==index:
+                item['native_task_active']=False
+                item.pop('_monitor_activity',None)
         self._record_monitor_output(job_id,data['path'],index)
 
     def _record_monitor_output(self,job_id,filename,task_index,from_result=False):

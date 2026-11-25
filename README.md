@@ -1,12 +1,18 @@
 # Casting Studio for WanGP
 
-Version: v1.0.0-rc.12.21
+Version: v1.0.0-rc.12.22
 Date: 2026-11-25
 
 
 ## License and commercial inquiries
 
 Casting Studio is source-available, not OSI open-source. The publisher selects [PolyForm Noncommercial 1.0.0](LICENSE) for independently licensable project material. Noncommercial use, modifications and distribution are permitted, including the specific organizational uses allowed by the standard terms. Uses outside those terms require separate written authorization from applicable rights holders. Contact the [project maintainer](https://github.com/berrant/wan2gp-casting-studio). See [notices](NOTICE.md) and [contribution policy](CONTRIBUTING.md). No upstream rights or ownership of user outputs are granted or claimed. The official terms control. Private testing only pending provenance and attribution clearance.
+
+## RC12.22 — Live generation monitor recovery
+
+- Follow native casting activity across overlapping submissions rather than redirecting the monitor to a staged job. Keep submission receipts and exact job-status lookups separate from monitor following. Continue polling across cancellations and mixed image/video jobs while other casting work remains.
+- Bind transient preview requests to the exact task and revision; reject superseded or aborted frames, drop terminal preview bytes, and unload the inactive media element when changing media types. Preserve completed-result handoff preferences and private data.
+- The monitor follows observed Casting Studio generation callbacks, not unrelated native jobs or maintenance operations. Live Safari and GPU behavior still require installation testing.
 
 ## RC12.21 — Identity caption ownership
 

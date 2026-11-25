@@ -1,3 +1,9 @@
+## RC12.22 — Live generation monitor recovery
+
+- Follow native casting activity across overlapping submissions rather than redirecting the monitor to a staged job. Keep submission receipts and exact job-status lookups separate from monitor following. Continue polling across cancellations and mixed image/video jobs while other casting work remains.
+- Bind transient preview requests to the exact task and revision; reject superseded or aborted frames, drop terminal preview bytes, and unload the inactive media element when changing media types. Preserve completed-result handoff preferences and private data.
+- The monitor follows observed Casting Studio generation callbacks, not unrelated native jobs or maintenance operations. Live Safari and GPU behavior still require installation testing.
+
 ## RC12.21 — Identity caption ownership
 
 - The existing image and video caption toggles now apply to every subject category, including performer-only, game, broadcast and Personal. Enabled generates one current identity caption per generated scene or image; disabled generates none. Personal relationship labels remain available when enabled.

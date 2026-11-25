@@ -1,16 +1,16 @@
-Casting Studio v1.0.0-rc.12.21 — Identity caption ownership
-Measured release verification (2026-11-25)
+Casting Studio v1.0.0-rc.12.22 — Live generation monitor recovery
+Measured verification (2026-11-25)
 
 FINAL COMPLETE CUMULATIVE REGRESSION GATE
-405 collected, 403 passed, 0 failed, 2 retired standalone Docker checks skipped.
-Group 1: 114 passed, 163 warnings in 117.11s
-Group 2: 99 passed, 118 warnings in 122.65s
-Group 3: 93 passed, 140 warnings in 124.21s
-Group 4: 97 passed, 2 skipped, 124 warnings in 102.16s
-All four exit codes: 0. All 87 test modules included exactly once. 545 non-failing warnings, including FastAPI lifecycle and Pillow deprecation warnings. Final source and test file fingerprints matched after the gate; only the generated verification report and checklist results were subsequently updated.
+411 collected, 409 passed, 0 failed, 2 previously retired standalone Docker tests skipped.
+Group 1: 103 passed, 139 warnings in 98.54s
+Group 2: 108 passed, 136 warnings in 132.23s
+Group 3: 91 passed, 136 warnings in 102.38s
+Group 4: 107 passed, 2 skipped, 144 warnings in 114.15s
+All four exit codes 0. All 88 test modules included exactly once. 555 non-failing warnings (including existing FastAPI and Pillow deprecations). Final source and test fingerprints verified unchanged. Only generated verification/checklist documents updated after the gate.
 
-Four new permanent tests pass: repeated video caption toggles for all five subject categories, all eight image model options and five categories, saved templates/preview/export/synthetic native queue/manual final edits, and unrelated scene text preservation. Two targeted tests reproduce duplicate/unconditional captions against unchanged RC12.20. Legacy private-caption assertions explicitly opt in to captions; prior consent and private-note protections remain tested. Additional Chromium pointer interaction check against mocked API passed (both checkboxes, save and reopen). An attempted browser-to-TestClient navigation to a synthetic hostname was blocked by the container browser policy; this is not evidence of live host compatibility.
+Six permanent new regression cases: observed active generation selection with queued/running overlap, unrelated operation exclusion, exact status and preview lease; four image/video revision and cancellation transitions; Chromium mocked-status active-job retention and media unloading. Five new backend cases reproduce failures on the unchanged RC12.21 archive. Earlier targeted monitor suite: 26 passed before final cancellation tightening; all included in the final cumulative gate. Python and inline JavaScript syntax passed.
 
-Exact RC12.20 -> RC12.21 synthetic Git fast-forward, startup/restart, saved template and caption preferences, approved character traits, reference-image bytes and SQLite integrity passed. Python and inline JavaScript syntax passed. No schema, native bridge, model, upstream or license changes. Existing stored templates and manual final prompts are preserved verbatim. Recognized pasted caption instructions are normalized only during template-generated prompt construction; arbitrary custom final instructions are untouched.
+Synthetic exact RC12.21 to RC12.22 Git fast-forward and restart passed; preserved saved custom template, caption preference, image template, approved character traits, reference-image bytes and SQLite integrity. Initial synthetic checkout setup encountered untracked file conflicts; corrected test checkout to the actual baseline commit before fast-forward, with external data retained. No product-code change required.
 
-Both normalized archives and the exact staged synthetic source index are subject to the distribution privacy audit before delivery. The audit does not establish ownership or complete security. Live WanGP 20.20/Safari, actual GPU conversion and vision inference, model adherence to captions and character pigmentation remain unverified in this environment. The existing natural skin texture factory wording was inspected but not changed: actual pigmentation causation needs a controlled rendering comparison. Private installation-test candidate only; public distribution remains on hold pending attribution and asset provenance clearance.
+Monitor follows observed casting callbacks rather than direct GPU introspection. Strict revision checking may return 404 for superseded previews; next successful poll requests a fresh frame. Existing completed-result preferences and native queue cancellation semantics retained. No changes to upstream WanGP/Refmod-Fork, generation prompts, model settings, database schema or licensing. Live Safari, actual GPU preview recovery, native conversion, vision inference and pigmentation remain installation checks. This is a private installation-test candidate, not a cleared public v1.0 release. Both normalized archives and final staged Git index require privacy audit before delivery; this audit does not establish ownership or complete security.

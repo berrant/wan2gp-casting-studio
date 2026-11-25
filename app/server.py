@@ -3470,18 +3470,20 @@ def casting_batch_preflight(request:CastBatchRequest):
             'steps':request.task.steps,'selections':len(set(x['choice_key'] for x in labels))}
 
 @app.get('/api/generator/jobs/{job_id}',include_in_schema=False)
-def generator_job_status(job_id:str, live_preview:bool|None=None):
+def generator_job_status(job_id:str, live_preview:bool|None=None, follow:bool=False):
     bridge=_casting_bridge()
-    if live_preview is not None:bridge.set_preview_interest(job_id,live_preview)
-    result=bridge.status(job_id)
+    if follow:result=bridge.monitor_status(job_id,live_preview)
+    else:
+        if live_preview is not None:bridge.set_preview_interest(job_id,live_preview)
+        result=bridge.status(job_id)
     if not result:raise HTTPException(404,'Generation job not found in this WanGP process')
     return result
 
 @app.get('/api/generator/jobs/{job_id}/preview', include_in_schema=False)
-def generator_job_preview(job_id: str, task: int | None = Query(default=None,ge=1)):
+def generator_job_preview(job_id: str, task: int | None = Query(default=None,ge=1), rev: int | None = Query(default=None,ge=1)):
     # Bytes are produced by WanGP's on_preview callback. They are never read
     # from user-supplied paths or other services on the host.
-    preview = _casting_bridge().preview(job_id, task)
+    preview = _casting_bridge().preview(job_id, task, rev)
     if preview is None:
         raise HTTPException(404, 'WanGP has not emitted a preview for this job')
     payload, media_type = preview

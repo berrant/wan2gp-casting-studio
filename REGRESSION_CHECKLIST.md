@@ -1,3 +1,9 @@
+# v1.0.0-rc.12.22 — Live generation monitor recovery
+
+- [x] Active-job following, four media-transition combinations, cancellation and stale revision rejection; six permanent regression cases.
+- [x] Complete cumulative regression gate: 409 passed, zero failed, two retired Docker checks skipped, 411 collected, 88 modules. Syntax, synthetic Git upgrade and external-data checks passed. Distribution and staged-index audits required before delivery.
+- [ ] Live Safari and native GPU verification.
+
 # v1.0.0-rc.12.21 — Identity captions
 
 - [x] Focused checks for repeated toggles, every image model and subject category, stale/pasted caption instructions, saved templates, preview/export, native queue and manual final edits.
