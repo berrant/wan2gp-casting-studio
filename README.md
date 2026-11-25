@@ -1,11 +1,23 @@
 # Casting Studio for WanGP
 
-Version: v1.0.0-rc.12.6
+Version: v1.0.0-rc.12.7
 Date: 2026-11-25
+
+
+## RC12.7 workspace workflow
+
+- Open the generator and use Prompts, Model settings, Identity, or Batch review. All configured image prompts stay independently editable; pending edits and blocked reviews still prevent unsafe submission.
+- Select an exact compatible RefMod from the cast/role dropdown when multiple files are available. Character-specific Workshop names contain `__role__`; existing library files are not renamed. Ambiguous cross-family choices require explicit selection.
+- Save selections from a production cast for the active RefMod family; restore merges available saved selections without replacing existing choices. Use the filtered selection control to select visible roles.
+- Switch between performer and character reference collection and Workshop, then return to the original cast.
+- Browse recent completed outputs from the monitor. The gallery is in-memory for this WanGP process, up to 30 outputs; it never controls the live job, and video playback is manual.
+- The image-set editor includes the same public character identity as the video workflow. Factory action, framing and expression now occupy their own fields. Personally edited final prompts are not overwritten.
+- Settings has category navigation; reset an individual fine-tune without resetting the others. Batch history can be filtered by model, status, performer or production. Confirmed failed-task retry remains limited to the current process.
+- No new keyboard shortcuts. No new automatic online collection. Native Git updates preserve external runtime data.
 
 **Discover. Cast. Create.**
 
-Native WanGP plugin · Release candidate 12.6.
+Native WanGP plugin · Release candidate 12.7.
 
 ## RC12.6 — prompt review and saved model settings
 

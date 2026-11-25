@@ -1,3 +1,14 @@
+# v1.0.0-rc.12.7 — Workspace Edition (2026-11-25)
+
+- Approved UX priorities 1–8: dedicated wide generator workspace with Prompts, Model settings, Identity and Batch review tabs; explicit same-performer RefMod picker and character variant naming; grouped secondary cast/role actions and filtered selection; continuous collection/Workshop navigation; recent completed result gallery; saved production selections; settings navigation and individual fine-tune reset; searchable batch history and expandable public casting labels.
+- Image-set template editor exposes shared public character identity, with explicit research/save/reset, error feedback and unsaved-edit confirmation. Identity storage is shared with video; saved final prompt edits are not silently rewritten.
+- Separate legacy factory image action/pose, framing and expression; migrate exact old factory actions while retaining explicitly customized framing, expression and action text. Video templates retain time-coded scene directions; no separate video framing input exists.
+- Fix stale or invalidated batch reviews, failed prompt reset losing a draft, per-prompt saved indicators, and submission enabled during a reset. Maintain per-fine-tune server settings.
+- Exact RefMod path is authoritative in live prompts and exports. Never guess a character-specific cross-family counterpart. Role-specific files use the `__role__` naming marker; explicit choices supported even when several files share a performer. Re-scan local inventory on save/restore; skip missing references and preserve unrelated/existing selections. Reject corrupted saved-set keys and payloads.
+- Gallery is session-local, bounded to 30 recently recorded native outputs; reject missing/changed media; deduplicate notifications; preserve late outputs without rewinding current live monitor. Completed clips do not autoplay.
+- History stores public role labels and existing settings for up to 100 batches; no new persistent prompt snapshots or persistent retry. Existing native retry safety remains unchanged. Production sets are local SQLite data, separate from public package and existing settings backup. No additional keyboard shortcuts. No new automatic online research, no WanGP/Refmod-Fork core changes.
+- Limits: no automatic character-specific counterpart guessing, no cross-restart gallery, no historical prompt replay, no automatic reference quality ranking or duplicate grouping. Existing library and settings remain in external runtime storage. See measured TEST_RESULTS.txt for regression and MOAB+ outcomes; actual live host integration requires user verification.
+
 # v1.0.0-rc.12.6 — Prompt review and model persistence (2026-11-25)
 
 - Review and edit every configured image prompt in one responsive grid. Preserve independent custom prompts, reset each individually, save all pending edits and block whole-set queueing on preview or save failures. Preserve the existing video prompt editor.

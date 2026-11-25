@@ -347,6 +347,7 @@ def connect():
     with schema_lock:
         conn.execute('CREATE TABLE IF NOT EXISTS identity_names (key TEXT PRIMARY KEY, display_name TEXT NOT NULL)')
         conn.execute('CREATE TABLE IF NOT EXISTS choices (key TEXT PRIMARY KEY, payload TEXT NOT NULL)')
+        conn.execute('CREATE TABLE IF NOT EXISTS production_selection_sets (production TEXT NOT NULL, family TEXT NOT NULL, payload TEXT NOT NULL, PRIMARY KEY(production,family))')
         conn.execute('CREATE TABLE IF NOT EXISTS casting_job_history (id TEXT PRIMARY KEY, updated INTEGER NOT NULL, payload TEXT NOT NULL)')
         conn.execute('CREATE TABLE IF NOT EXISTS images (key TEXT PRIMARY KEY, url TEXT NOT NULL)')
         conn.execute('CREATE TABLE IF NOT EXISTS photo_files (url TEXT PRIMARY KEY, filename TEXT NOT NULL)')
@@ -385,6 +386,7 @@ def connect():
 
 def model_name(p):
     base=p.stem
+    if '__role__' in base:base=base.split('__role__',1)[0]
     base=re.sub(r'^minimaxh3[_-]?','',base,flags=re.I)
     base=re.sub(r'(?i)(?:_v\d+)?_refmod(?:h3)?$','',base)
     base=re.sub(r'(?i)_H3(?:_v\d+)?$','',base)
@@ -562,7 +564,7 @@ def scan(force=False):
             if (family,path) in seen_paths:continue
             seen_paths.add((family,path))
             convertible=picture_conversion_source(f) if family=='minimax_h3' else False
-            items.append({'filename':f.name,'path':path,'name':canonical_name(model_name(f)),'family':family,'convertible_to_flux':convertible})
+            items.append({'filename':f.name,'path':path,'name':canonical_name(model_name(f)),'family':family,'convertible_to_flux':convertible, 'role_specific':'__role__' in f.stem})
         items.sort(key=lambda x:(x['name'].casefold(),x['family'],x['path']))
         catalog_cache.update(models=items,until=float('inf'))
         stamp=int(time.time())
@@ -727,7 +729,7 @@ def get_profile_link(name:str=Query(min_length=1,max_length=180)):
         return {'provider':'imdb','url':row[0],'verified':True} if row[0] else default
     imdb=''
     try:
-        with httpx.Client(timeout=5,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.6 (personal catalog)'}) as client:
+        with httpx.Client(timeout=5,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.7 (personal catalog)'}) as client:
             resp=client.get('https://www.wikidata.org/w/api.php',params={'action':'wbsearchentities','search':name,'language':'en','format':'json','limit':6,'type':'item'})
             resp.raise_for_status()
             candidates=[v for v in resp.json().get('search',[]) if token(v.get('label'))==token(name)]
@@ -819,7 +821,7 @@ def wikidata_get(client,params):
     raise last_error
 
 def wikidata_profile(name):
-    with httpx.Client(timeout=20, headers={'User-Agent':'CastingStudio/1.0.0-rc.12.6 (public performer metadata; respectful research)'}) as client:
+    with httpx.Client(timeout=20, headers={'User-Agent':'CastingStudio/1.0.0-rc.12.7 (public performer metadata; respectful research)'}) as client:
         search=wikidata_get(client,{
             'action':'wbsearchentities','search':name,'language':'en','format':'json','type':'item','limit':8})
         candidates=[c for c in search.get('search',[]) if token(c.get('label',''))==token(name) or
@@ -1391,6 +1393,52 @@ def put_choice(item:Choice):
         db.execute('INSERT OR REPLACE INTO choices VALUES (?,?)',(payload['key'],json.dumps(payload)))
     return {'saved':True}
 
+class ProductionSelectionSet(BaseModel):
+    production:str=Field(min_length=1,max_length=180)
+    family:str
+
+@app.get('/api/production-selection-set')
+def get_production_selection_set(production:str=Query(min_length=1,max_length=180),family:str='minimax_h3'):
+    if family not in ('minimax_h3','flux2'):raise HTTPException(400,'Unknown RefMod family')
+    assert_public_name(production)
+    with connect() as db:row=db.execute('SELECT payload FROM production_selection_sets WHERE production=? AND family=?',(token(canonical_production(production)),family)).fetchone()
+    if not row:return {'choices':[]}
+    try:
+        data=json.loads(row[0])
+        if not isinstance(data,list) or any(not isinstance(x,dict) or not decoded_choice(x.get('key'),json.dumps(x)) or x.get('personal_id') or x['key']!=canonical_role_key(x['person'],x['character'],x['production']) for x in data):raise ValueError('Invalid set')
+    except (TypeError,ValueError):raise HTTPException(409,'Saved production selections are damaged')
+    return {'choices':data}
+
+@app.put('/api/production-selection-set')
+def save_production_selection_set(req:ProductionSelectionSet):
+    if req.family not in ('minimax_h3','flux2'):raise HTTPException(400,'Unknown RefMod family')
+    assert_public_name(req.production)
+    production=token(canonical_production(req.production));private=personal_name_keys()
+    paths={m['path']:m for m in scan(force=True) if m['family']==req.family}
+    with lock,connect() as db:
+        items,damaged=read_choices(db)
+        if damaged:raise HTTPException(409,'Repair damaged selections before saving a set')
+        chosen=[c for c in items if not c.get('personal_id') and token(canonical_production(c['production']))==production and token(canonical_name(c['person'])) not in private]
+        if not chosen:raise HTTPException(400,'Select at least one public role in this production')
+        if any(c['refmod'] not in paths or token(canonical_name(c['person']))!=token(canonical_name(paths[c['refmod']]['name'])) for c in chosen):raise HTTPException(409,'Resolve missing or incompatible RefMods before saving the set')
+        db.execute('INSERT OR REPLACE INTO production_selection_sets VALUES (?,?,?)',(production,req.family,json.dumps(chosen)))
+    return {'saved':len(chosen)}
+
+@app.post('/api/production-selection-set/restore')
+def restore_production_selection_set(req:ProductionSelectionSet):
+    data=get_production_selection_set(req.production,req.family)['choices']
+    paths={m['path']:m for m in scan(force=True) if m['family']==req.family}
+    private=personal_name_keys();errors=[];added=0;skipped=0
+    # Merge only absent public selections, with one transaction and no silent replacements.
+    with lock,connect() as db:
+        for c in data:
+            if c.get('personal_id') or token(canonical_name(c['person'])) in private or token(canonical_production(c['production']))!=token(canonical_production(req.production)) or c['refmod'] not in paths or token(canonical_name(paths[c['refmod']]['name']))!=token(canonical_name(c['person'])):
+                errors.append(c['person']+' · missing or incompatible RefMod');continue
+            cur=db.execute('INSERT OR IGNORE INTO choices VALUES (?,?)',(canonical_role_key(c['person'],c['character'],canonical_production(c['production'])),json.dumps(c)))
+            if cur.rowcount:added+=1
+            else:skipped+=1
+    return {'added':added,'skipped':skipped,'errors':errors}
+
 class ModelFamilySwitch(BaseModel):
     family:str
     keep_convertible:bool=False
@@ -1436,7 +1484,7 @@ def reconcile_choices_for_model(req:ModelFamilySwitch):
                 family_mods=by_person.get(token(canonical_name(item.get('person',''))),{}).get(req.family,[])
                 if current and current['family']==req.family:
                     resolved=chosen
-                elif current and current['family']!=req.family and len(family_mods)==1:
+                elif current and current['family']!=req.family and len(family_mods)==1 and not current.get('role_specific') and not family_mods[0].get('role_specific'):
                     resolved=family_mods[0]['path']
                 elif req.keep_convertible and req.family=='flux2' and not family_mods and current and current.get('convertible_to_flux'):
                     pending.append(key_string);keep.append(item);continue
@@ -1888,7 +1936,7 @@ def download_image(url):
         if cached and safe_media_file(PHOTO_DIR,cached[0],r'[0-9a-f]{64}\.jpg'):return 'api/photos/'+cached[0]
         validate_public_url(url)
         # Disable proxies and redirects; redirects must not reach private network addresses.
-        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.0-rc.12.6)'}) as client:
+        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.0-rc.12.7)'}) as client:
             with client.stream('GET',url) as res:
                 if res.status_code!=200 or not res.headers.get('content-type','').lower().startswith('image/'):
                     return ''
@@ -2396,27 +2444,40 @@ def prompt_for_selection(item,t,personal=False):
         out.append('\n'.join(parts))
     return '\n\n'.join(out)
 
-IMAGE_SCENE_DEFAULTS={
+# Exact old factory values are migrated field-by-field; personal edits are never parsed or rewritten.
+LEGACY_IMAGE_SCENE_DEFAULTS={
  'scene1':'A production-authentic character portrait, framed chest-up with comfortable headroom. The subject looks toward the camera with a relaxed, confident expression.',
  'scene2':'A full-body character showcase, framed from head to feet with balanced space around the subject. The subject stands in a natural, confident pose.',
  'scene3':'A cinematic environmental portrait, with medium-wide framing that shows the surrounding location. The subject looks naturally toward a point of interest.',
  'scene4':'A natural action pose, captured in a medium or full-body composition with clear facial detail. The subject takes a purposeful step or makes a small expressive gesture.',
  'scene5':'A dramatic close-up portrait, with expressive eyes, a composed expression and natural facial detail. Use intimate framing and cinematic depth of field.',
 }
-PERSONAL_IMAGE_ACTIONS={
-    'scene1':'A professional chest-up studio portrait with comfortable headroom and a relaxed, friendly expression.',
-    'scene2':'A full-body studio portrait with a comfortable, natural standing pose.',
-    'scene3':'A medium-wide studio portrait with a balanced composition and relaxed gaze.',
-    'scene4':'A natural expressive gesture in a medium or full-body studio portrait, with clear facial detail.',
-    'scene5':'A close-up studio portrait with a composed expression and natural facial detail.',
+IMAGE_SCENE_DEFAULTS={
+ 'scene1':'The subject stands facing the camera with a natural, relaxed posture.',
+ 'scene2':'The subject stands naturally with their weight balanced.',
+ 'scene3':'The subject looks toward a point of interest.',
+ 'scene4':'The subject takes a purposeful step or makes a small gesture.',
+ 'scene5':'The subject holds a steady pose facing the camera.',
 }
+IMAGE_FRAMING_DEFAULTS={
+ 'scene1':'Chest-up character portrait with comfortable headroom.',
+ 'scene2':'Full-body character showcase, from head to feet with balanced space.',
+ 'scene3':'Environmental portrait in a medium-wide shot showing the surroundings.',
+ 'scene4':'Medium or full-body composition for a natural action pose.',
+ 'scene5':'Dramatic close-up with intimate framing and shallow depth of field.',
+}
+IMAGE_EXPRESSION_DEFAULTS={
+ 'scene1':'Relaxed, confident expression.', 'scene2':'Natural, confident expression.',
+ 'scene3':'Natural, attentive gaze.', 'scene4':'Natural expression.', 'scene5':'Composed expression with expressive eyes.',
+}
+PERSONAL_IMAGE_ACTIONS=dict(IMAGE_SCENE_DEFAULTS)
 IMAGE_MODEL_DIRECTIONS={
  'h3_image':'Cinematic, coherent photorealistic scene with high facial fidelity and production-authentic design.',
  'h3_image_pruned':'Cinematic, photorealistic portrait with high face detail and coherent natural lighting.',
  'p_h3_image':'Photorealistic original image of the selected subject, with recognizable character identity and coherent composition.',
  'flux2_dev':'Natural photographic materials, accurate illumination, cinematic lens composition and high identity fidelity.',
- 'flux2_klein4':'Clear photographic pose and framing, natural light and accurate expression.',
- 'flux2_klein9':'Photorealistic portrait with cohesive setting, expressive eyes and crisp facial details.',
+ 'flux2_klein4':'Natural photographic light and accurate facial details.',
+ 'flux2_klein9':'Photorealistic photography with crisp facial details.',
  'pi_flux2':'Natural cinematic portrait lighting, accurate facial details and sharp photographic focus.',
  'flux3_klein':'Consistent photorealistic portrait with natural materials, cohesive background and clear facial detail.',
 }
@@ -2453,13 +2514,24 @@ def image_template_normalized(raw=None):
     if obj.shots:
         if len(obj.shots)!=count:
             raise ValueError(f'Expected exactly {count} image definitions; received {len(obj.shots)}')
+        for i,shot in enumerate(data['shots'],1):
+            k=f'scene{i}'
+            if k in LEGACY_IMAGE_SCENE_DEFAULTS and shot['action']==LEGACY_IMAGE_SCENE_DEFAULTS[k]:
+                shot['action']=IMAGE_SCENE_DEFAULTS[k]
+                if not shot['framing']:shot['framing']=IMAGE_FRAMING_DEFAULTS[k]
+                if not shot['expression']:shot['expression']=IMAGE_EXPRESSION_DEFAULTS[k]
         return data
     shots=[]
     for i in range(1,count+1):
         action=(data.get('scene'+str(i)) or IMAGE_SCENE_DEFAULTS.get('scene'+str(i)) or
-                'A natural pose with clear subject identity, relaxed expression and coherent composition.')
+                'The subject holds a natural pose.')
         wardrobe=data['original_wardrobe'] if i==1 else data['transformed_wardrobe']
-        shots.append(ImageShot(wardrobe=wardrobe,action=action).model_dump())
+        k=f'scene{i}'
+        factory=action in (IMAGE_SCENE_DEFAULTS.get(k),LEGACY_IMAGE_SCENE_DEFAULTS.get(k))
+        if factory:action=IMAGE_SCENE_DEFAULTS[k]
+        shots.append(ImageShot(wardrobe=wardrobe,action=action,
+            framing=IMAGE_FRAMING_DEFAULTS[k] if factory else '',
+            expression=IMAGE_EXPRESSION_DEFAULTS[k] if factory else '').model_dump())
     data['shots']=shots
     return data
 
@@ -2564,6 +2636,21 @@ def image_prompts_for_selection(item,model,template,video_template,installed,per
         prompts.append('\n'.join(fields))
     return '\n\n'.join(prompts)
 
+def resolve_public_cast_model(item,family,models):
+    """Use the exact saved reference or an unambiguous general cross-family match."""
+    performer_mods=[m for m in models if token(canonical_name(m['name']))==token(canonical_name(item.get('person','')))]
+    saved=item.get('refmod')
+    available=[m for m in performer_mods if m['family']==family]
+    exact=next((m for m in available if m['path']==saved),None)
+    if exact:return exact
+    original=next((m for m in performer_mods if m['path']==saved),None)
+    if original and original['family']!=family and len(available)==1 and not original.get('role_specific') and not available[0].get('role_specific'):
+        return available[0]
+    if not available:raise ValueError('An installed RefMod for the selected model family is required')
+    if original and original['family']!=family and (len(available)>1 or original.get('role_specific') or any(m.get('role_specific') for m in available)):
+        raise ValueError('More than one compatible RefMod exists or the counterpart is character-specific; choose the intended file')
+    raise ValueError(f"Saved RefMod is missing or belongs to an unrecognized model family: {saved or '(unset)'} for {item.get('person','unknown')}.")
+
 @app.get('/api/prompts/export')
 def export_prompts(filename:str=Query(default='RefMod_Prompts.txt',max_length=120),model:str='h3_video'):
     selected=selected_model(model)
@@ -2576,7 +2663,7 @@ def export_prompts(filename:str=Query(default='RefMod_Prompts.txt',max_length=12
     template=stored_video_template(tplrow)
     texts=[]
     installed={}
-    for m in scan():installed.setdefault(token(canonical_name(m['name'])),{})[m['family']]=m
+    models=scan()
     image_template=stored_image_template(image_row) if selected['kind']=='image' else None
     # The backend, not the UI, is authoritative for Personal consent.
     personal_rows=get_personal_rows()
@@ -2604,9 +2691,11 @@ def export_prompts(filename:str=Query(default='RefMod_Prompts.txt',max_length=12
                 # Editing actions remains possible, but original studio appearance and identity are fixed.
                 texts.append(prompt_for_selection(safe_item,t,personal=True))
             continue
-        if selected['kind']=='image':texts.append(image_prompts_for_selection(item,model,image_template,t,installed))
+        try:personmod=resolve_public_cast_model(item,selected['family'],models)
+        except ValueError:personmod=None
+        role_models={token(canonical_name(item['person'])):{selected['family']:personmod}} if personmod else {}
+        if selected['kind']=='image':texts.append(image_prompts_for_selection(item,model,image_template,t,role_models))
         else:
-            personmod=installed.get(token(canonical_name(item.get('person',''))),{}).get('minimax_h3')
             video_item={**item,'refmod':personmod['path'] if personmod else 'MISSING_COMPATIBLE_REFMOD.safetensors'}
             texts.append(prompt_for_selection(video_item,t))
     text='\n\n'.join(texts)+('\n' if texts else '')
@@ -2692,27 +2781,7 @@ def build_live_cast_prompt(req, *, use_saved=True, monitor_details=None):
         ref=available[link]
     else:
         installed={}
-        performer_mods=[m for m in scan() if
-                   token(canonical_name(m['name']))==token(canonical_name(item.get('person','')))]
-        available=[m for m in performer_mods if m['family']==family]
-        if not available:raise ValueError('An installed RefMod for the selected model family is required')
-        saved=item.get('refmod')
-        ref=next((m for m in available if m['path']==saved), None)
-        if ref is None:
-            # Cast choices predate model-family presets and usually retain the
-            # H3 file chosen while casting. Permit a model switch only when the
-            # *original* saved mod still exists in the other family and there
-            # is exactly one eligible counterpart in the requested family.
-            # Never replace a missing saved file or choose among multiple
-            # alternative same-family mods behind the user's back.
-            original=next((m for m in performer_mods if m['path']==saved),None)
-            if original and original['family']!=family and len(available)==1:
-                ref=available[0]
-            else:
-                reason=('More than one compatible RefMod exists; choose the intended file' if
-                        original and original['family']!=family and len(available)>1 else
-                        'Saved RefMod is missing or belongs to an unrecognized model family')
-                raise ValueError(f"{reason}: {saved or '(unset)'} for {item.get('person','unknown')}.")
+        ref=resolve_public_cast_model(item,family,scan())
         modpath=ref['path']
         safe={**item,'refmod':modpath}
         installed[token(canonical_name(item['person']))]={family:ref}
@@ -3098,6 +3167,10 @@ def generator_job_preview(job_id: str, task: int | None = Query(default=None,ge=
     return Response(content=payload, media_type=media_type,
                     headers={'Cache-Control':'no-store', 'X-Content-Type-Options':'nosniff'})
 
+@app.get('/api/generator/monitor-gallery',include_in_schema=False)
+def generator_monitor_gallery():
+    return {'results':_casting_bridge().monitor_gallery()}
+
 @app.get('/api/generator/monitor-output/{token}',include_in_schema=False)
 def generator_monitor_output(token:str):
     output=_casting_bridge().monitor_output(token)
@@ -3426,7 +3499,7 @@ def search_production_online(q:str=Query(min_length=2,max_length=120)):
 # Key-free film credit source. Match exact title or explicit "(film)" titles;
 # treat cast lists as suggestions for human review, not verified installed mods.
 WIKIPEDIA_API='https://en.wikipedia.org/w/api.php'
-WIKI_AGENT='CastingStudio/1.0.0-rc.12.6 (personal local catalog; Wikimedia public credits)'
+WIKI_AGENT='CastingStudio/1.0.0-rc.12.7 (personal local catalog; Wikimedia public credits)'
 def wiki_api(client,params):
     r=client.get(WIKIPEDIA_API,params={**params,'format':'json','formatversion':2},headers={'User-Agent':WIKI_AGENT})
     r.raise_for_status();return r.json()
@@ -3765,7 +3838,7 @@ def save_reference_image(item:ReferenceImageRequest):
             return {**result,'reused_local':True}
         try:validate_public_url(item.image_url)
         except Exception as e:raise HTTPException(400,str(e))
-        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.6'}) as client:
+        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.7'}) as client:
             with client.stream('GET',item.image_url) as r:
                 if r.status_code!=200 or not r.headers.get('content-type','').lower().startswith('image/'):
                     raise HTTPException(422,'Image host did not return an image')

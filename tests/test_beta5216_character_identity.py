@@ -74,9 +74,10 @@ def test_cast_actions_and_automatic_identity_ui():
         page.evaluate('''() => {catalog={people:[],roles:[],models:[{name:'Installed Example',family:'flux2',path:'flux2/Example.safetensors'},{name:'Convertible Example',family:'minimax_h3',path:'Example_H3.safetensors',convertible_to_flux:true}]};$('promptModel').value='flux2_dev';showProductionCast({production:'Example Series',cast:[{actress:'Installed Example',character:'A',production:'Example Series'},{actress:'Convertible Example',character:'B',production:'Example Series'},{actress:'Missing Example',character:'C',production:'Example Series'}]});}''')
         rows=page.locator('#productionCast .cast-row');assert rows.count()==3
         for i in (0,1):
-            assert rows.nth(i).get_by_role('button',name='Select',exact=True).count()==1
+            assert rows.nth(i).get_by_role('button',name='Select' if i==0 else 'Select for conversion',exact=True).count()==1
             assert rows.nth(i).get_by_role('button',name='Create RefMod').count()==0
-            assert rows.nth(i).get_by_role('button',name='Collect reference photos').count()==1
+            rows.nth(i).locator('details.secondary-actions summary').click()
+            assert rows.nth(i).get_by_role('button',name='Collect reference photos').is_visible()
             assert rows.nth(i).get_by_role('button',name='Download image pack').count()==0
         assert 'Conversion required' in rows.nth(1).text_content()
         assert rows.nth(2).get_by_role('button',name='Collect reference photos').count()==1
@@ -84,6 +85,8 @@ def test_cast_actions_and_automatic_identity_ui():
         page.evaluate("$('promptModel').value='h3_video';openGenerator()")
         page.wait_for_function("$('generatorPreview').value==='Blue skin and horns'")
         assert page.locator('#generatorCharacterTraits').input_value()=='Blue skin and horns'
+        page.locator('button[data-workspace=identity]').click()
         assert page.locator('#generatorCharacterPanel').evaluate('(e)=>e.open')
+        assert page.locator('#generatorCharacterTraits').is_visible()
         assert not errors,errors
         b.close()

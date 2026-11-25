@@ -1,3 +1,15 @@
+# v1.0.0-rc.12.7 — Workspace Edition release gate
+
+- [x] Tabbed generator workspace, shared image-set character identity, exact legacy factory action migration, RefMod variant selection, saved production sets, gallery and batch history: focused tests.
+- [x] Five previously reproduced UX defects corrected; new gallery identity and stale inventory/variant cases covered by adversarial tests.
+- [x] Final MOAB+: 25 isolated fresh-process rounds, 31 cases each, 775 passed, zero failed.
+- [x] Earlier cumulative candidate: 251 passed, five failed. All five subsequently passed in focused reruns (four updated UI fixtures and one corrected gallery defect).
+- [ ] Single full cumulative regression on the final corrected code (not rerun after final fixes).
+- [x] Actual source-tree Git fast-forward simulation from RC12.6, native mount and synthetic external-state preservation through restart.
+- [x] Python and JavaScript syntax checks.
+- [ ] Actual live WanGP native update, GPU generation, and real user data preservation.
+- Distribution archive and staged-index privacy checks run at packaging. See TEST_RESULTS.txt.
+
 # v1.0.0-rc.12.6 — Release gate
 
 - [x] Multi-image prompt preview, per-scene edits, save-before-queue and preview/save failure blocking (targeted Chromium tests).

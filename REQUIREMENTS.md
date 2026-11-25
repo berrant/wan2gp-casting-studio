@@ -1,6 +1,6 @@
 # Casting Board — cumulative requirements
 
-Authoritative development baseline: v1.0.0-rc.12.4 (Casting Studio for WanGP, release candidate 12.4). Do not build from earlier ZIPs. Before making a release, compare this document and REGRESSION_CHECKLIST.md with the working tree; retain user data outside the package. The requirements below were recovered from development chats and earlier release notes, not inferred from the newest code alone.
+Authoritative development baseline: v1.0.0-rc.12.7 (Casting Studio for WanGP, release candidate 12.7). Do not build from earlier ZIPs. Before making a release, compare this document and REGRESSION_CHECKLIST.md with the working tree; retain user data outside the package. The requirements below were recovered from development chats and earlier release notes, not inferred from the newest code alone.
 
 ## Integration and packaging
 - Native WanGP plugin only, no Docker distribution, no patches to WanGP or Refmod-Fork core. Use documented native session/Gradio queue integration; check installed models and custom settings. Correct native queue submission is the acceptance criterion, not whether a GPU can render it. Target portable Windows/macOS/Linux paths, UTF-8, no developer machine paths, private databases, identity mappings, photos, selections, LoRA preferences or inventory shipped. Preserve external user data. Full cumulative ZIP. Use v1b5.x.x until explicitly authorized to change milestone/release candidate.
@@ -174,3 +174,8 @@ Whole-batch cancellation is latched across manifest boundaries; native cancellat
 - Reference photo collection must be available on production cast cards, even if a RefMod exists. Separate performer and role-specific photos; no automatic collection. Return from Workshop to cast context and refresh inventory.
 - Provide explicit settings/prompt export/import under Settings. Never ship user backups or prompts in distribution ZIPs. Restore validated matching entries, never grant consent or copy model/photo files, and report skipped private edits.
 - Persist model preferences across restarts using browser local storage, preserve independent image/video and checkpoint choices, read legacy session settings when needed, and indicate unavailable models.
+
+## RC12.7 approved requirements
+- Implement UX audit priorities 1–8; no additional keyboard shortcuts. Dedicated tabbed generator, explicit RefMod variants, streamlined cards, continuous collector/Workshop path, independent recent gallery, per-production/family saved choices, settings navigation and improved history.
+- Keep factory image action, framing and expression in their dedicated fields. Preserve custom text and final prompt edits. Expose shared character identity while editing the image set.
+- Run 25 MOAB+ rounds on unchanged final code; original adversarial tests plus new coverage for exact variants, damaged saved sets, missing files, prompt migration, shared identity, gallery late events, deduplication and bounds. Record all measured results and any limitations; never certify untested host integration.

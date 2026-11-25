@@ -37,7 +37,7 @@ def test_review_bulk_queuing_and_character_identity(page):
     tab.locator('#queueProductionButton').click()
     tab.wait_for_function("document.querySelector('#generatorScope').value==='production:darkmatter'")
     tab.wait_for_function("document.querySelector('#generatorModelType').value==='h3_ref2va_pruned_checkpoint'")
-    tab.locator('#generatorBatchPanel summary').first.click()
+    tab.locator('button[data-workspace=batch]').click()
     tab.locator('#generatorReviewBatch').click()
     tab.wait_for_function("document.querySelector('#generatorBatchStatus').textContent.includes('Ready: 2 unique')")
     assert tab.locator('#generatorSubmitBatch').is_enabled()
@@ -75,6 +75,7 @@ def test_character_identity_editor_updates_when_switching_cast(page):
     }""")
     tab.locator('#queueProductionButton').click()
     tab.wait_for_function("document.querySelector('#generatorCharacterTraits').value.length>0")
+    tab.locator('button[data-workspace=identity]').click()
     assert tab.locator('#generatorCharacterPanel').is_visible()
     tab.locator('#generatorCharacterPanel summary').click() if not tab.locator('#generatorCharacterPanel').evaluate('(e)=>e.open') else None
     tab.locator('#generatorCharacterTraits').fill('Permanent luminous silver irises.')

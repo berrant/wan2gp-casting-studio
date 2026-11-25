@@ -36,6 +36,7 @@ def test_generator_settings_survive_cast_switch_model_switch_and_reload():
   page.set_content(HTML,wait_until='domcontentloaded')
   page.evaluate('openGenerator()')
   page.wait_for_function("document.querySelector('#generatorLoraStatus').textContent.includes('installed for this model')")
+  page.locator('button[data-workspace=model]').click()
   page.locator('#generatorSteps').fill('8')
   page.locator('#generatorStrength').fill('1.3')
   page.locator('#generatorResolution').select_option('480x832')
@@ -51,6 +52,7 @@ def test_generator_settings_survive_cast_switch_model_switch_and_reload():
   assert page.locator('.generator-lora-row input').evaluate_all('(els)=>els.map(e=>e.value)')==['0.75','1.5']
   assert page.locator('#generatorResolution').input_value()=='480x832'
   # check current model and next model isolation
+  page.locator('button[data-workspace=model]').click()
   page.locator('#generatorSessionPanel summary').first.click() if not page.locator('#generatorSessionPanel').evaluate('(e)=>e.open') else None
   page.locator('#generatorModelType').select_option('h3_alternate')
   page.wait_for_function("document.querySelector('#generatorLoraStatus').textContent.includes('installed for this model')")
@@ -92,7 +94,7 @@ def test_generator_settings_survive_cast_switch_model_switch_and_reload():
   page.wait_for_function("document.querySelectorAll('.generator-lora-row').length===3")
   assert page.locator('#generatorSubmit').is_disabled()
   assert 'no longer installed' in page.locator('#generatorLoraStatus').text_content()
-  page.locator('#generatorSessionPanel summary').first.click() if not page.locator('#generatorSessionPanel').evaluate('(e)=>e.open') else None
+  page.locator('button[data-workspace=model]').click()
   page.locator('.generator-lora-row button').last.click()
   assert page.locator('#generatorSubmit').is_enabled()
   # Explicit reset restores model defaults without touching the casting selections.

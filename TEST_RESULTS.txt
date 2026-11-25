@@ -1,43 +1,57 @@
-Casting Studio RC12.6 — measured release verification, 2026-11-25
-Target: WanGP v20.20; native host integration simulated, no live GPU.
+Casting Studio v1.0.0-rc.12.7 — Workspace Edition
+Measured release verification (2026-11-25)
 
-Final application snapshot: cumulative regression exit code 0.
-235 passed, 346 warnings in 224.33s (0:03:44).
-Nine new tests cover multi-image review, fine-tune settings and performer disclosure.
-Existing browser fixture changes accommodate explicit expansion and catalog snapshots.
-Warnings include existing FastAPI on_event deprecations; warnings are not failures.
+FINAL MOAB+: 25 independent fresh-process rounds, 31 cases per round, 775 passed, 0 failed. Distinct hash seeds and temporary directories; five parallel workers. Earlier 25 x 30 runs are excluded from the final count because application code was subsequently corrected.
 
-MOAB: ten fresh Python processes, distinct hash seeds, unchanged application code.
-1: 0 18 passed, 36 warnings in 7.38s
-2: 0 18 passed, 36 warnings in 7.46s
-3: 0 18 passed, 36 warnings in 7.57s
-4: 0 18 passed, 36 warnings in 7.78s
-5: 0 18 passed, 36 warnings in 9.86s
-6: 0 18 passed, 36 warnings in 6.14s
-7: 0 18 passed, 36 warnings in 7.08s
-8: 0 18 passed, 36 warnings in 7.20s
-9: 0 18 passed, 36 warnings in 7.36s
-10: 0 18 passed, 36 warnings in 7.64s
-180 passed test executions; zero failed executions.
+4 0 31 passed, 62 warnings in 23.54s
+2 0 31 passed, 62 warnings in 22.75s
+1 0 31 passed, 62 warnings in 24.37s
+5 0 31 passed, 62 warnings in 24.02s
+3 0 31 passed, 62 warnings in 23.80s
+7 0 31 passed, 62 warnings in 21.08s
+6 0 31 passed, 62 warnings in 23.70s
+8 0 31 passed, 62 warnings in 22.07s
+9 0 31 passed, 62 warnings in 22.02s
+10 0 31 passed, 62 warnings in 22.44s
+11 0 31 passed, 62 warnings in 22.39s
+12 0 31 passed, 62 warnings in 21.29s
+14 0 31 passed, 62 warnings in 19.17s
+13 0 31 passed, 62 warnings in 24.05s
+15 0 31 passed, 62 warnings in 23.08s
+16 0 31 passed, 62 warnings in 25.30s
+18 0 31 passed, 62 warnings in 25.72s
+17 0 31 passed, 62 warnings in 27.65s
+19 0 31 passed, 62 warnings in 28.73s
+20 0 31 passed, 62 warnings in 26.72s
+21 0 31 passed, 62 warnings in 29.08s
+22 0 31 passed, 62 warnings in 29.73s
+23 0 31 passed, 62 warnings in 29.97s
+24 0 31 passed, 62 warnings in 24.21s
+25 0 31 passed, 62 warnings in 21.63s
+Elapsed 157.01
 
-Actual RC12.5 source archive local Git clone, fast-forward to RC12.6 source,
-and separate simulated native host processes:
-1.0.0-rc.12.5 seed mount, version and external state PASS
+CUMULATIVE REGRESSION: earlier candidate, 251 passed / 5 failed, 370 warnings, 419.42 seconds. This run began before the final gallery correction. Four failed browser tests had outdated navigation/visibility expectations (new tabs, More menu, conversion action); assertions updated to exercise the current UI. One actual application defect, gallery summary events replacing exact output metadata, was repaired and added as a permanent MOAB+ case. All five original failures passed in subsequent focused runs. The complete cumulative suite has NOT been rerun after the final corrections; no claim of a clean single final cumulative run is made. Final gate contains one extra case, for 257 collected cases.
+
+Focused reruns (overlapping cases, not an additive total):
+Model-settings tab fixture: 1 passed in 4.59s
+Batch and Identity tab fixtures: 2 passed in 8.70s
+Cast More menu and conversion action fixture: 3 passed, 4 warnings in 6.21s
+Corrected gallery and expanded adversarial cases: 14 passed, 28 warnings in 7.70s
+Related preview and workspace tests: 16 passed, 14 warnings in 47.52s
+New workspace browser workflows: 4 passed in 11.17s
+
+FINAL GIT UPGRADE SIMULATION:
+1.0.0-rc.12.6 seed mount, version and external state PASS
 Clean installed Git working tree PASS
 Actual source-tree fast-forward PASS
-1.0.0-rc.12.6 update mount, version and external state PASS
+1.0.0-rc.12.7 update mount, version and external state PASS
 Clean installed Git working tree PASS
-1.0.0-rc.12.6 restart mount, version and external state PASS
+1.0.0-rc.12.7 restart mount, version and external state PASS
 Clean installed Git working tree PASS
-Synthetic custom prompt, production record, reference directory sentinel and new
-model preferences preserved across update and restart. No live native updater used.
-Python source AST parse and JavaScript syntax validation passed.
-Preliminary package audit: GitHub source 101 files, installation ZIP 97 files,
-exact staged source 101 files. Empty public catalog and identity aliases.
-Final package audit rerun after inserting this report; see separate package log.
 
-Outstanding: actual native WanGP update and Pinokio authentication persistence,
-real GPU/Refmod-Fork integration, Safari, real user's data preservation.
-Server model preferences are shared by browser clients of this installation;
-existing browser settings migrate only when no server preference file exists.
-No licensing review completed; no publication or change to GitHub made here.
+Python compileall and inline JavaScript syntax check passed.
+Distribution audit is run separately against the completed archives and staged source index.
+
+Outstanding: real WanGP v20.20 native update, GPU generation, real library variant selection, browser-specific behavior, and actual user data preservation. Simulated host and synthetic data only. Existing FastAPI deprecation warnings remain.
+
+Final distribution verification: source archive 104 files, manual archive 100 files, staged Git index 104 files. All privacy checks and archive integrity checks passed. Bundled catalog counts: people 0, roles 0, productions 0. Manual review and publisher-account checks remain separate.

@@ -156,6 +156,7 @@ class QueueBridge:
         # Completed output is separate from transient inference media. Only
         # native callback/result paths may enter this bounded registry.
         self._monitor_outputs = {}
+        self._monitor_gallery = {}
         self._last_monitor_output = None
         self.history_sink = None
 
@@ -568,6 +569,7 @@ class QueueBridge:
         with self._lock:
             item=self._jobs[job_id]
             item['_monitor_history_settings']=self._history_settings(submissions[0])
+            item['_monitor_history_labels']=[{k:d[k] for k in ('person','character','production','kind','scene') if k in d} for sub in submissions if isinstance(d:=getattr(sub,'monitor_details',None),dict) and not d.get('personal')][:100]
             item['_monitor_retry_source']=(list(submissions),validate)
             item['failed_task_indices']=[]
         self._persist_cast_history(job_id)
@@ -579,6 +581,7 @@ class QueueBridge:
             if '_monitor_history_settings' not in item:return
             record={k:deepcopy(item[k]) for k in ('id','state','message','model_type','total_tasks','failed_task_indices','retried_as') if k in item}
             record['settings']=deepcopy(item['_monitor_history_settings'])
+            record['tasks']=deepcopy(item.get('_monitor_history_labels',[]))
             record['task_count']=item.get('total_tasks',1)
             record['output_count']=len(item.get('files') or [])
         try:self.history_sink(record)
@@ -796,9 +799,9 @@ class QueueBridge:
                     self._jobs[job_id].pop('_monitor_queue_ops',None)
                 files=[str(x) for x in (getattr(result,'generated_files',None) or [])]
                 all_files.extend(files)
-                for path in reversed(files):
+                for path in files:
                     if Path(path).suffix.lower() in ('.png','.jpg','.jpeg','.webp','.mp4','.webm'):
-                        self._record_monitor_output(job_id,path,None,from_result=True);break
+                        self._record_monitor_output(job_id,path,None,from_result=True)
                 errors=[str(getattr(e,'message',e)) for e in (getattr(result,'errors',None) or [])]
                 skipped=self._jobs[job_id].get('_monitor_skipped',set())
                 raw_errors=getattr(result,'errors',None) or []
@@ -1379,14 +1382,26 @@ class QueueBridge:
             item=self._jobs.get(job_id)
             if not item or (not from_result and item.get('state')!='running'):return
             previous=self._last_monitor_output
-            if previous and previous['job_id']==job_id:
-                if previous.get('task_index') and task_index and previous['task_index']>task_index:return
-                entry=self._monitor_outputs.get(previous['id'])
-                if entry and entry[0]==path and entry[2:]==(stat.st_size,stat.st_mtime_ns):return
+            for old,entry in self._monitor_outputs.items():
+                details=self._monitor_gallery.get(old,{})
+                if details.get('job_id')==job_id and entry[0]==path and entry[2:]==(stat.st_size,stat.st_mtime_ns):
+                    # Manifest result lists may repeat an identified native output
+                    # without a task index. Never replace known identity with unknown.
+                    if details.get('task_index')==task_index or task_index is None:return
             token=uuid.uuid4().hex
             self._monitor_outputs[token]=(path,mime,stat.st_size,stat.st_mtime_ns)
-            for old in list(self._monitor_outputs)[:-4]:self._monitor_outputs.pop(old,None)
-            self._last_monitor_output={'id':token,'job_id':job_id,'task_index':task_index,'kind':'video' if mime.startswith('video/') else 'image', 'task_details':self._task_monitor_details(item,task_index)}
+            output={'id':token,'job_id':job_id,'task_index':task_index,'kind':'video' if mime.startswith('video/') else 'image', 'task_details':self._task_monitor_details(item,task_index)}
+            self._monitor_gallery[token]=deepcopy(output)
+            # Late earlier-task outputs belong in the gallery but must not rewind the live monitor.
+            if not (previous and previous['job_id']==job_id and previous.get('task_index') and task_index and previous['task_index']>task_index):
+                self._last_monitor_output=output
+            for old in list(self._monitor_outputs)[:-30]:
+                self._monitor_outputs.pop(old,None);self._monitor_gallery.pop(old,None)
+            if self._last_monitor_output and self._last_monitor_output['id'] not in self._monitor_outputs:self._last_monitor_output=output
+
+    def monitor_gallery(self):
+        with self._lock:results=list(self._monitor_gallery.values())[::-1]
+        return [deepcopy(r) for r in results if self.monitor_output(r['id']) is not None]
 
     def monitor_output(self,token):
         with self._lock:entry=self._monitor_outputs.get(token)
