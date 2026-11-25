@@ -1,21 +1,18 @@
-Casting Studio v1.0.0-rc.12.17 — Character image review and collection + native relay correction
+Casting Studio v1.0.0-rc.12.18 — Licensing and distribution
 Measured release verification (2026-11-25)
 
 FINAL COMPLETE CUMULATIVE REGRESSION GATE
-392 collected, 390 passed, 0 failed, 2 retired standalone Docker checks skipped.
-Group 1: 102 passed, 145 warnings in 112.75s (0:01:52)
-Group 2: 88 passed, 94 warnings in 120.07s (0:02:00)
-Group 3: 93 passed, 144 warnings in 114.60s (0:01:54)
-Group 4: 107 passed, 2 skipped, 146 warnings in 102.28s (0:01:42)
-All four exit codes: 0. All 83 test modules included exactly once.
-Application and regression source fingerprints matched before and after the final gate.
+395 collected, 393 passed, 0 failed, 2 retired standalone Docker checks skipped.
+Group 1: 102 passed, 145 warnings in 114.83s (0:01:54)
+Group 2: 88 passed, 94 warnings in 119.99s (0:01:59)
+Group 3: 93 passed, 144 warnings in 113.77s (0:01:53)
+Group 4: 110 passed, 2 skipped, 148 warnings in 107.60s (0:01:47)
+All four exit codes: 0. All 84 test modules included exactly once. Final source, documentation and test fingerprints matched those recorded before the gate (this generated results report excluded).
 
-Untouched RC12.16 baseline: 379 passed, 0 failed, 2 retired checks skipped.
-Earlier image collection and polish regressions: 12 passed. Six dedicated native lifecycle tests passed, including a nested Gradio host simulating the actual generator/edit hooks before plugin tab construction. Five new permanent cases cover source/quality metadata, explicitly dated collection separation, wrong-year exclusion, corrupt portrait fallback, actual-size inspection, no automatic search, character-only collector return, preservation of model/selections/unsaved drafts, refresh failure, mutation blocking and no silent replacement after removal.
+Three additional permanent regressions passed: mounted read-only legal documents and invalid/missing document handling; About license and notice links and dismissal; distribution audit rejection of missing legal documents, altered license file and altered copyright notice in both layouts. These are included in the cumulative count.
 
-Exact RC12.16 -> RC12.17 local Git fast-forward and startup/restart simulation passed; external runtime state, custom templates, final prompt edits, approved traits, source images and SQLite integrity preserved. Clean installed Git tree. Cumulative suite includes simulated native mount. Python and inline JavaScript syntax passed.
+RC12.17 -> RC12.18 synthetic Git update and startup/restart passed. Preserved saved wardrobe template, approved portrayal traits, reference-image bytes and SQLite integrity. Git worktree clean. Existing queue, vision, conversion and workshop bridges are byte-identical to RC12.17. No new schema, model, prompt template, runtime entitlement checks or external services.
 
-The optional native vision callback now registers in its owning tab constructor, confirmed against the exact WanGP 20.20 source at 72d50753. No default generation prompts, native inference implementation, model selection limits, persistent schema or upstream files changed. Low-resolution warning threshold: short edge below 600 pixels or area below 500,000 pixels. Legacy undated references and role portraits still require manual portrayal confirmation. Actual-size inspection shows the stored local image, not a potentially larger remote original.
+PolyForm Noncommercial 1.0.0 selected by publisher. LICENSE incorporates the official versioned terms by reference, as allowed by the official terms, rather than reproducing the full text. Both archives include NOTICE.md and CONTRIBUTING.md. Generic copyright-holder wording pending identification of actual rights holders; maintainer contact is the project repository. The license audit is an integrity/presence check, not legal clearance. Eight icons unchanged from RC12.17, PNG metadata empty; source archive and prior notes do not establish complete artwork/code provenance or ownership. No outside contributor commercial rights assumed. Public distribution remains on hold until rights, attribution and third-party provenance are cleared. Commercial permissions cannot grant upstream rights.
 
-Live native relay registration and GPU inference/conversion/rendering, character pigmentation quality, Safari, runtime reference numbering and model downloads remain unverified. No changes to generation prompt wording were made. Model-family selection preservation, licensing, first-run UX and public documentation remain open v1 concerns.
-Distribution privacy audit covers both archives and staged synthetic Git index. Installation-test candidate, not public v1 approval.
+Live WanGP 20.20 vision relay/model discovery, GPU analysis and generation, pigmentation adherence, model-family selection preservation and Safari remain installation checks; no live server access. Existing non-failing warnings remain. Distribution privacy audit covers both archives and a staged synthetic source Git index. Private installation-test candidate, not public v1 approval.

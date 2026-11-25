@@ -1,6 +1,6 @@
 # Casting Board — cumulative requirements
 
-Authoritative development baseline for the next candidate: v1.0.0-rc.12.16 (Casting Studio for WanGP, release candidate 12.16), only after its release gate passes. Do not build from earlier ZIPs. Before making a release, compare this document and REGRESSION_CHECKLIST.md with the working tree; retain user data outside the package. The requirements below were recovered from development chats and earlier release notes, not inferred from the newest code alone.
+Authoritative development baseline for the next candidate: v1.0.0-rc.12.17 (Casting Studio for WanGP, release candidate 12.17), only after its release gate passes. Do not build from earlier ZIPs. Before making a release, compare this document and REGRESSION_CHECKLIST.md with the working tree; retain user data outside the package. The requirements below were recovered from development chats and earlier release notes, not inferred from the newest code alone.
 
 ## Integration and packaging
 - Native WanGP plugin only, no Docker distribution, no patches to WanGP or Refmod-Fork core. Use documented native session/Gradio queue integration; check installed models and custom settings. Correct native queue submission is the acceptance criterion, not whether a GPU can render it. Target portable Windows/macOS/Linux paths, UTF-8, no developer machine paths, private databases, identity mappings, photos, selections, LoRA preferences or inventory shipped. Preserve external user data. Full cumulative ZIP. Use the current v1.0.0-rc.12.x release sequence; synchronize metadata at release boundaries.
@@ -210,3 +210,6 @@ Whole-batch cancellation is latched across manifest boundaries; native cancellat
 - Explicit character-only collection from within appearance analysis. Return with local selections, engine and unsaved drafts intact. Never auto-fetch on analysis opening or run inference on collection return. Show original stored size, source, quality and selected image count; warn for a sole low-resolution portrait. Exclude corrupt artwork; keep other dated portrayals separate while marking legacy undated sources for confirmation. Preserve the approval workflow and native model limits.
 
 - Native vision relay readiness follows actual successful callback registration inside the owning Gradio UI. Main-form hooks may run before plugin tab creation (verified against WanGP 20.20 commit `72d50753`); callback registration cannot depend on their order. Preserve queue callbacks and fail closed when binding fails.
+
+## RC12.18 Licensing
+- Adopt selected PolyForm Noncommercial 1.0.0 by reference to official terms, include license and notices in both archives, preserve upstream and output rights, document commercial permission and contributions, and verify packaging. No runtime enforcement. Public release requires attribution and provenance clearance.

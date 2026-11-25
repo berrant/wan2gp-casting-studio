@@ -651,6 +651,17 @@ def changelog():
     if not path.is_file():raise HTTPException(404,'Changelog not found')
     return FileResponse(path,media_type='text/markdown',headers={'Cache-Control':'no-store'})
 
+@app.get('/api/legal/{document}')
+def legal_document(document: str):
+    filename = {'license': 'LICENSE', 'notice': 'NOTICE.md'}.get(document)
+    if filename is None:
+        raise HTTPException(404, 'Unknown legal document')
+    path = ROOT.parent / filename
+    if not path.is_file() or path.is_symlink():
+        raise HTTPException(404, 'Legal document not found')
+    return FileResponse(path, media_type='text/plain', headers={
+        'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff'})
+
 @app.get('/')
 def home():
     # The inline HTML/JS is the application itself, not a cacheable static asset.
@@ -748,7 +759,7 @@ def get_profile_link(name:str=Query(min_length=1,max_length=180)):
         return {'provider':'imdb','url':row[0],'verified':True} if row[0] else default
     imdb=''
     try:
-        with httpx.Client(timeout=5,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.17 (personal catalog)'}) as client:
+        with httpx.Client(timeout=5,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.18 (personal catalog)'}) as client:
             resp=client.get('https://www.wikidata.org/w/api.php',params={'action':'wbsearchentities','search':name,'language':'en','format':'json','limit':6,'type':'item'})
             resp.raise_for_status()
             candidates=[v for v in resp.json().get('search',[]) if token(v.get('label'))==token(name)]
@@ -850,7 +861,7 @@ def wikidata_get(client,params):
     raise last_error
 
 def wikidata_profile(name):
-    with httpx.Client(timeout=20, headers={'User-Agent':'CastingStudio/1.0.0-rc.12.17 (public performer metadata; respectful research)'}) as client:
+    with httpx.Client(timeout=20, headers={'User-Agent':'CastingStudio/1.0.0-rc.12.18 (public performer metadata; respectful research)'}) as client:
         search=wikidata_get(client,{
             'action':'wbsearchentities','search':name,'language':'en','format':'json','type':'item','limit':8})
         candidates=[c for c in search.get('search',[]) if token(c.get('label',''))==token(name) or
@@ -2084,7 +2095,7 @@ def download_image(url):
         if cached and safe_media_file(PHOTO_DIR,cached[0],r'[0-9a-f]{64}\.jpg'):return 'api/photos/'+cached[0]
         validate_public_url(url)
         # Disable proxies and redirects; redirects must not reach private network addresses.
-        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.0-rc.12.17)'}) as client:
+        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.0-rc.12.18)'}) as client:
             with client.stream('GET',url) as res:
                 if res.status_code!=200 or not res.headers.get('content-type','').lower().startswith('image/'):
                     return ''
@@ -3811,7 +3822,7 @@ def search_production_online(q:str=Query(min_length=2,max_length=120)):
 # Key-free film credit source. Match exact title or explicit "(film)" titles;
 # treat cast lists as suggestions for human review, not verified installed mods.
 WIKIPEDIA_API='https://en.wikipedia.org/w/api.php'
-WIKI_AGENT='CastingStudio/1.0.0-rc.12.17 (personal local catalog; Wikimedia public credits)'
+WIKI_AGENT='CastingStudio/1.0.0-rc.12.18 (personal local catalog; Wikimedia public credits)'
 def wiki_api(client,params):
     r=client.get(WIKIPEDIA_API,params={**params,'format':'json','formatversion':2},headers={'User-Agent':WIKI_AGENT})
     r.raise_for_status();return r.json()
@@ -4160,7 +4171,7 @@ def save_reference_image(item:ReferenceImageRequest):
             return {**result,'reused_local':True}
         try:validate_public_url(item.image_url)
         except Exception as e:raise HTTPException(400,str(e))
-        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.17'}) as client:
+        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.18'}) as client:
             with client.stream('GET',item.image_url) as r:
                 if r.status_code!=200 or not r.headers.get('content-type','').lower().startswith('image/'):
                     raise HTTPException(422,'Image host did not return an image')

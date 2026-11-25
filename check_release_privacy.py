@@ -6,11 +6,11 @@ Requires Pillow for inspection of the generic PNG assets.
 This is a narrow packaging guard, not proof of anonymity or a security audit.
 """
 from pathlib import PurePosixPath
-import ast, io, json, re, stat, subprocess, sys, zipfile
+import ast, hashlib, io, json, re, stat, subprocess, sys, zipfile
 from PIL import Image
 
 ROOT = 'wan2gp-casting-studio'
-FILES = {'README.md','CHANGELOG.md','REQUIREMENTS.md','REGRESSION_CHECKLIST.md',
+FILES = {'LICENSE','NOTICE.md','CONTRIBUTING.md','README.md','CHANGELOG.md','REQUIREMENTS.md','REGRESSION_CHECKLIST.md',
          '__init__.py','plugin.py','plugin_info.json','compat_adapter.py','conversion_bridge.py',
          'queue_bridge.py','workshop_bridge.py','vision_bridge.py','requirements.txt','run_regression.py','check_release_privacy.py',
          'app/__init__.py','app/server.py','app/index.html','app/credit_service.py','app/credit_sync.py',
@@ -27,7 +27,10 @@ PATTERNS = {
 CATALOG_KEYS={'people':{'name','type','credits','actress'},'roles':{'actress','character','production','franchise'},
               'productions':{'id','title','year','franchise','roles','source','wiki'}}
 
-GITHUB_FILES = {'.gitignore','NOTICE.md','PUBLISHING.md','TEST_RESULTS.txt'}
+GITHUB_FILES = {'.gitignore','PUBLISHING.md','TEST_RESULTS.txt'}
+
+LICENSE_SHA256 = '026ef905367dd50b07dd541fd81acb1f9c6e2a29368d55d67cdf53db0e8955b4'
+REQUIRED_NOTICE = "Required Notice: Copyright (c) 2026 Casting Studio's respective copyright holders (https://github.com/berrant/wan2gp-casting-studio)."
 
 def audit(path):
  errors=[]; seen=set(); counts={}
@@ -57,6 +60,10 @@ def audit(path):
      if im.format!='PNG' or im.info or im.getexif():errors.append('Icon metadata present: '+rel)
     continue
    text=data.decode('utf-8')
+   if rel=='LICENSE' and hashlib.sha256(data).hexdigest()!=LICENSE_SHA256:
+    errors.append('License file changed; verify terms')
+   if rel=='NOTICE.md' and REQUIRED_NOTICE not in text.splitlines():
+    errors.append('Required copyright notice missing or changed')
    if rel!='check_release_privacy.py':
     for label,pattern in PATTERNS.items():
      if re.search(pattern,text):errors.append(label+' in '+rel)

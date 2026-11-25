@@ -1,3 +1,8 @@
+## RC12.18 — Licensing and distribution
+
+- Select PolyForm Noncommercial 1.0.0, retain separate commercial permissions, and document contribution rights and upstream terms. Public release remains subject to provenance clearance.
+- Include license, notices and contribution policy in both archives; local About links and release audit. No runtime entitlement, model, schema or prompt changes.
+
 ## RC12.17 — Character image review and collection
 
 - Open the existing character-only reference collector directly from each AI analysis portrayal, including roles with no usable local pictures. Return to the same analysis dialog with the engine, prior selections and unsaved review drafts intact. No automatic collection or analysis.

@@ -427,3 +427,6 @@ Use a Python environment with plugin dependencies, pytest and optional Playwrigh
 - [ ] Actual WanGP GPU inference, character pigmentation quality and Safari verification remain live-installation checks.
 
 - [x] Native lifecycle: omitted, early, late and repeated hooks; actual host-order nested Blocks/tab simulation; exactly one registered event for each native relay; failed binding cannot report ready. No GPU inference in synthetic tests.
+
+## RC12.18 Licensing
+- Local legal routes, About links, missing/unknown documents, required archive legal files and tamper rejection. Public release requires ownership and provenance confirmation.

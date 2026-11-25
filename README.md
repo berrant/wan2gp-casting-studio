@@ -1,8 +1,16 @@
 # Casting Studio for WanGP
 
-Version: v1.0.0-rc.12.17
+Version: v1.0.0-rc.12.18
 Date: 2026-11-25
 
+
+## License and commercial inquiries
+
+Casting Studio is source-available, not OSI open-source. The publisher selects [PolyForm Noncommercial 1.0.0](LICENSE) for independently licensable project material. Noncommercial use, modifications and distribution are permitted, including the specific organizational uses allowed by the standard terms. Uses outside those terms require separate written authorization from applicable rights holders. Contact the [project maintainer](https://github.com/berrant/wan2gp-casting-studio). See [notices](NOTICE.md) and [contribution policy](CONTRIBUTING.md). No upstream rights or ownership of user outputs are granted or claimed. The official terms control. Private testing only pending provenance and attribution clearance.
+
+## RC12.18 — Licensing and distribution
+
+Both archives require license, notices and contribution policy. About provides local read-only documents and a commercial licensing contact. No runtime license enforcement or generation changes.
 
 ## RC12.17 — Character image review and collection
 
