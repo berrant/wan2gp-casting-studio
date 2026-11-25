@@ -16,14 +16,17 @@ def test_highlighted_actor_roles_appear_before_new_minor_credit(page):
         {actress:'Kate Mara',character:'Hayden McClaine',production:'American Horror Story',year:2011},
         {actress:'Kate Mara',character:'Zoe Barnes',production:'House of Cards (2013)',year:2013}
       );
+      catalog={...catalog}; // Production refresh replaces the catalog snapshot.
       showTab('performers');$('search').value='Kate Mara';render();
     }""")
+    tab.locator('#list .performer-roles-toggle').click()
     tab.wait_for_function("document.querySelector('#list').textContent.includes('Zoe Barnes')")
     got=tab.locator('#list article.card .role .details strong').all_text_contents()
     assert got==['Zoe Barnes','Hayden McClaine','Claire Wilson','Sue Storm','Recent minor cameo'],got
     # Actor name search should show all relevant roles, but searching a particular
     # production should still narrow results to that title only.
     tab.locator('#search').fill('New Series')
+    tab.wait_for_function("document.querySelectorAll('#list .role').length===1")
     got=tab.locator('#list article.card .role .details strong').all_text_contents()
     assert got==['Recent minor cameo'],got
     assert not errors,errors

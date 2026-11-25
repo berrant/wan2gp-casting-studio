@@ -1,3 +1,11 @@
+# v1.0.0-rc.12.6 — Prompt review and model persistence (2026-11-25)
+
+- Review and edit every configured image prompt in one responsive grid. Preserve independent custom prompts, reset each individually, save all pending edits and block whole-set queueing on preview or save failures. Preserve the existing video prompt editor.
+- Persist per-family/per-fine-tune generation settings and global LoRA preferences in external server state, with browser migration/fallback and private backup integration. Retain global LoRA overrides on reopen. Report save failures; validate payloads and retain unreadable prior state. Settings are shared by browsers on the same server, not per-user accounts.
+- Collapse performer filmographies by default; display role and selected-role counts with independent keyboard-accessible controls. Role-only searches reveal matching roles. Maintain expansion state during browsing; refreshing roles is separate and explicit.
+- Update the native plugin version, UI About and user-agent versions; preserve repository-root installation layout and external data. Retain the staged-file privacy checker. Update older browser fixtures to account for disclosure and catalog snapshots.
+- See TEST_RESULTS.txt for the measured release gates and remaining real-host verification.
+
 # v1.0.0-rc.12.5 — GitHub edition (2026-11-25)
 
 - Keep the GitHub-native repository-root plugin layout and synchronize version metadata across the host plugin, UI and HTTP agents.

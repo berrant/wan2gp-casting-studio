@@ -1,11 +1,21 @@
 # Casting Studio for WanGP
 
-Version: v1.0.0-rc.12.5
+Version: v1.0.0-rc.12.6
 Date: 2026-11-25
 
 **Discover. Cast. Create.**
 
-Native WanGP plugin · Release candidate 12.5.
+Native WanGP plugin · Release candidate 12.6.
+
+## RC12.6 — prompt review and saved model settings
+
+For still images, the generator presents the complete configured image set as numbered, individually editable prompts. All previews must load and all pending final-prompt edits must save before the set can be queued. Each prompt can be reset separately; Save all prompts commits outstanding edits. Video editing remains single-task. Bulk queue preflight remains separate.
+
+**Saved model settings:** the exact fine-tune and model-family combination determines the stored generation settings. Steps, resolution, seed, strength, LoRAs, global override, duration, sliding windows and supported extra controls are remembered on this WanGP server, outside the plugin Git checkout. The browser cache remains a fallback; existing browser settings migrate when there is no server preference file. Settings backups include the saved model preferences. If server saving fails, the generator reports the failure; an unreadable server preference file is preserved rather than overwritten. Named presets remain optional and browser-local. The server preference file is shared by browsers connected to the same installation; simultaneous editors are not isolated profiles.
+
+**People → Performers:** filmographies are collapsed by default. Each performer has a role count, selected-role count and independent disclosure control. Character searches reveal matching roles. Refresh roles is a separate, explicit research action.
+
+Existing Git installations should use Apps & PlugIn Manager → Update, followed by a WanGP restart. Export private settings and back up external runtime data before updating. If GitHub credentials fail after a Pinokio restart, verify the Pinokio-specific credential helper; do not remove the working installation or expose credentials in the repository URL.
 
 ## GitHub installation and cast coverage (RC12.5)
 

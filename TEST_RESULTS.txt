@@ -1,49 +1,43 @@
-Casting Studio RC12.5 — measured verification, 2026-11-25
-Target: WanGP v20.20. Native host and queue behavior simulated; no live GPU.
+Casting Studio RC12.6 — measured release verification, 2026-11-25
+Target: WanGP v20.20; native host integration simulated, no live GPU.
 
-Cumulative gate (earlier staged application snapshot):
-215 passed, 1 failed, 338 warnings in 226.34s.
-Failure: legacy FLUX Workshop mock accepted two positional arguments, while the
-role-scoped collector introduced a third in RC12.4. Corrected test fixture to
-accept and filter by person, production, character; no production change.
-An expanded Workshop module rerun also identified an outdated HTML locator in
-an older maintenance-layout test that was not in the original cumulative gate.
-Corrected the test locator and included the test in the permanent runner.
-Final affected Workshop and role-scope rerun: 6 passed, 12 warnings in 4.25s.
-No remaining observed failure after targeted retesting. Not a single clean
-cumulative run on the final archive; cumulative gate was started before the
-last UI refinements and before the fixture corrections. Final UI refinements
-were separately verified by the targeted tests below.
+Final application snapshot: cumulative regression exit code 0.
+235 passed, 346 warnings in 224.33s (0:03:44).
+Nine new tests cover multi-image review, fine-tune settings and performer disclosure.
+Existing browser fixture changes accommodate explicit expansion and catalog snapshots.
+Warnings include existing FastAPI on_event deprecations; warnings are not failures.
 
-Targeted RC12.4 + RC12.5: 10 passed, 10 warnings in 12.19s.
-Expanded related browser/API suite: 22 passed, 10 warnings in 50.06s.
-Final seven RC12.5 cases: 7 passed, 4 warnings in 16.22s.
-Includes actual local Git clone, update, recent view, filtering, compact mode,
-role-scoped approved photo counts, stale response isolation, repeat startup.
+MOAB: ten fresh Python processes, distinct hash seeds, unchanged application code.
+1: 0 18 passed, 36 warnings in 7.38s
+2: 0 18 passed, 36 warnings in 7.46s
+3: 0 18 passed, 36 warnings in 7.57s
+4: 0 18 passed, 36 warnings in 7.78s
+5: 0 18 passed, 36 warnings in 9.86s
+6: 0 18 passed, 36 warnings in 6.14s
+7: 0 18 passed, 36 warnings in 7.08s
+8: 0 18 passed, 36 warnings in 7.20s
+9: 0 18 passed, 36 warnings in 7.36s
+10: 0 18 passed, 36 warnings in 7.64s
+180 passed test executions; zero failed executions.
 
-MOAB fresh processes, different hash seeds (each 18 cases, exit code 0):
-1: 0 18 passed, 36 warnings in 7.90s
-2: 0 18 passed, 36 warnings in 8.19s
-3: 0 18 passed, 36 warnings in 6.99s
-4: 0 18 passed, 36 warnings in 7.55s
-5: 0 18 passed, 36 warnings in 7.90s
-6: 0 18 passed, 36 warnings in 8.63s
-7: 0 18 passed, 36 warnings in 8.48s
-8: 0 18 passed, 36 warnings in 9.43s
-9: 0 18 passed, 36 warnings in 11.41s
-10: 0 18 passed, 36 warnings in 10.24s
-180 successful executions; zero failures. MOAB suite unchanged by subsequent
-fixture-only Workshop test corrections.
+Actual RC12.5 source archive local Git clone, fast-forward to RC12.6 source,
+and separate simulated native host processes:
+1.0.0-rc.12.5 seed mount, version and external state PASS
+Clean installed Git working tree PASS
+Actual source-tree fast-forward PASS
+1.0.0-rc.12.6 update mount, version and external state PASS
+Clean installed Git working tree PASS
+1.0.0-rc.12.6 restart mount, version and external state PASS
+Clean installed Git working tree PASS
+Synthetic custom prompt, production record, reference directory sentinel and new
+model preferences preserved across update and restart. No live native updater used.
+Python source AST parse and JavaScript syntax validation passed.
+Preliminary package audit: GitHub source 101 files, installation ZIP 97 files,
+exact staged source 101 files. Empty public catalog and identity aliases.
+Final package audit rerun after inserting this report; see separate package log.
 
-Actual source archive local Git simulation (separate mock host processes):
-1.0.0-rc.12.4 seed native mount + external runtime storage passed
-98 files inspected; public catalog counts: {'people': 0, 'roles': 0, 'productions': 0}
-Distribution privacy checks passed.
-Git fast-forward from RC12.4 to RC12.5 succeeded.
-1.0.0-rc.12.5 verify native mount + external runtime storage passed
-CLEAN_WORKTREE_AND_DATA_PRESERVED
-Verified synthetic custom prompt, production record, photo-directory sentinel.
-Python compile and JavaScript syntax checks passed.
-Warnings: existing FastAPI startup event deprecation warnings.
-Remaining: actual native plugin-manager installation, private repository access,
-WanGP v20.20 / Refmod-Fork / GPU, Safari, and real-server rollback/update.
+Outstanding: actual native WanGP update and Pinokio authentication persistence,
+real GPU/Refmod-Fork integration, Safari, real user's data preservation.
+Server model preferences are shared by browser clients of this installation;
+existing browser settings migrate only when no server preference file exists.
+No licensing review completed; no publication or change to GitHub made here.

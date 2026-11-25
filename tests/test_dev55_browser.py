@@ -94,6 +94,7 @@ def test_role_selection_is_identical_between_production_and_performers(page):
  tab.wait_for_function("document.querySelector('#productionCast').textContent.includes('Selected · Remove')")
  assert tab.locator('#productionCast .cast-row').nth(0).get_by_role('button',name='✓ Selected · Remove').get_attribute('aria-pressed')=='true'
  tab.evaluate("showTab('performers')")
+ tab.locator('#list article.card').filter(has=tab.get_by_role('heading',name='Zoie Palmer',exact=False)).locator('.performer-roles-toggle').click()
  assert tab.locator('#list .role button.selected').count()==1
  tab.evaluate("showTab('productions')")
  tab.wait_for_function("document.querySelector('#productionMatches').textContent.includes('Dark Matter')")

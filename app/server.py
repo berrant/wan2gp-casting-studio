@@ -727,7 +727,7 @@ def get_profile_link(name:str=Query(min_length=1,max_length=180)):
         return {'provider':'imdb','url':row[0],'verified':True} if row[0] else default
     imdb=''
     try:
-        with httpx.Client(timeout=5,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.5 (personal catalog)'}) as client:
+        with httpx.Client(timeout=5,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.6 (personal catalog)'}) as client:
             resp=client.get('https://www.wikidata.org/w/api.php',params={'action':'wbsearchentities','search':name,'language':'en','format':'json','limit':6,'type':'item'})
             resp.raise_for_status()
             candidates=[v for v in resp.json().get('search',[]) if token(v.get('label'))==token(name)]
@@ -819,7 +819,7 @@ def wikidata_get(client,params):
     raise last_error
 
 def wikidata_profile(name):
-    with httpx.Client(timeout=20, headers={'User-Agent':'CastingStudio/1.0.0-rc.12.5 (public performer metadata; respectful research)'}) as client:
+    with httpx.Client(timeout=20, headers={'User-Agent':'CastingStudio/1.0.0-rc.12.6 (public performer metadata; respectful research)'}) as client:
         search=wikidata_get(client,{
             'action':'wbsearchentities','search':name,'language':'en','format':'json','type':'item','limit':8})
         candidates=[c for c in search.get('search',[]) if token(c.get('label',''))==token(name) or
@@ -1888,7 +1888,7 @@ def download_image(url):
         if cached and safe_media_file(PHOTO_DIR,cached[0],r'[0-9a-f]{64}\.jpg'):return 'api/photos/'+cached[0]
         validate_public_url(url)
         # Disable proxies and redirects; redirects must not reach private network addresses.
-        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.0-rc.12.5)'}) as client:
+        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.0-rc.12.6)'}) as client:
             with client.stream('GET',url) as res:
                 if res.status_code!=200 or not res.headers.get('content-type','').lower().startswith('image/'):
                     return ''
@@ -3426,7 +3426,7 @@ def search_production_online(q:str=Query(min_length=2,max_length=120)):
 # Key-free film credit source. Match exact title or explicit "(film)" titles;
 # treat cast lists as suggestions for human review, not verified installed mods.
 WIKIPEDIA_API='https://en.wikipedia.org/w/api.php'
-WIKI_AGENT='CastingStudio/1.0.0-rc.12.5 (personal local catalog; Wikimedia public credits)'
+WIKI_AGENT='CastingStudio/1.0.0-rc.12.6 (personal local catalog; Wikimedia public credits)'
 def wiki_api(client,params):
     r=client.get(WIKIPEDIA_API,params={**params,'format':'json','formatversion':2},headers={'User-Agent':WIKI_AGENT})
     r.raise_for_status();return r.json()
@@ -3765,7 +3765,7 @@ def save_reference_image(item:ReferenceImageRequest):
             return {**result,'reused_local':True}
         try:validate_public_url(item.image_url)
         except Exception as e:raise HTTPException(400,str(e))
-        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.5'}) as client:
+        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.6'}) as client:
             with client.stream('GET',item.image_url) as r:
                 if r.status_code!=200 or not r.headers.get('content-type','').lower().startswith('image/'):
                     raise HTTPException(422,'Image host did not return an image')
@@ -4289,6 +4289,76 @@ def workshop_decompiled_zip(name:str=Query(min_length=3,max_length=260)):
     output.seek(0)
     return StreamingResponse(output,media_type='application/zip',headers={
         'Content-Disposition':f'attachment; filename="{Path(name).name}_Decompiled.zip"'})
+
+
+# Generation preferences live outside the git-installed plugin, independent of browser origin.
+def model_preferences_path():
+    return external_data_path(DATA/'model_preferences.json')
+
+
+def validate_model_preferences(data):
+    if not isinstance(data,dict) or set(data)!={'generator','global_loras'}:
+        raise ValueError('Invalid model preference envelope')
+    def safe(value,depth=0):
+        if depth>12:raise ValueError('Preferences nested too deeply')
+        if value is None or type(value) in (bool,int,str):return
+        if type(value) is float:
+            import math
+            if not math.isfinite(value):raise ValueError('Nonfinite preference')
+            return
+        if isinstance(value,list):
+            for item in value:safe(item,depth+1)
+            return
+        if isinstance(value,dict):
+            for key,item in value.items():
+                if key in ('__proto__','constructor','prototype'):raise ValueError('Invalid preference key')
+                safe(item,depth+1)
+            return
+        raise ValueError('Invalid preference value')
+    safe(data)
+    gen=data['generator'];loras=data['global_loras']
+    if not isinstance(gen,dict) or gen.get('version')!=1 or not isinstance(loras,dict) or loras.get('version')!=2:
+        raise ValueError('Unsupported model preference version')
+    if set(gen)-{'version','boardModel','lastImageBoard','selectedModels','modelSettings'} or set(loras)-{'version','profiles','legacy'}:
+        raise ValueError('Unknown preference field')
+    for field in ('boardModel','lastImageBoard'):
+        if not isinstance(gen.get(field),str):raise ValueError('Invalid model selection')
+    if not isinstance(gen.get('selectedModels'),dict) or not all(isinstance(v,str) for v in gen['selectedModels'].values()):raise ValueError('Invalid model selections')
+    if not isinstance(gen.get('modelSettings'),dict) or not all(isinstance(v,dict) and '::' in k for k,v in gen['modelSettings'].items()):raise ValueError('Invalid model settings')
+    for field in ('profiles','legacy'):
+        if not isinstance(loras.get(field),dict) or not all(isinstance(v,list) for v in loras[field].values()):raise ValueError('Invalid LoRA preferences')
+    return data
+
+
+@app.get('/api/settings/model-preferences')
+def get_model_preferences():
+    with lock:
+        path=model_preferences_path()
+        try:
+            data=validate_model_preferences(json.loads(path.read_text(encoding='utf-8'))) if path.exists() else None
+        except (OSError,ValueError,TypeError,RecursionError) as exc:
+            raise HTTPException(409,'Saved model settings are unreadable; original file retained.') from exc
+    return JSONResponse({'preferences':data},headers={'Cache-Control':'no-store'})
+
+
+@app.put('/api/settings/model-preferences')
+async def put_model_preferences(request:Request):
+    raw=bytearray()
+    async for chunk in request.stream():
+        if len(raw)+len(chunk)>2_000_000:raise HTTPException(413,'Model settings exceed 2 MB')
+        raw.extend(chunk)
+    try:
+        data=validate_model_preferences(json.loads(raw))
+        content=json.dumps(data,allow_nan=False,indent=2)+'\n'
+    except (ValueError,TypeError,RecursionError) as exc:raise HTTPException(422,'Invalid model settings') from exc
+    with lock:
+        path=model_preferences_path()
+        # Do not silently replace an unreadable existing settings file.
+        if path.exists():
+            try:validate_model_preferences(json.loads(path.read_text(encoding='utf-8')))
+            except (OSError,ValueError,TypeError,RecursionError) as exc:raise HTTPException(409,'Saved model settings are unreadable; original file retained.') from exc
+        atomic_state_write(path,content)
+    return {'saved':True}
 
 
 # User-owned settings backups are never part of the distributable plugin.

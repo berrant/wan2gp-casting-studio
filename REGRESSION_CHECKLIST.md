@@ -1,3 +1,14 @@
+# v1.0.0-rc.12.6 — Release gate
+
+- [x] Multi-image prompt preview, per-scene edits, save-before-queue and preview/save failure blocking (targeted Chromium tests).
+- [x] Exact-model preferences, server round trip, invalid input protection, global override restoration and fresh browser fallback/restore (targeted tests).
+- [x] Default collapsed filmographies, independent expansion, selected-role counts, role search, keyboard focus and no research on expansion (targeted Chromium tests).
+- [x] Final cumulative regression: 235 passed, zero failed; 346 warnings.
+- [x] Ten fresh-process MOAB rounds: 180 successful executions.
+- [x] Actual source-tree Git upgrade simulation and model-state restart preservation.
+- [x] Python and JavaScript syntax checks; package privacy checks and exact staged index audit. See measured TEST_RESULTS.txt.
+- [ ] Real WanGP plugin-manager update, Pinokio credential persistence, GPU generation, browser-specific behavior and user's existing data verification.
+
 # v1.0.0-rc.12.5 — GitHub edition
 
 - Cast coverage, search, empty results, compact preference and recent productions: targeted browser test.
