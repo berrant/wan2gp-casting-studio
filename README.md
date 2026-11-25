@@ -1,8 +1,16 @@
 # Casting Studio for WanGP
 
-Version: v1.0.0-rc.12.12
+Version: v1.0.0-rc.12.13
 Date: 2026-11-25
 
+
+## RC12.13 Experimental character appearance profiles
+
+- In the character information editor or the selected combinations workspace, choose **Analyze with AI** / **AI appearance profiles**. The selected character must have a known production year and saved local character artwork or approved character reference images. Collect photos with the existing reference tools first; no photos are fetched by analysis.
+- Select a native local WanGP vision model (Qwen3.5 4B preferred on first use). Other compatible variants and checkpoint formats are discovered from the running host. If the selected checkpoint files are missing, install them through WanGP's own model configuration, then retry. No downloads or external model services are initiated by this bridge.
+- Review the portrayal and 1–4 pictures per role; include up to 20 selected roles. Start analysis only when WanGP is idle. A single temporary native runtime services the batch sequentially, then is released. Cancel stops at the next safe inference boundary. Individual failed roles do not discard successful drafts. No background inference or startup model load.
+- Review and edit each proposed description, then approve explicitly. Approved traits are stored for the performer, character, production and year, not the performer's everyday identity. New template-generated H3 video, H3 still-image and FLUX prompts reuse the text without inference. Existing final custom prompt edits are not rewritten. Existing broad character/production descriptions remain fallback text. Analysis provenance (engine, checkpoint format, date and selected image hashes) is kept in the local database; standard prompt backup includes the traits, not provenance. Unapproved drafts are in memory only and are lost on host restart.
+- References without a year require your visual confirmation; saved artwork can be shared by same-title remakes in the current catalog. The selection workspace retains its existing role keys; different portrayals of an identically titled production can be analyzed separately by selecting the intended year. The bridge targets current WanGP shared-state, prompt-enhancer and MMGP internals, and fails closed when they are unavailable. The real GPU integration and quality of inferred traits require live testing; see TEST_RESULTS.txt.
 
 ## RC12.12 Visible feedback and Workshop resilience
 

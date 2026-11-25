@@ -1,18 +1,19 @@
-Casting Studio v1.0.0-rc.12.12 — Visible feedback and Workshop resilience
+Casting Studio v1.0.0-rc.12.13 — Local AI character appearance profiles
 Measured release verification (2026-11-25)
 
 FINAL COMPLETE CUMULATIVE REGRESSION GATE
-355 collected, 353 passed, 0 failed, 2 retired standalone Docker checks skipped.
-Group 1: 90 passed, 133 warnings in 129.73s (0:02:09)
-Group 2: 92 passed, 2 skipped, 118 warnings in 154.78s (0:02:34)
-Group 3: 80 passed, 88 warnings in 159.66s (0:02:39)
-Group 4: 91 passed, 142 warnings in 163.27s (0:02:43)
-Wall time: 167.42 seconds. All four exit codes: 0.
-Application and regression source fingerprints matched before and after the final gate. The focused tests do not substitute for this gate.
+362 collected, 360 passed, 0 failed, 2 retired standalone Docker checks skipped.
+Group 1: 86 passed, 108 warnings in 175.60s (0:02:55)
+Group 2: 89 passed, 2 skipped, 110 warnings in 159.55s (0:02:39)
+Group 3: 91 passed, 123 warnings in 126.81s (0:02:06)
+Group 4: 94 passed, 152 warnings in 124.54s (0:02:04)
+Wall time: 178.92 seconds. All four exit codes: 0.
+Application and regression source fingerprints matched before and after the final gate.
 
-New coverage: seven regression tests for pinned queue and photo acknowledgements, redundant Close controls, extraction prompt isolation, serialized reference saves and bounded manual review retry, stale collection failures, stale encoder discovery, and Workshop status recovery. Focused run: 17 passed.
+Seven new regression cases: native local vision adapter, model selection, exact portrayal identity, reference checks, batch approval and cancellation, stale draft and image handling, prompt integration, and browser controls.
+Earlier focused run: 10 passed; final cumulative gate supersedes it.
 
 FINAL GIT UPGRADE SIMULATION
-RC12.11 baseline seed/mount PASS; actual source-tree fast-forward PASS; RC12.12 mount and restart PASS. Synthetic external public profile, production role, personal profile and custom prompt settings preserved; SQLite integrity PASS. Clean installed Git working tree. Python and inline JavaScript syntax checks PASS.
+RC12.12 baseline seed/mount PASS; RC12.13 fast-forward, mount and restart PASS. External public profile, role, private profile, legacy identity traits and custom wardrobe settings preserved; SQLite integrity PASS; clean installed Git tree. Python and inline JavaScript syntax PASS. Actual Gradio 6.5.1 Blocks native callback registration smoke PASS (no inference).
 
-Distribution guard checks source archive, wrapped installation archive and staged source index independently. Actual WanGP host/GPU and user library integration, Safari-specific behavior, and model download or initialization requirements remain unverified. Dependency deprecation warnings remain. A passing suite is not a guarantee of zero undiscovered defects.
+Distribution guard is executed on source and installation ZIPs and a staged copy of source. Real WanGP/GPU inference, actual model assets, memory use, shared-lock behavior with real generation, Safari and character fidelity remain unverified. Host private interfaces are capability checked; future host versions may disable the feature. Deprecation warnings remain. This is a release candidate, not public v1 approval.

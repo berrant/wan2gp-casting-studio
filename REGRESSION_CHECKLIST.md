@@ -1,3 +1,9 @@
+# v1.0.0-rc.12.13 — Character appearance profiles
+
+- [x] Full cumulative test collection on final source: 360 passed, zero failed, two retired Docker skips; fingerprints unchanged. See TEST_RESULTS.txt.
+- [x] Simulated preferred 4B, model selector, exact portrayal scoping, single and batch review, native model reuse and cleanup, missing assets and busy GPU, cancellation, invalid or changed references, changed profile, expiry, existing prompt templates, no background vision calls, and backward-compatible upgrade. Gradio relay registration smoke passed.
+- [ ] On real WanGP: ensure the vision relay opens with installed 4B files; run one character and a small batch; verify GPU/RAM usage and cleanup; confirm active jobs are not interrupted; verify generation prompt and actual results in H3 and FLUX. The simulated regression suite does not establish GPU compatibility or appearance fidelity.
+
 # v1.0.0-rc.12.12 — Visible feedback and Workshop resilience release gate
 
 - [x] Pinned queue and reference collection feedback; one pinned dismiss control; last job receipt survives next-selection setup.

@@ -381,6 +381,7 @@ def connect():
         conn.execute('CREATE TABLE IF NOT EXISTS prompt_overrides (key TEXT PRIMARY KEY, payload TEXT NOT NULL)')
         conn.execute("CREATE TABLE IF NOT EXISTS final_prompt_edits (key TEXT PRIMARY KEY, choice_key TEXT NOT NULL, personal_id TEXT NOT NULL DEFAULT '', prompt TEXT NOT NULL)")
         conn.execute('CREATE TABLE IF NOT EXISTS character_identity (key TEXT PRIMARY KEY, traits TEXT NOT NULL, updated_at INTEGER NOT NULL)')
+        conn.execute('CREATE TABLE IF NOT EXISTS appearance_analysis (key TEXT PRIMARY KEY, payload TEXT NOT NULL)')
         conn.execute('CREATE TABLE IF NOT EXISTS character_identity_suggestions (key TEXT PRIMARY KEY, traits TEXT NOT NULL, source TEXT NOT NULL, checked INTEGER NOT NULL)')
         conn.commit()
     return conn
@@ -747,7 +748,7 @@ def get_profile_link(name:str=Query(min_length=1,max_length=180)):
         return {'provider':'imdb','url':row[0],'verified':True} if row[0] else default
     imdb=''
     try:
-        with httpx.Client(timeout=5,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.12 (personal catalog)'}) as client:
+        with httpx.Client(timeout=5,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.13 (personal catalog)'}) as client:
             resp=client.get('https://www.wikidata.org/w/api.php',params={'action':'wbsearchentities','search':name,'language':'en','format':'json','limit':6,'type':'item'})
             resp.raise_for_status()
             candidates=[v for v in resp.json().get('search',[]) if token(v.get('label'))==token(name)]
@@ -849,7 +850,7 @@ def wikidata_get(client,params):
     raise last_error
 
 def wikidata_profile(name):
-    with httpx.Client(timeout=20, headers={'User-Agent':'CastingStudio/1.0.0-rc.12.12 (public performer metadata; respectful research)'}) as client:
+    with httpx.Client(timeout=20, headers={'User-Agent':'CastingStudio/1.0.0-rc.12.13 (public performer metadata; respectful research)'}) as client:
         search=wikidata_get(client,{
             'action':'wbsearchentities','search':name,'language':'en','format':'json','type':'item','limit':8})
         candidates=[c for c in search.get('search',[]) if token(c.get('label',''))==token(name) or
@@ -1358,6 +1359,7 @@ def decoded_choice(key,raw):
         if any(not isinstance(item.get(field),str) for field in ('key','person','character','production','refmod')):return None
         if item['key']!=key or not item['person'].strip() or not item['refmod'].strip():return None
         if not isinstance(item.get('personal_id',''),str):return None
+        if item.get('year') is not None and (type(item['year']) is not int or not 1880<=item['year']<=2100):return None
         return item
     except (ValueError,TypeError):return None
 
@@ -1384,7 +1386,7 @@ def get_choices(response:Response=None):
     return items
 
 class Choice(BaseModel):
-    key:str; person:str; character:str; production:str; refmod:str; personal_id:str=''
+    key:str; person:str; character:str; production:str; refmod:str; personal_id:str=''; year:int|None=Field(default=None,ge=1880,le=2100)
 
 @app.put('/api/choices')
 def put_choice(item:Choice):
@@ -1413,9 +1415,11 @@ def put_choice(item:Choice):
             current=personal_row_by_id(personal['id'])
             if not current or not current['consent'] or current['name_key']!=personal['name_key'] or item.refmod not in (current['h3_refmod'],current['flux_refmod']):
                 raise HTTPException(409,'Personal profile changed during selection; refresh and try again')
-        payload=item.model_dump()
+        payload=item.model_dump(exclude_none=True)
         payload['person']=personal['name'] if personal else canonical_name(payload['person'])
         payload['personal_id']=personal['id'] if personal else ''
+        explicit_year=re.search(r'\b((?:18|19|20)\d{2})\)?\s*$',payload['production'])
+        if explicit_year and 1880<=int(explicit_year.group(1))<=2100:payload['year']=int(explicit_year.group(1))
         payload['production']=canonical_production(payload['production'])
         payload['key']=canonical_role_key(payload['person'],payload['character'],payload['production'])
         db.execute('INSERT OR REPLACE INTO choices VALUES (?,?)',(payload['key'],json.dumps(payload)))
@@ -1964,7 +1968,7 @@ def download_image(url):
         if cached and safe_media_file(PHOTO_DIR,cached[0],r'[0-9a-f]{64}\.jpg'):return 'api/photos/'+cached[0]
         validate_public_url(url)
         # Disable proxies and redirects; redirects must not reach private network addresses.
-        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.0-rc.12.12)'}) as client:
+        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.0-rc.12.13)'}) as client:
             with client.stream('GET',url) as res:
                 if res.status_code!=200 or not res.headers.get('content-type','').lower().startswith('image/'):
                     return ''
@@ -2172,9 +2176,10 @@ def portrayal_production_label(item):
             # was never manually added to the production table.
             with connect() as db:
                 local_roles=saved_cast_rows(db)
-            for role in local_roles:
-                if token(canonical_production(role.get('production','')))==token(production) and role.get('year'):
-                    year=role['year'];break
+            same=[role for role in local_roles if token(canonical_production(role.get('production','')))==token(production) and role.get('year')]
+            exact=[role for role in same if token(canonical_name(role.get('actress','')))==token(canonical_name(item.get('person',''))) and token(role.get('character',''))==token(item.get('character',''))]
+            years={str(role['year']) for role in (exact or same)}
+            if len(years)==1:year=years.pop()
     if year and str(year).isdigit() and 1880<=int(year)<=2100:
         return f'{production} ({int(year)})'
     return production
@@ -2299,11 +2304,25 @@ def cached_character_suggestion(character,production,auto=False,refresh=False):
 def character_identity_key(character,production):
     return token(character)+'|'+token(canonical_production(production))
 
-def character_identity_traits(character,production):
-    if not character or not production:return ''
-    k=character_identity_key(character,production)
+def portrayal_identity_key(character,production,person='',year=None):
+    if not person:return character_identity_key(character,production)
+    label=portrayal_production_label({'person':person,'character':character,'production':production,'year':year})
+    match=re.search(r'\((\d{4})\)$',label)
+    parts=[token(canonical_name(person)),token(character),token(canonical_production(production)),match.group(1) if match else 'undated']
+    return 'portrayal|'+hashlib.sha256(json.dumps(parts,separators=(',',':')).encode()).hexdigest()
+
+def identity_row(character,production,person='',year=None):
+    exact=portrayal_identity_key(character,production,person,year)
     with connect() as db:
-        row=db.execute('SELECT traits FROM character_identity WHERE key=?',(k,)).fetchone()
+        row=db.execute('SELECT traits FROM character_identity WHERE key=?',(exact,)).fetchone()
+        if row:return row
+        # Legacy custom descriptions remain a fallback, not a migration into all portrayals.
+        if person:return db.execute('SELECT traits FROM character_identity WHERE key=?',(character_identity_key(character,production),)).fetchone()
+    return None
+
+def character_identity_traits(character,production,person='',year=None):
+    if not character or not production:return ''
+    row=identity_row(character,production,person,year)
     if row:return row[0]
     curated=CURATED_CHARACTER_TRAITS.get(token(character),'')
     return curated or cached_character_suggestion(character,production)[0]
@@ -2311,36 +2330,44 @@ def character_identity_traits(character,production):
 class CharacterIdentityPayload(BaseModel):
     character:str=Field(min_length=1,max_length=180)
     production:str=Field(min_length=1,max_length=180)
+    person:str=Field(default='',max_length=180)
+    year:int|None=Field(default=None,ge=1880,le=2100)
     traits:str=Field(default='',max_length=2200)
 
 @app.get('/api/characters/identity')
-def get_character_identity(character:str,production:str,auto:bool=False,refresh:bool=False):
+def get_character_identity(character:str,production:str,auto:bool=False,refresh:bool=False,person:str='',year:int|None=None):
     if not character or not production:raise HTTPException(400,'Choose a public character and production')
     assert_public_name(character);assert_public_name(production)
-    with connect() as db:
-        row=db.execute('SELECT traits FROM character_identity WHERE key=?',
-                       (character_identity_key(character,production),)).fetchone()
+    if person:assert_public_name(person)
+    row=identity_row(character,production,person,year)
     curated=CURATED_CHARACTER_TRAITS.get(token(character),'')
-    # Personal profiles never call this public endpoint. For manual overrides,
-    # don't send identifying characters to external services unnecessarily.
     suggested,source=('', '') if row or curated else cached_character_suggestion(character,production,auto=auto,refresh=refresh)
     default=curated or suggested
     return {'traits':row[0] if row else default,'source':'custom' if row else ('curated' if curated else ('researched' if suggested else 'none')),
             'has_override':bool(row),'default':default,'reference':source}
 
+def validate_appearance_traits(traits):
+    if any(c in traits for c in ('<Subject 2>','wardrobe_description:','detailed_description:')):
+        raise HTTPException(400,'Character identity describes visual traits only; keep wardrobe and actions in their own template fields')
+
+def exact_identity_snapshot(key):
+    with connect() as db:
+        row=db.execute('SELECT traits,updated_at FROM character_identity WHERE key=?',(key,)).fetchone()
+    return list(row) if row else None
+
 @app.put('/api/characters/identity')
 def set_character_identity(payload:CharacterIdentityPayload):
     assert_public_name(payload.character);assert_public_name(payload.production)
-    if any(c in payload.traits for c in ('<Subject 2>','wardrobe_description:','detailed_description:')):
-        raise HTTPException(400,'Character identity describes visual traits only; keep wardrobe and actions in their own template fields')
-    key=character_identity_key(payload.character,payload.production)
+    if payload.person:assert_public_name(payload.person)
+    validate_appearance_traits(payload.traits)
+    key=portrayal_identity_key(payload.character,payload.production,payload.person,payload.year)
     with lock,connect() as db:
         if payload.traits.strip():
-            db.execute('INSERT OR REPLACE INTO character_identity VALUES (?,?,?)',
-                       (key,payload.traits.strip(),int(time.time())))
+            db.execute('INSERT OR REPLACE INTO character_identity VALUES (?,?,?)',(key,payload.traits.strip(),int(time.time())))
         else:
             db.execute('DELETE FROM character_identity WHERE key=?',(key,))
-    return {'saved':True,'traits':character_identity_traits(payload.character,payload.production)}
+        db.execute('DELETE FROM appearance_analysis WHERE key=?',(key,))
+    return {'saved':True,'traits':character_identity_traits(payload.character,payload.production,payload.person,payload.year)}
 
 # Local, explicit game-world anchors; no network lookup during generation.
 GAME_WORLD_DEFAULTS = {}
@@ -2390,7 +2417,7 @@ def prompt_for_selection(item,t,personal=False):
     portrayal=portrayal_production_label(item) if character and production and not personal else ''
     caption=' - '.join(x for x in ((actress,clean_line(item.get('relationship',''))) if personal else (actress,character,portrayal or production)) if x)
     broadcast=not personal and is_broadcast_credit(item)
-    traits=character_identity_traits(character,production) if character and production and not personal and not broadcast else ''
+    traits=character_identity_traits(character,production,item.get('person',''),item.get('year')) if character and production and not personal and not broadcast else ''
     game_character=not personal and is_video_game_character(actress)
     if personal:
         # Private profiles remain a single real person in a neutral studio.
@@ -2615,7 +2642,7 @@ def image_prompts_for_selection(item,model,template,video_template,installed,per
     filepath=person_mod['path'] if person_mod else 'MISSING_COMPATIBLE_REFMOD'
     portrayal=portrayal_production_label(item) if character and production and not personal else ''
     broadcast=not personal and is_broadcast_credit(item)
-    traits=character_identity_traits(character,production) if character and production and not personal and not broadcast else ''
+    traits=character_identity_traits(character,production,item.get('person',''),item.get('year')) if character and production and not personal and not broadcast else ''
     game_character=not personal and is_video_game_character(performer)
     if personal:
         subject=f'{performer} appearing as themselves in a photography studio.'
@@ -3633,7 +3660,7 @@ def search_production_online(q:str=Query(min_length=2,max_length=120)):
 # Key-free film credit source. Match exact title or explicit "(film)" titles;
 # treat cast lists as suggestions for human review, not verified installed mods.
 WIKIPEDIA_API='https://en.wikipedia.org/w/api.php'
-WIKI_AGENT='CastingStudio/1.0.0-rc.12.12 (personal local catalog; Wikimedia public credits)'
+WIKI_AGENT='CastingStudio/1.0.0-rc.12.13 (personal local catalog; Wikimedia public credits)'
 def wiki_api(client,params):
     r=client.get(WIKIPEDIA_API,params={**params,'format':'json','formatversion':2},headers={'User-Agent':WIKI_AGENT})
     r.raise_for_status();return r.json()
@@ -3972,7 +3999,7 @@ def save_reference_image(item:ReferenceImageRequest):
             return {**result,'reused_local':True}
         try:validate_public_url(item.image_url)
         except Exception as e:raise HTTPException(400,str(e))
-        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.12'}) as client:
+        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.13'}) as client:
             with client.stream('GET',item.image_url) as r:
                 if r.status_code!=200 or not r.headers.get('content-type','').lower().startswith('image/'):
                     raise HTTPException(422,'Image host did not return an image')
@@ -4267,6 +4294,143 @@ def workshop_photos(person:str=Query(min_length=2),production:str='',character:s
                        'character':r['character'],'width':r['width'],'height':r['height'],
                        'quality':r['quality'],'quality_rank':r['quality_rank'],'duplicate_group':r['duplicate_group'],'duplicate_of':r['duplicate_of'],'sharpness':r.get('sharpness',0),'face_count':r.get('face_count',-1),'url':'api/reference-images/file/'+r['id']} for r in rows]}
 
+
+# Local-only, explicit appearance analysis. Only current saved public casting roles
+# and their exact character artwork or approved character photos can be resolved.
+def appearance_bridge():
+    bridge=getattr(app.state,'casting_vision_bridge',None)
+    if bridge is None:raise HTTPException(503,'Open Casting Studio inside a compatible WanGP host.')
+    return bridge
+
+def appearance_role(key):
+    with connect() as db:
+        row=db.execute('SELECT payload FROM choices WHERE key=?',(key,)).fetchone()
+    choice=decoded_choice(key,row[0]) if row else None
+    if not choice or choice.get('personal_id') or not choice.get('character') or not choice.get('production') or is_broadcast_credit(choice):
+        raise HTTPException(400,'Choose a saved public character role, not a personal or broadcast profile.')
+    for name in (choice['person'],choice['character'],choice['production']):assert_public_name(name)
+    label=portrayal_production_label(choice)
+    match=re.search(r'\((\d{4})\)$',label)
+    if not match:raise HTTPException(409,'Set the production year in the catalog before analyzing this portrayal.')
+    year=int(match.group(1))
+    return {'choice_key':key,'person':choice['person'],'character':choice['character'],'production':choice['production'],'year':year,
+            'label':f"{choice['character']} portrayed by {choice['person']} in {label}",
+            'profile_key':portrayal_identity_key(choice['character'],choice['production'],choice['person'],year)}
+
+def appearance_photo_rows(role):
+    rows=rank_reference_photos(workshop_photo_rows(role['person'],role['production'],role['character']))
+    out=[]
+    for row in rows:
+        explicit=re.search(r'\b((?:18|19|20)\d{2})\)?\s*$',row['production'])
+        if explicit and int(explicit.group(1))!=role['year']:continue
+        out.append({'id':row['id'],'path':row['path'],'url':'api/reference-images/file/'+row['id'],'label':'Approved character reference '+str(row['quality_rank']),'dated':bool(explicit)})
+    # Only already archived local character artwork. Never download an image to run analysis.
+    with connect() as db:
+        row=db.execute('SELECT url FROM images WHERE key=?',('role|'+canonical_role_key(role['person'],role['character'],role['production']),)).fetchone()
+        if row and row[0].startswith('https://'):
+            local=db.execute('SELECT filename FROM photo_files WHERE url=?',(row[0],)).fetchone()
+            row=('api/photos/'+local[0],) if local else None
+    if row and row[0].startswith('api/photos/'):
+        filename=row[0].removeprefix('api/photos/')
+        path=safe_media_file(PHOTO_DIR,filename,r'[0-9a-f]{64}\.jpg')
+        if path:out.insert(0,{'id':'portrait','path':path,'url':row[0],'label':'Saved character artwork','dated':False})
+    return out
+
+@app.get('/api/appearance/options')
+def appearance_options():
+    bridge=getattr(app.state,'casting_vision_bridge',None)
+    return bridge.options() if bridge else {'ready':False,'models':[],'reason':'Native WanGP vision bridge unavailable.'}
+
+@app.get('/api/appearance/references')
+def appearance_references(choice_key:str=Query(min_length=1,max_length=500)):
+    role=appearance_role(choice_key)
+    rows=appearance_photo_rows(role)
+    with connect() as db:
+        saved=db.execute('SELECT payload FROM appearance_analysis WHERE key=?',(role['profile_key'],)).fetchone()
+    return {'role':role,'photos':[{k:v for k,v in r.items() if k!='path'} for r in rows], 'saved':json.loads(saved[0]) if saved else None}
+
+class AppearanceSelection(BaseModel):
+    choice_key:str=Field(min_length=1,max_length=500)
+    image_ids:list[str]=Field(min_length=1,max_length=4)
+class AppearanceBatch(BaseModel):
+    engine:str=Field(min_length=1,max_length=20)
+    selections:list[AppearanceSelection]=Field(min_length=1,max_length=20)
+class AppearanceApproval(BaseModel):
+    index:int=Field(ge=0,le=19)
+    traits:str=Field(min_length=1,max_length=2200)
+
+def appearance_source_bytes(task):
+    current=appearance_role(task['choice_key'])
+    if current['profile_key']!=task['profile_key']:raise HTTPException(409,'Casting portrayal changed; start a new analysis.')
+    available={r['id']:r for r in appearance_photo_rows(current)}
+    if any(i not in available for i in task['image_ids']):raise HTTPException(409,'A selected reference is no longer available or approved.')
+    data=[]; fingerprints=[]
+    for i in task['image_ids']:
+        path=available[i]['path']
+        with path.open('rb') as stream:raw=stream.read(16_000_001)
+        if len(raw)>16_000_000:raise HTTPException(422,'Reference is too large for vision analysis.')
+        data.append(raw);fingerprints.append(hashlib.sha256(raw).hexdigest())
+    return data,fingerprints
+
+def resolve_appearance_images(task):
+    data,fingerprints=appearance_source_bytes(task);images=[]
+    if fingerprints!=task['staged_fingerprints']:raise HTTPException(409,'Source images changed after selection; review and analyze again.')
+    try:
+        for raw in data:
+            with Image.open(io.BytesIO(raw)) as image:
+                if image.width*image.height>25_000_000:raise ValueError('Reference dimensions too large')
+                image=ImageOps.exif_transpose(image).convert('RGB');image.thumbnail((1024,1024),Image.Resampling.LANCZOS);images.append(image)
+        return images,fingerprints
+    except Exception:
+        for image in images:image.close()
+        raise
+
+@app.post('/api/appearance/batch')
+def appearance_batch(req:AppearanceBatch):
+    bridge=appearance_bridge(); tasks=[];seen=set()
+    for selection in req.selections:
+        role=appearance_role(selection.choice_key)
+        if role['profile_key'] in seen:raise HTTPException(400,'Duplicate portrayal in batch')
+        seen.add(role['profile_key'])
+        available={r['id'] for r in appearance_photo_rows(role)}
+        if len(set(selection.image_ids))!=len(selection.image_ids) or not set(selection.image_ids)<=available:raise HTTPException(400,'Select 1–4 available character-specific references per role')
+        task={**role,'image_ids':selection.image_ids,'baseline':exact_identity_snapshot(role['profile_key'])}
+        _,task['staged_fingerprints']=appearance_source_bytes(task)
+        tasks.append(task)
+    try:return bridge.stage(req.engine,tasks)
+    except Exception as exc:raise HTTPException(409,str(exc)[:400]) from exc
+
+@app.get('/api/appearance/batch/{job_id}')
+def appearance_status(job_id:str):
+    result=appearance_bridge().status(job_id)
+    if result is None:raise HTTPException(404,'Appearance batch unavailable; run it again.')
+    return result
+
+@app.post('/api/appearance/batch/{job_id}/cancel')
+def appearance_cancel(job_id:str):
+    if not appearance_bridge().cancel(job_id):raise HTTPException(404,'Appearance batch unavailable')
+    return {'cancelled':True}
+
+@app.post('/api/appearance/batch/{job_id}/approve')
+def appearance_approve(job_id:str,req:AppearanceApproval):
+    bridge=appearance_bridge();traits=req.traits.strip();validate_appearance_traits(traits)
+    if not traits:raise HTTPException(400,'Enter an appearance description')
+    with bridge.lock:
+        job=bridge.job
+        if not job or job['id']!=job_id or job['state'] not in ('completed','cancelled','failed'):raise HTTPException(409,'Wait for the batch to finish before approving drafts')
+        result=next((r for r in job['results'] if r['index']==req.index and r['state']=='review'),None)
+        if not result:raise HTTPException(409,'No pending draft for this portrayal')
+        key=result['profile_key']
+        with lock,connect() as db:
+            _,fingerprints=appearance_source_bytes(result)
+            if fingerprints!=result['fingerprints']:raise HTTPException(409,'Source images changed; analyze again.')
+            row=db.execute('SELECT traits,updated_at FROM character_identity WHERE key=?',(key,)).fetchone()
+            if (list(row) if row else None)!=result['baseline']:raise HTTPException(409,'A saved profile changed since analysis; existing edits retained.')
+            meta={'engine':job['engine'],'backend':job['backend'],'year':result['year'],'person':result['person'],'character':result['character'],'production':result['production'],'image_ids':result['image_ids'],'fingerprints':fingerprints,'approved_at':int(time.time())}
+            db.execute('INSERT OR REPLACE INTO character_identity VALUES (?,?,?)',(key,traits,int(time.time())))
+            db.execute('INSERT OR REPLACE INTO appearance_analysis VALUES (?,?)',(key,json.dumps(meta)))
+        result.update(state='approved',traits=traits)
+    return {'saved':True,'traits':traits}
 
 def workshop_portrait_candidates(bridge,family):
     candidates=[]
@@ -4674,7 +4838,7 @@ async def import_prompt_backup(request:Request):
                 ref=c['refmod'];parts=Path(ref).parts
                 if not parts or Path(ref).is_absolute() or '..' in parts or '\\' in ref or not ref.endswith('.safetensors'):raise ValueError('Invalid collection RefMod identifier')
                 keys.add(c['key'])
-            seen.add((prod,family));production_sets.append((prod,family,json.dumps([{k:c[k] for k in ('key','person','character','production','refmod')} for c in choices])))
+            seen.add((prod,family));production_sets.append((prod,family,json.dumps([{k:c[k] for k in ('key','person','character','production','refmod','year') if k in c} for c in choices])))
         def mapping(name):
             value=data[name]
             if not isinstance(value,dict) or len(value)>10000 or any(not isinstance(k,str) or not k or len(k)>500 for k in value):raise ValueError('Invalid '+name)
@@ -4705,6 +4869,7 @@ async def import_prompt_backup(request:Request):
         db.executemany('INSERT OR REPLACE INTO prompt_settings VALUES (?,?)',templates)
         db.executemany('INSERT OR REPLACE INTO prompt_overrides VALUES (?,?)',overrides)
         db.executemany('INSERT OR REPLACE INTO character_identity VALUES (?,?,?)',traits)
+        db.executemany('DELETE FROM appearance_analysis WHERE key=?',[(row[0],) for row in traits])
         db.executemany('INSERT OR REPLACE INTO production_selection_sets VALUES (?,?,?)',production_sets)
         for row in edits:
             if row[2] and not db.execute('SELECT 1 FROM personal_profiles WHERE id=? AND consent=1',(row[2],)).fetchone():

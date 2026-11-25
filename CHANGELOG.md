@@ -1,3 +1,10 @@
+# v1.0.0-rc.12.13 — Experimental AI character appearance profiles (2026-11-25)
+
+- Add optional local WanGP vision compatibility bridge with Qwen3.5 4B preferred, compatible model discovery and explicit batch execution. Verify assets and shared idle GPU state; no automatic downloads, global LLM configuration changes or background model loading.
+- Analyze up to four locally saved character references per portrayal, up to 20 portrayals per batch. Reuse one temporary native vision runtime; release it after completion, cancellation or errors. Drafts require individual approval.
+- Scope saved appearance traits to performer, character, production and year, preserving legacy fallback descriptions. Integrate into the existing image and video template paths without rewriting custom final prompts.
+- Revalidate source identity, approval and image fingerprints; prevent accidental overwrites from stale review drafts. Store local provenance and preserve existing prompt backups. Add targeted API, simulated native runtime and Chromium regressions.
+
 # v1.0.0-rc.12.12 — Visible feedback and Workshop resilience (2026-11-25)
 
 - Remove redundant Close controls where the pinned × already dismisses the dialog; retain keyboard dismiss and existing save/confirmation workflows.

@@ -12,7 +12,7 @@ from PIL import Image
 ROOT = 'wan2gp-casting-studio'
 FILES = {'README.md','CHANGELOG.md','REQUIREMENTS.md','REGRESSION_CHECKLIST.md',
          '__init__.py','plugin.py','plugin_info.json','compat_adapter.py','conversion_bridge.py',
-         'queue_bridge.py','workshop_bridge.py','requirements.txt','run_regression.py','check_release_privacy.py',
+         'queue_bridge.py','workshop_bridge.py','vision_bridge.py','requirements.txt','run_regression.py','check_release_privacy.py',
          'app/__init__.py','app/server.py','app/index.html','app/credit_service.py','app/credit_sync.py',
          'app/requirements.txt','app/casting_db.json','app/refmod_identities.json'}
 ICONS = {'app/icons/'+x+'.png' for x in ('adult','casting-logo','models','performers','personal','productions','workshop','television')}

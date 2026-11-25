@@ -1,11 +1,11 @@
 """Native WanGP app host for the existing Casting Studio FastAPI UI.
 
-The only WanGP integration points used are documented public plugin interfaces:
-WAN2GPPlugin.add_tab, register_web_app, and optional app navigation metadata.
+WanGP public plugin interfaces host the UI and queue. The optional vision
+bridge isolates capability-checked, private host runtime integration.
 """
 from __future__ import annotations
 
-import os
+import os, sys
 from pathlib import Path
 
 import gradio as gr
@@ -14,6 +14,7 @@ from shared.utils.plugins import WAN2GPPlugin
 
 from .compat_adapter import RefmodForkAdapter
 from .queue_bridge import QueueBridge
+from .vision_bridge import NativeVision, VisionBridge
 
 
 # WanGP's AppBar renders `icon` as SVG markup (not a Lucide icon name).
@@ -24,11 +25,13 @@ class CastingStudioPlugin(WAN2GPPlugin):
     def __init__(self):
         super().__init__()
         self.name='Casting Studio for WanGP'
-        self.version='1.0.0-rc.12.12'
+        self.version='1.0.0-rc.12.13'
         self.description='Native casting, reference-photo curation, and prompt management for Refmod-Fork.'
         self.wangp_root=Path(__file__).resolve().parents[2]
         self.adapter=RefmodForkAdapter(self.wangp_root)
         self.queue_bridge=QueueBridge(self.adapter)
+        self.vision_bridge=VisionBridge(NativeVision(sys.modules.get('wgp')))
+        self.vision_button=None
 
     def setup_ui(self):
         # WanGP v20.00 may inject a deferred session whose discovery methods
@@ -36,7 +39,6 @@ class CastingStudioPlugin(WAN2GPPlugin):
         # discovery providers; they do not bind to a browser's Gradio state.
         for global_name in ('list_model_defs', 'get_model_def', 'get_factory_settings', 'get_lora_dir'):
             self.request_global(global_name)
-        self.request_component('state')
         self.register_web_app('/casting-studio', self.create_web_app)
         self.add_tab(tab_id='casting_studio', label='Casting Studio',
                      component_constructor=self.create_ui, position=-1, icon=CASTING_TAB_ICON)
@@ -65,6 +67,9 @@ class CastingStudioPlugin(WAN2GPPlugin):
                 queue_request=gr.Textbox(elem_id='casting_queue_request', value='')
                 queue_response=gr.Textbox(elem_id='casting_queue_response', value='', interactive=False)
                 queue_button=gr.Button('Inspect or manage native queue', elem_id='casting_queue_manage_button')
+                self.vision_request=gr.Textbox(elem_id='casting_vision_request',value='')
+                self.vision_response=gr.Textbox(elem_id='casting_vision_response',value='',interactive=False)
+                self.vision_button=gr.Button('Analyze character appearance',elem_id='casting_vision_button')
             def manage_queue(request):
                 return self.queue_bridge.manage_native_queue(api_session,request)
             # The request is read in the originating browser, not shared via a
@@ -86,6 +91,15 @@ class CastingStudioPlugin(WAN2GPPlugin):
             for key in ('list_model_defs', 'get_model_def', 'get_factory_settings', 'get_lora_dir')
             if callable(getattr(self, key, None))
         }
+        if self.vision_button is not None:
+            def analyze_native(job_id):
+                from .app import server
+                native_state=self.vision_bridge.native.shared_state()
+                return self.vision_bridge.run(job_id,native_state,server.resolve_appearance_images)
+            self.vision_button.click(fn=analyze_native,inputs=self.vision_request,outputs=self.vision_response,
+                js="(unused) => [document.querySelector('#casting_vision_button')?.dataset.jobId || '']",
+                show_progress='hidden',concurrency_limit=1)
+            self.vision_bridge.ready=True
         return {}
 
     # Do not use on_tab_select to create a second WanGPSession. That session
@@ -108,6 +122,7 @@ class CastingStudioPlugin(WAN2GPPlugin):
         # its lifespan startup event; this idempotent initializer is essential.
         server.startup()
         server.app.state.casting_queue_bridge=self.queue_bridge
+        server.app.state.casting_vision_bridge=self.vision_bridge
         self.queue_bridge.history_sink=server.persist_cast_job_history
         self.queue_bridge.gallery_sink=server.persist_cast_gallery
         self.queue_bridge.restore_gallery(server.load_cast_gallery())
