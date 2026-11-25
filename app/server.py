@@ -4661,10 +4661,26 @@ def appearance_batch(req:AppearanceBatch):
     try:return bridge.stage(req.engine,tasks)
     except Exception as exc:raise HTTPException(409,str(exc)[:400]) from exc
 
+# Conservative review guard, not a semantic clothing classifier.
+# Never strip text or conflate integrated mechanical anatomy with removable armor.
+_APPEARANCE_WARDROBE = re.compile(
+    r"\b(?:clothing|costumes?|wardrobe|outfits?|uniforms|(?:a|an|military|school|dress|flight)\s+uniform|shirts?|jackets?|(?:leather|wool|winter|trench|lab)\s+coats?|"
+    r"trousers|pants|skirts?|dresses|robes?|cloaks?|boots?|shoes?|"
+    r"leather\s+straps?|utility\s+belts?|belts?|gauntlets?|gloves?|helmets?|goggles?|"
+    r"necklaces?|earrings?|bracelets?|jewelry|jewellery|holsters?|"
+    r"shoulder\s+(?:armor|armour)|chest\s+(?:armor|armour))\b",
+    re.IGNORECASE,
+)
+
+def appearance_wardrobe_flags(traits):
+    return list(dict.fromkeys(m.group(0).lower() for m in _APPEARANCE_WARDROBE.finditer(traits)))
+
 @app.get('/api/appearance/batch/{job_id}')
 def appearance_status(job_id:str):
     result=appearance_bridge().status(job_id)
     if result is None:raise HTTPException(404,'Appearance batch unavailable; run it again.')
+    for draft in result.get('results',[]):
+        if draft.get('state')=='review':draft['wardrobe_flags']=appearance_wardrobe_flags(draft.get('traits',''))
     return result
 
 @app.post('/api/appearance/batch/{job_id}/cancel')
@@ -4676,6 +4692,8 @@ def appearance_cancel(job_id:str):
 def appearance_approve(job_id:str,req:AppearanceApproval):
     bridge=appearance_bridge();traits=req.traits.strip();validate_appearance_traits(traits)
     if not traits:raise HTTPException(400,'Enter an appearance description')
+    flags=appearance_wardrobe_flags(traits)
+    if flags:raise HTTPException(400,'Possible wardrobe or removable equipment in identity: '+', '.join(flags)+'. Edit the draft to describe physical traits only; keep wardrobe in its own field.')
     with bridge.lock:
         job=bridge.job
         if not job or job['id']!=job_id or job['state'] not in ('completed','cancelled','failed'):raise HTTPException(409,'Wait for the batch to finish before approving drafts')

@@ -1,3 +1,18 @@
+Casting Studio v1.0.0-rc.12.24 — Physical identity review
+Measured verification (2026-11-25)
+
+FINAL COMPLETE CUMULATIVE REGRESSION GATE
+428 collected, 426 passed, 0 failed, 2 approved retired standalone Docker skips.
+Group 1: 109 passed, 149 warnings in 118.22s
+Group 2: 108 passed, 136 warnings in 149.85s
+Group 3: 102 passed, 136 warnings in 142.32s
+Group 4: 107 passed, 2 skipped, 144 warnings in 134.31s
+All four exit codes zero. 92 test modules each included exactly once. 565 non-failing dependency deprecation warnings. Final Python, HTML and JSON fingerprints match the tested tree. Python and inline JavaScript syntax passed.
+
+Original RC12.23 approval persisted a synthetic wardrobe-contaminated profile. Three new permanent regression cases verify the flagged draft, rejection without overwriting a previous approved profile, clean reapproval, nonhuman anatomy and prompt instructions, and browser warning without deletion. Final related focused gate: 15 passed. Exact synthetic Git upgrade RC12.23 to RC12.24 passed with preserved saved templates, approved profile, reference and model bytes, SQLite integrity and native mount. Separate fresh synthetic native installation passed. The lexical guard does not guarantee semantic wardrobe detection, can flag ambiguous terms, and leaves manual/existing approved profiles intact. No added inference, model loads or upstream changes. Live native AI output remains unverified on this candidate. The RC12.23 live checklist, active-generation protection and public asset/attribution/account review still require completion. The actual screenshot prompted this change; no real user photos or prompts are included in the new synthetic fixtures.
+
+Previous release record follows.
+
 Casting Studio v1.0.0-rc.12.23 — Final stabilization: inventory concurrency, appearance navigation and manual autosave
 Measured verification (2026-11-25)
 

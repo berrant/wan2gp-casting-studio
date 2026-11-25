@@ -1,3 +1,7 @@
+## RC12.24 — Physical identity, not wardrobe
+
+- Strengthen native vision instructions to distinguish stable character anatomy and pigmentation from removable wardrobe, equipment and lighting. Avoid contradictory iris colors and unsupported hidden traits. Flag obvious wardrobe terms on review, reject flagged approvals without modifying saved profiles, preserve editable drafts. Existing manual profiles and final prompts are untouched; no extra inference or model loads.
+
 ## RC12.23 — Final stabilization: inventory concurrency, appearance navigation and autosave
 
 - Manual physical-appearance edits in the character card, image and video editors save automatically after a short idle period. Flush edits before switching portrayals, closing or analysis; keep failed drafts available for retry. Do not infer deletion from blank text; AI analysis still requires explicit approval.

@@ -1,3 +1,8 @@
+# v1.0.0-rc.12.24 — Physical identity review
+
+- [x] Complete cumulative regression gate on final code: 426 passed, zero failed, two approved skips, 428 collected, 92 modules. Final fingerprints, syntax, synthetic exact Git upgrade and fresh installation passed.
+- [ ] Live vision inference and character wardrobe separation on native host.
+
 # v1.0.0-rc.12.23 — Final stabilization
 
 - [x] Reproduce duplicate cold scans and concurrent Personal-registration disclosure on unchanged RC12.22.

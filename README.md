@@ -1,6 +1,6 @@
 # Casting Studio for WanGP
 
-Version: v1.0.0-rc.12.23
+Version: v1.0.0-rc.12.24
 Date: 2026-11-25
 
 
@@ -42,6 +42,10 @@ These are recognized options, not a guarantee that every checkpoint, encoder, GP
 | Damaged settings or data | Back up external storage first; follow the recovery note below. Do not delete the database or reset all browser data as a first step. |
 
 For bug reports, provide plugin, WanGP and Refmod-Fork versions, platform/browser, a reproducible sequence and sanitized errors. Do not post private photographs, identities, prompts, tokens or raw databases. This is a trusted local, single-user workflow; do not expose the service to untrusted users or the public internet.
+
+## RC12.24 — Physical identity review
+
+AI appearance analysis describes traits that remain independent of costume. Obvious removable wardrobe/equipment terms are flagged and prevent AI approval until edited. Review remains necessary; this is not a semantic classifier. Existing approved and manual descriptions are unchanged.
 
 ## RC12.23 — Final stabilization: inventory concurrency and appearance navigation
 
