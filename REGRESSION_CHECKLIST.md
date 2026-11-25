@@ -1,3 +1,13 @@
+# v1.0.0-rc.12.5 — GitHub edition
+
+- Cast coverage, search, empty results, compact preference and recent productions: targeted browser test.
+- Approved photo counts isolated by performer, production and role, missing file excluded: targeted API test.
+- Repeat startup preserves prompts and production records in external storage: targeted simulated native host test.
+- Repository-root local Git clone, fast-forward, clean working tree and external sentinel: targeted Git test.
+- Inspect and audit source ZIP, manual install ZIP and exact staged files with corrected privacy checker.
+- See TEST_RESULTS.txt for cumulative and MOAB status; do not infer unrun tests passed.
+- Outstanding real WanGP: first native install, Refmod-Fork discovery, GPU generation, user data preservation, Safari, private repository access and actual native update/rollback.
+
 # v1.0.0-rc.12.4 — Cast workflow and private settings
 
 - [x] Cast collector reachable without leaving production; no search before explicit choice; performer/character scopes and Workshop return tested.

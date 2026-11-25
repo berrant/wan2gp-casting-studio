@@ -1,3 +1,14 @@
+# v1.0.0-rc.12.5 — GitHub edition (2026-11-25)
+
+- Keep the GitHub-native repository-root plugin layout and synchronize version metadata across the host plugin, UI and HTTP agents.
+- Include the corrected privacy checker supporting both archive layouts and the staged Git index.
+- Add production cast coverage filters, installed coverage progress, approved local photo counts scoped to performer/role, compact cast view, cast-name search and browser-local recent productions.
+- Explicit coverage refresh rescans model inventory; stale cast responses are ignored when the production or model changes. Returning from Workshop retains cast filters; closing collection refreshes counts.
+- Preserve external database, model libraries, browser preference keys and factory prompt defaults. Compact preference is exportable; recent production history is not.
+- No queue submission or RefMod conversion changes. Multiple RefMods per role, import preview, backup reminders and reference candidate resume remain follow-up work.
+- Repair two stale Workshop test fixtures: the role-scoped third argument and the updated browse section markup. Include the maintenance-layout case in the cumulative gate.
+- See TEST_RESULTS.txt for measured verification; native live host installation is not certified by the simulated tests.
+
 # v1.0.0-rc.12.4 — Cast workflow and private settings (2026-11-25)
 
 - Add reference collection directly to every production cast card, installed or missing. Choose general performer photos, role/production-specific character photos, or both through separate collection scopes; retain the cast context when entering and returning from Workshop. Refresh availability on return and successful creation. The collector uses explicit user actions and existing quality review.

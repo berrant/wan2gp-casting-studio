@@ -31,9 +31,11 @@ def test_flux_creation_uses_fork_payload_and_preserves_files(installation,monkey
     from cb_under_test import workshop_bridge
     source=root/'user_data/reference_photos/abc123.jpg'
     source.parent.mkdir(parents=True,exist_ok=True);source.write_bytes(b'fake image for a contract test')
-    monkeypatch.setattr(srv,'workshop_photo_rows',lambda person=None,production=None:[
-        {'id':'abc123','person':'Ada Test','production':'Sample Show','character':'Lead',
-         'path':source,'width':800,'height':900,'quality':'passed'}])
+    def mock_photo_rows(person=None,production=None,character=None):
+        return [{'id':'abc123','person':'Ada Test','production':'Sample Show','character':'Lead',
+                 'path':source,'width':800,'height':900,'quality':'passed'}] if (
+                     person in (None,'Ada Test') and production in (None,'Sample Show') and character in (None,'Lead')) else []
+    monkeypatch.setattr(srv,'workshop_photo_rows',mock_photo_rows)
     monkeypatch.setattr(plugin.adapter,'discover',lambda:{'fork_revision':58,'installed':True})
     monkeypatch.setattr(plugin.queue_bridge,'models',lambda board:[{'model_type':'flux-klein-test','name':'FLUX Klein','ready':True}] if board=='flux2_klein9' else [])
     plugin.queue_bridge.dispatch_mode='gradio'
@@ -67,7 +69,7 @@ def test_maintenance_controls_in_settings_not_performers(installation):
     client,_,_,_=installation
     html=client.get('/casting-studio/').text
     assert 'id="backgroundTools"' in html
-    main=html.split('<section id="browseSection">')[1].split('<section id="productionSection"')[0]
+    main=html.split('<section id="browseSection"')[1].split('<section id="productionSection"')[0]
     assert 'id="prefetchStatus"' not in main
     settings=html.split('<div id="settingsModal"')[1].split('<div id="aboutModal"')[0]
     for token in ('id="prefetchStatus"','id="creditsStatus"','id="enrichStatus"'):

@@ -1,11 +1,17 @@
 # Casting Studio for WanGP
 
-Version: v1.0.0-rc.12.4
+Version: v1.0.0-rc.12.5
 Date: 2026-11-25
 
 **Discover. Cast. Create.**
 
-Native WanGP plugin · Release candidate 12.4.
+Native WanGP plugin · Release candidate 12.5.
+
+## GitHub installation and cast coverage (RC12.5)
+
+The repository root is directly installable through WanGP's native Apps & PlugIn Manager. Use the repository URL (not a release ZIP URL). A private repository requires Git access from the WanGP server; authentication on a separate computer does not grant server access. Keep the existing plugin folder backed up outside `plugins/` for the first Git installation; never delete the external runtime data or model directories. Future Git-based updates can use the native update control. Check the About version after restarting.
+
+The production cast view offers a model-family coverage filter (installed, convertible, missing, or all), performer/character text filtering, an installed coverage progress indicator, and separate counts of locally available approved performer and character reference photos. The counters do not include unapproved or missing files. Bulk selection remains production-wide, not filter-wide. Compact view is remembered in browser local storage and included in settings backups. The last ten viewed productions are kept locally in the browser and can be cleared; viewing history is intentionally excluded from exported settings backups. Filtering and coverage display do not initiate online research. Use Refresh coverage to explicitly rescan installed models.
 
 ## Cast collection and private preferences (RC12.4)
 
@@ -112,18 +118,18 @@ Cast rows with installed or convertible RefMods display selection and artwork co
 
 ## Installation and transition from the beta
 
-Stop WanGP and finish active jobs. For a new installation, extract this ZIP into WanGP's `plugins/` directory, then enable Casting Studio in the host's Apps & PlugIn Manager and restart if needed. The release folder is `plugins/wan2gp-casting-studio/`.
+Finish active jobs and back up external runtime data. Preferred: install from the repository URL in the host Apps & PlugIn Manager, then restart WanGP. For manual/offline installation only, stop WanGP and extract the separately packaged installation ZIP into the `plugins/` directory. Both methods use `plugins/wan2gp-casting-studio/`. Do not overwrite a live manual installation with a Git clone.
 
 If replacing the former RefMod Casting Board beta, disable it and move its entire plugin folder out of `plugins/` to a backup location before installing this release. Do not run both applications at once. The initial release candidate intentionally starts with a new default data directory (`data/casting-studio/`) and separate browser storage keys. It does not migrate or delete the beta's database or preferences. Existing model files remain in the same Refmod-Fork model library and can be discovered by Casting Studio. Custom beta scanning paths must be re-entered or supplied using the new `CASTING_STUDIO_*` environment overrides. Do not move, rename or delete RefMod model directories or their symlinks. To revert, disable Casting Studio, move its plugin directory aside, and restore/re-enable the beta; its data remains separate.
 
-When upgrading from RC1 to RC2 or later, stop WanGP and replace only the `plugins/wan2gp-casting-studio` application folder. Keep `data/casting-studio`, browser settings and model libraries unchanged.
+For Git-installed releases, use the native update control. For a manually installed release, stop WanGP, preserve the existing plugin folder outside `plugins/`, then install the new source through the native manager. Keep `data/casting-studio`, browser settings and model libraries unchanged.
 
 ## Reversible first-run testing
 
 Stop WanGP and finish active work. Locate the external Casting Studio data directory (`data/casting-studio` relative to WanGP, or the configured `CASTING_STUDIO_DATA_DIR`). Rename it to a unique backup name without overwriting an existing directory. Keep all RefMod directories and WanGP model files unchanged. Restart WanGP and open Casting Studio in a fresh browser profile/private window. The new empty data directory will be initialized; installed RefMods may be discovered automatically. The RefMod root is auto-detected from the native mount; an equivalent custom root alias may be re-entered temporarily. To restore, stop WanGP, rename the fresh data directory to a separate unused name, then rename the backup to its original name. Restart and return to the original browser profile. This isolates Casting Studio's records, not the model library: new model files created during the test remain in that library.
 
 ## Packaging
-This ZIP is intended for WanGP plugin installation only.
+The GitHub source archive is repository-root source; the separate WanGP ZIP is for manual installation only.
 
 The responsible-use reminder remains visible at the bottom of every Casting Studio workspace and dialog. WanGP tab order remains a host preference.
 

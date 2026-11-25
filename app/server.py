@@ -727,7 +727,7 @@ def get_profile_link(name:str=Query(min_length=1,max_length=180)):
         return {'provider':'imdb','url':row[0],'verified':True} if row[0] else default
     imdb=''
     try:
-        with httpx.Client(timeout=5,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.4 (personal catalog)'}) as client:
+        with httpx.Client(timeout=5,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.5 (personal catalog)'}) as client:
             resp=client.get('https://www.wikidata.org/w/api.php',params={'action':'wbsearchentities','search':name,'language':'en','format':'json','limit':6,'type':'item'})
             resp.raise_for_status()
             candidates=[v for v in resp.json().get('search',[]) if token(v.get('label'))==token(name)]
@@ -819,7 +819,7 @@ def wikidata_get(client,params):
     raise last_error
 
 def wikidata_profile(name):
-    with httpx.Client(timeout=20, headers={'User-Agent':'CastingStudio/1.0.0-rc.12.4 (public performer metadata; respectful research)'}) as client:
+    with httpx.Client(timeout=20, headers={'User-Agent':'CastingStudio/1.0.0-rc.12.5 (public performer metadata; respectful research)'}) as client:
         search=wikidata_get(client,{
             'action':'wbsearchentities','search':name,'language':'en','format':'json','type':'item','limit':8})
         candidates=[c for c in search.get('search',[]) if token(c.get('label',''))==token(name) or
@@ -1888,7 +1888,7 @@ def download_image(url):
         if cached and safe_media_file(PHOTO_DIR,cached[0],r'[0-9a-f]{64}\.jpg'):return 'api/photos/'+cached[0]
         validate_public_url(url)
         # Disable proxies and redirects; redirects must not reach private network addresses.
-        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.0-rc.12.4)'}) as client:
+        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.0-rc.12.5)'}) as client:
             with client.stream('GET',url) as res:
                 if res.status_code!=200 or not res.headers.get('content-type','').lower().startswith('image/'):
                     return ''
@@ -3358,7 +3358,28 @@ def get_production_cast(production:str=Query(min_length=2,max_length=180),model:
         if numbered and (token(entry['actress'])+'|'+token(numbered.group(1))) in dedup:
             dedup.pop(k,None)
     missing=production_credit_candidates(production,{token(entry['actress']) for entry in dedup.values()})
-    return {'production':production,'cast':production_coverage(production,list(dedup.values()),model),
+    cast=production_coverage(production,list(dedup.values()),model)
+    # Read only locally collected, approved and available photos. Never trigger research.
+    people={token(canonical_name(r['actress'])) for r in cast}
+    counts={}
+    if people:
+        with connect() as db:
+            rows=db.execute("SELECT person,production,character,filename FROM reference_images WHERE quality_status IN ('passed','reviewed')").fetchall()
+        private=personal_name_keys()
+        for name,prod,char,file in rows:
+            who=token(canonical_name(name))
+            if who not in people or who in private:continue
+            pk=token(canonical_production(prod)) if prod else ''
+            if pk not in ('',wanted):continue
+            if not reference_file_exists(file):continue
+            k=(who,pk,token(char) if pk else '')
+            counts[k]=counts.get(k,0)+1
+    for role in cast:
+        who=token(canonical_name(role['actress']))
+        char=token(role.get('character') or '')
+        role['reference_counts']={'performer':counts.get((who,'',''),0),
+                                  'character':counts.get((who,wanted,char),0) if char else 0}
+    return {'production':production,'cast':cast,
             'unmapped_credits':missing,'unmapped_count':len(missing)}
 
 class ProductionCreditRefresh(BaseModel):
@@ -3405,7 +3426,7 @@ def search_production_online(q:str=Query(min_length=2,max_length=120)):
 # Key-free film credit source. Match exact title or explicit "(film)" titles;
 # treat cast lists as suggestions for human review, not verified installed mods.
 WIKIPEDIA_API='https://en.wikipedia.org/w/api.php'
-WIKI_AGENT='CastingStudio/1.0.0-rc.12.4 (personal local catalog; Wikimedia public credits)'
+WIKI_AGENT='CastingStudio/1.0.0-rc.12.5 (personal local catalog; Wikimedia public credits)'
 def wiki_api(client,params):
     r=client.get(WIKIPEDIA_API,params={**params,'format':'json','formatversion':2},headers={'User-Agent':WIKI_AGENT})
     r.raise_for_status();return r.json()
@@ -3744,7 +3765,7 @@ def save_reference_image(item:ReferenceImageRequest):
             return {**result,'reused_local':True}
         try:validate_public_url(item.image_url)
         except Exception as e:raise HTTPException(400,str(e))
-        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.4'}) as client:
+        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.5'}) as client:
             with client.stream('GET',item.image_url) as r:
                 if r.status_code!=200 or not r.headers.get('content-type','').lower().startswith('image/'):
                     raise HTTPException(422,'Image host did not return an image')

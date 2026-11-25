@@ -5,6 +5,6 @@
 - Check that `plugin_info.json`, `plugin.py`, `README.md`, `app/` and `tests/` are at the repository root.
 - Keep the original WanGP installation ZIP separate from the GitHub source archive. The installation ZIP has the required `wan2gp-casting-studio/` wrapper. GitHub's automatic source downloads are not the tested installation ZIP.
 - Before public release, settle licensing and review upstream provenance. Do not imply official endorsement or complete compatibility testing.
-- The RC12.4 targeted test run passed 31 cases; the cumulative gate timed out. Live WanGP v20.20, GPU and Safari integration remain unverified. See `TEST_RESULTS.txt`.
-- For a local release package, run `python check_release_privacy.py path/to/WanGP-release.zip` from this source tree. This guard checks the installation archive, not the GitHub source bundle or Git history.
-- Once ready, create tag `v1.0.0-rc.12.4` and mark the GitHub release as a pre-release. Upload the unchanged installation ZIP as the release asset.
+- See `TEST_RESULTS.txt` for current measured results. Live WanGP v20.20, GPU, private-repository authentication, and Safari integration require installation testing.
+- Run `python check_release_privacy.py --git-index` after staging. The checker also supports normalized source and installation ZIP files with the ZIP path as argument. This guard does not inspect prior Git history or author metadata.
+- Once ready, create tag `v1.0.0-rc.12.5` and mark the GitHub release as a pre-release. Upload the unchanged installation ZIP as the release asset.
