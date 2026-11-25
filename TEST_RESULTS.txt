@@ -1,3 +1,19 @@
+Casting Studio v1.0.0 — Initial stable release preparation
+Measured verification (2026-11-25)
+
+FINAL COMPLETE CUMULATIVE REGRESSION GATE
+442 collected, 440 passed, zero failures, two approved retired standalone Docker skips.
+Group 1: 152 passed, 2 skipped, 217 warnings in 135.31s (0:02:15)
+Group 2: 131 passed, 142 warnings in 161.34s (0:02:41)
+Group 3: 157 passed, 232 warnings in 139.72s (0:02:19)
+All three exit codes zero; all 94 test modules covered exactly once. 591 non-failing warnings. Final Python, HTML and JSON fingerprints match the tested tree. Python, JSON and inline JavaScript syntax checks passed.
+
+Exact RC12.26 synthetic Git upgrade and separate fresh installation passed, preserving existing prompt templates, approved profiles, reference and model bytes and SQLite integrity. No unexpected tracked-file deletions. Staged index checked 131 files; empty shipped catalogs. Final archives subject to separate packaging verification.
+
+The maintainer reported 13/13 RC12.25 and 6/6 RC12.26 live acceptance passes. These do not establish live acceptance of every model/host combination or the final v1.0.0 installation. v1.0.0 promotes RC12.26 with MIT licensing, generic copyright attribution, synchronized version metadata and updated documentation. No generation, model, schema or upstream changes. The maintainer reports GitHub email privacy settings enabled. Actual repository history, rights clearance, launch approval and public native installation remain separate publisher-side tasks. Trusted local use only.
+
+Previous release record follows.
+
 Casting Studio v1.0.0-rc.12.26 — Pre-release reference validation
 Measured verification (2026-11-25)
 

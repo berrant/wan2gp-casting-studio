@@ -1,9 +1,9 @@
 # Casting Board — cumulative requirements
 
-Authoritative release baseline: v1.0.0-rc.12.26, cleared for private installation testing after its complete final regression gate. Do not build from earlier ZIPs. Before making a release, compare this document and REGRESSION_CHECKLIST.md with the working tree; retain user data outside the package. The requirements below were recovered from development chats and earlier release notes, not inferred from the newest code alone.
+Authoritative development baseline: v1.0.0-rc.12.26, with all reported focused live acceptance checks passed. The v1.0.0 build promotes this baseline and adopts MIT; publication remains subject to clearance. Do not build from earlier ZIPs. Before making a release, compare this document and REGRESSION_CHECKLIST.md with the working tree; retain user data outside the package. The requirements below were recovered from development chats and earlier release notes, not inferred from the newest code alone.
 
 ## Integration and packaging
-- Native WanGP plugin only, no Docker distribution, no patches to WanGP or Refmod-Fork core. Use documented native session/Gradio queue integration; check installed models and custom settings. Correct native queue submission is the acceptance criterion, not whether a GPU can render it. Target portable Windows/macOS/Linux paths, UTF-8, no developer machine paths, private databases, identity mappings, photos, selections, LoRA preferences or inventory shipped. Preserve external user data. Full cumulative ZIP. Use the current v1.0.0-rc.12.x release sequence; synchronize metadata at release boundaries.
+- Native WanGP plugin only, no Docker distribution, no patches to WanGP or Refmod-Fork core. Use documented native session/Gradio queue integration; check installed models and custom settings. Correct native queue submission is the acceptance criterion, not whether a GPU can render it. Target portable Windows/macOS/Linux paths, UTF-8, no developer machine paths, private databases, identity mappings, photos, selections, LoRA preferences or inventory shipped. Preserve external user data. Full cumulative ZIP. Synchronize version metadata at release boundaries; do not create unnecessary release candidates.
 - Dynamic model and RefMod discovery including supported H3 and FLUX families and nested folders. Reject missing or ambiguous models/invalid files. Do not silently substitute identities. Keep path checks and private/public separation.
 
 ## Workspace and discovery
@@ -215,7 +215,7 @@ Whole-batch cancellation is latched across manifest boundaries; native cancellat
 - Native vision relay readiness follows actual successful callback registration inside the owning Gradio UI. Main-form hooks may run before plugin tab creation (verified against WanGP 20.20 commit `72d50753`); callback registration cannot depend on their order. Preserve queue callbacks and fail closed when binding fails.
 
 ## RC12.18 Licensing
-- Adopt selected PolyForm Noncommercial 1.0.0 by reference to official terms, include license and notices in both archives, preserve upstream and output rights, document commercial permission and contributions, and verify packaging. No runtime enforcement. Public release requires attribution and provenance clearance.
+- Use the complete MIT License text with generic project copyright attribution (supersedes the earlier noncommercial decision). Include license and notices in both archives, preserve upstream and output rights, document MIT contributions, and verify packaging. No personal name or email in project attribution, no runtime enforcement. Public release requires rights and repository privacy clearance.
 
 ## RC12.19 Dialog stacking
 - The latest open dialog must be visually and interactively above its parents regardless of DOM order. Preserve the analysis state when collecting, including when another character editor remains open. Close and Escape use existing lifecycle guards; inspection lightbox remains usable and the fixed footer stays visible.

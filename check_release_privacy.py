@@ -29,7 +29,7 @@ CATALOG_KEYS={'people':{'name','type','credits','actress'},'roles':{'actress','c
 
 GITHUB_FILES = {'.gitignore','PUBLISHING.md','TEST_RESULTS.txt'}
 
-LICENSE_SHA256 = '026ef905367dd50b07dd541fd81acb1f9c6e2a29368d55d67cdf53db0e8955b4'
+LICENSE_SHA256 = 'bfe97446ba65ca1b6ec10cb33a6c969ebdac53ab4f04cb7a300b7049d69e604c'
 REQUIRED_NOTICE = "Required Notice: Copyright (c) 2026 Casting Studio's respective copyright holders (https://github.com/berrant/wan2gp-casting-studio)."
 
 def audit(path):

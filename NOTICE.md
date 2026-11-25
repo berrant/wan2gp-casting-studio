@@ -10,9 +10,9 @@ Casting Studio for WanGP is a community plugin, not an official WanGP, Refmod-Fo
 
 Required Notice: Copyright (c) 2026 Casting Studio's respective copyright holders (https://github.com/berrant/wan2gp-casting-studio).
 
-The publisher has selected PolyForm Noncommercial License 1.0.0 for the portions it has rights to license. See LICENSE for the authoritative terms. Third-party materials retain their own applicable terms. Private testing only pending final attribution, contribution rights and publisher clearance. The repository handle is a contact identifier, not proof of exclusive ownership.
+Casting Studio uses the MIT License (SPDX: MIT) for material the respective rights holders have authority to license. The complete terms are in LICENSE. Commercial use, modification and redistribution are permitted subject to the license notices. Third-party materials retain their own terms. The generic project attribution avoids publishing personal names or email addresses; it does not establish exclusive ownership.
 
-For uses outside permitted purposes, obtain separate written permission from applicable rights holders through the project maintainer (https://github.com/berrant/wan2gp-casting-studio). No commercial license is granted by this notice. The plugin does not claim ownership of independently generated outputs; software, upstream terms and rights in source materials and outputs remain separate.
+The plugin does not claim ownership of independently generated outputs; software, upstream terms and rights in source materials and outputs remain separate. Private testing remains in effect pending publisher clearance.
 
 ## Public-release provenance gate
 

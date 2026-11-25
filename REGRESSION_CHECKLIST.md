@@ -1,8 +1,16 @@
+# v1.0.0 — Initial stable release preparation
+- [x] RC12.26 focused live acceptance: 6/6 maintainer-reported passes.
+- [x] MIT selected with generic attribution; maintainer reports GitHub email privacy settings configured.
+- [x] Final cumulative gate: 440 passed, zero failed, two approved skips, 442 collected, 94 modules. See TEST_RESULTS.txt.
+- [x] Synthetic upgrade, fresh installation and staged-source audit passed. Final archive audits required before delivery.
+- [ ] Repository historical privacy, applicable rights, explicit public launch approval and public installation verification.
+
 # RC12.26 — Reference integrity and failure reporting
 - Six permanent tests: truncated portrait, corrupt approved reference, replacement recovery, exact selected-byte validation, disappearing file, complete and partial failure (some tests cover multiple checks).
 - [x] Final complete cumulative gate: 442 collected, 440 passed, zero failures, two approved skips; 94 test modules; three zero exit codes. See TEST_RESULTS.txt.
 - [x] Maintainer confirmed artwork was created by ChatGPT during development; historical creation records not independently examined.
-- [ ] Focused live checks, final rights/attribution and publisher review remain pending.
+- [x] Maintainer reports all six RC12.26 focused live checks passed.
+- [ ] Final rights and publisher review remain pending.
 
 # RC12.25 — Deferred appearance analysis
 - Waiting batch visible independently of native generation queue; one batch only; cancel while waiting and running; reject permanent errors; stale reference/model checks; no retry of completed inference; release lock if generation joins before model load; reopen review from server status.
@@ -468,7 +476,7 @@ Use a Python environment with plugin dependencies, pytest and optional Playwrigh
 - [x] Native lifecycle: omitted, early, late and repeated hooks; actual host-order nested Blocks/tab simulation; exactly one registered event for each native relay; failed binding cannot report ready. No GPU inference in synthetic tests.
 
 ## RC12.18 Licensing
-- Local legal routes, About links, missing/unknown documents, required archive legal files and tamper rejection. Public release requires ownership and provenance confirmation.
+- Local legal routes, About links and current MIT label, missing/unknown documents, required archive legal files and tamper rejection. Public release requires ownership and provenance confirmation.
 
 ## RC12.19 Nested dialog stacking
 - [x] Reproduce parent intercepting collector pointer events on RC12.18.

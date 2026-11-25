@@ -2,6 +2,6 @@
 
 Bug reports and suggested improvements are welcome. Do not submit private data, photographs, model weights, secrets or material you do not have permission to share.
 
-The project intends to preserve separate commercial licensing options. Before merging outside code or assets, the maintainer must establish contributor rights and obtain a written agreement covering intended noncommercial distribution and any intended commercial relicensing. A pull request alone is not a copyright assignment or additional commercial grant. Until appropriate terms are agreed, do not merge outside code or assets. Preserve third-party notices and terms.
+Submit project contributions under the MIT License (see LICENSE). By submitting a contribution for inclusion, you represent that you have the rights and permissions needed to offer it under these terms. Clearly identify any third-party material and preserve all required notices and terms. A contribution is not a copyright assignment. Maintainers must verify compatibility and permissions before accepting outside code or assets.
 
-Contact the maintainer via https://github.com/berrant/wan2gp-casting-studio; do not post confidential licensing information in public issues. This policy grants no commercial permission.
+Use the project repository for contact and avoid posting personal identities, private email addresses or confidential information in public issues. Pseudonymous contributions are welcome, subject to applicable third-party attribution requirements.

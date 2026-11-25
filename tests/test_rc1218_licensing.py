@@ -27,6 +27,9 @@ def test_about_links(page):
     tab,errors=page
     tab.evaluate("$('aboutModal').classList.add('open')")
     dialog=tab.locator('#aboutModal')
+    assert 'MIT License' in dialog.inner_text()
+    assert 'PolyForm Noncommercial' not in dialog.inner_text()
+    assert dialog.get_by_role('link',name='Project repository',exact=True).is_visible()
     for name,url in [('License','api/legal/license'),('Notices','api/legal/notice')]:
         link=dialog.get_by_role('link',name=name,exact=True)
         assert link.is_visible() and link.get_attribute('href')==url

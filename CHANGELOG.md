@@ -1,3 +1,8 @@
+## v1.0.0 — Initial stable release preparation
+
+- Maintainer selected MIT instead of the prior noncommercial license, using generic project attribution without personal names or email. Update About, notices, contribution policy, documentation and archive license integrity check. No generation or workflow changes.
+- Maintainer reported 6/6 RC12.26 focused live checks passed. Public repository privacy review, rights clearance and launch approval remain outstanding. Version metadata synchronized to v1.0.0.
+
 ## RC12.26 — Pre-release reference validation
 
 - Exclude unreadable or oversized character artwork and approved reference images from AI appearance selection; cache bounded file metadata, not pixels, with file-change invalidation.

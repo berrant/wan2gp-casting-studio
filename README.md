@@ -1,12 +1,12 @@
 # Casting Studio for WanGP
 
-Version: v1.0.0-rc.12.26
+Version: v1.0.0
 Date: 2026-11-25
 
 
-## License and commercial inquiries
+## License
 
-Casting Studio is source-available, not OSI open-source. The publisher selects [PolyForm Noncommercial 1.0.0](LICENSE) for independently licensable project material. Noncommercial use, modifications and distribution are permitted, including the specific organizational uses allowed by the standard terms. Uses outside those terms require separate written authorization from applicable rights holders. Contact the [project maintainer](https://github.com/berrant/wan2gp-casting-studio). See [notices](NOTICE.md) and [contribution policy](CONTRIBUTING.md). No upstream rights or ownership of user outputs are granted or claimed. The official terms control. Private testing only pending provenance and attribution clearance.
+Casting Studio uses the [MIT License](LICENSE) for independently licensable project material. Use, modification, distribution and commercial use are permitted subject to the license notices. See [notices](NOTICE.md) and [contribution policy](CONTRIBUTING.md). WanGP, Refmod-Fork and other third-party material retain their applicable terms; no upstream rights or ownership of user outputs are granted or claimed. The project uses generic attribution without a personal name or email. Publication requires publisher clearance; version 1.0.0 does not itself authorize publication.
 
 ## Quick start
 
@@ -26,7 +26,7 @@ Casting Studio is a native local WanGP plugin for building a cast, organizing re
 | MiniMax H3 stills | H3-Image 33B, H3-Image Pruned 20B, Pruna P-H3-Image 20B |
 | FLUX stills | FLUX.2 Dev, Klein 4B, Klein 9B, pi-FLUX.2, FLUX.3 Klein |
 
-These are recognized options, not a guarantee that every checkpoint, encoder, GPU or operating system combination is installed or has been tested. Refmod-Fork compatibility is checked using metadata and live capabilities; an unsupported model or unavailable exact checkpoint is not silently substituted. Vision uses the compatible locally installed WanGP engines discovered by the bridge. The maintainer reported successful live RC12.22 tests of image/video previews, cancellation, bidirectional RefMod conversion, Workshop creation/decompilation, appearance inference, GPU cleanup, prompt/caption behavior and Git update on WanGP 20.20 (revision 72d50753). The maintainer subsequently reported 13/13 RC12.25 live checks passed, including deferred GPU scheduling, waiting/running cancellation, Safari reload recovery, correct portrayal navigation, autosave and wardrobe separation. Independent testing of other configurations remains outstanding. RC12.26 changes require focused live verification.
+These are recognized options, not a guarantee that every checkpoint, encoder, GPU or operating system combination is installed or has been tested. Refmod-Fork compatibility is checked using metadata and live capabilities; an unsupported model or unavailable exact checkpoint is not silently substituted. Vision uses the compatible locally installed WanGP engines discovered by the bridge. The maintainer reported successful live RC12.22 tests of image/video previews, cancellation, bidirectional RefMod conversion, Workshop creation/decompilation, appearance inference, GPU cleanup, prompt/caption behavior and Git update on WanGP 20.20 (revision 72d50753). The maintainer subsequently reported 13/13 RC12.25 live checks passed, including deferred GPU scheduling, waiting/running cancellation, Safari reload recovery, correct portrayal navigation, autosave and wardrobe separation. Independent testing of other configurations remains outstanding. The maintainer subsequently reported all six RC12.26 focused live checks passed, including valid references, prior profile preservation, batch review and approval, generation recovery and explicit inventory refresh.
 
 ### Troubleshooting
 
@@ -86,7 +86,7 @@ The newest dialog is visually above its parents and receives keyboard focus. Col
 
 ## RC12.18 — Licensing and distribution
 
-Both archives require license, notices and contribution policy. About provides local read-only documents and a commercial licensing contact. No runtime license enforcement or generation changes.
+Both archives require license, notices and contribution policy. About provides local read-only documents and a project repository link. Originally introduced under the prior license; the current project license is MIT. No runtime license enforcement or generation changes.
 
 ## RC12.17 — Character image review and collection
 
