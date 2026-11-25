@@ -10,7 +10,7 @@ import ast, hashlib, io, json, re, stat, subprocess, sys, zipfile
 from PIL import Image
 
 ROOT = 'wan2gp-casting-studio'
-FILES = {'LICENSE','NOTICE.md','CONTRIBUTING.md','README.md','CHANGELOG.md','REQUIREMENTS.md','REGRESSION_CHECKLIST.md',
+FILES = {'LICENSE','NOTICE.md','CONTRIBUTING.md','SECURITY.md','README.md','CHANGELOG.md','REQUIREMENTS.md','REGRESSION_CHECKLIST.md',
          '__init__.py','plugin.py','plugin_info.json','compat_adapter.py','conversion_bridge.py',
          'queue_bridge.py','workshop_bridge.py','vision_bridge.py','requirements.txt','run_regression.py','check_release_privacy.py',
          'app/__init__.py','app/server.py','app/index.html','app/credit_service.py','app/credit_sync.py',

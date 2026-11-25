@@ -30,13 +30,13 @@ def test_all_navigation_artwork_served_and_decoded(installation):
         # exact HTTP response bytes in the browser without network navigation.
         for key,content in icons.items():
             src='api/ui/icons/'+key
-            assert 'src="'+src+'"' in html
+            if key!='adult':assert 'src="'+src+'"' in html
             uri='data:image/png;base64,'+base64.b64encode(content).decode('ascii')
             html=html.replace('src="'+src+'"','src="'+uri+'"')
         page.set_content(html,wait_until='domcontentloaded')
         page.locator('#peopleMenuButton').click()
         page.wait_for_function("[...document.querySelectorAll('#peopleMenu img,#navTabs .tab-icon,.brand-mark')].every(i=>i.complete&&i.naturalWidth>0)")
-        for key in ('performers','personal','adult','models','television'):
+        for key in ('performers','personal','models','television'):
             row=page.locator('[data-people-category="'+key+'"]')
             assert row.locator('img').bounding_box()['width']>=30
             assert row.locator('img').bounding_box()['x']<row.locator('span').bounding_box()['x']

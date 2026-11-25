@@ -13,7 +13,7 @@ def test_navigation_labels_and_responsive_picker():
         page=b.new_page(viewport={'width':1440,'height':900});page.set_default_timeout(5000)
         page.evaluate(setup_js);page.set_content(HTML,wait_until='domcontentloaded')
         picker=page.locator('#peopleMenuButton');menu=page.locator('#peopleMenu')
-        assert menu.locator('button span').all_text_contents()==['Performers','Personal','Adult Entertainment','Models / Influencers','Television Personalities']
+        assert menu.locator('button span').all_text_contents()==['Performers','Personal','Models / Influencers','Television Personalities']
         for width in [1440,1024,768,600,360]:
             page.set_viewport_size({'width':width,'height':900})
             for selector in ['#productionsTab','#workshopTab','#peopleMenuButton']:
@@ -24,7 +24,7 @@ def test_navigation_labels_and_responsive_picker():
             picker.click();assert menu.is_visible()
             box=menu.bounding_box();assert box['x']>=0 and box['x']+box['width']<=width+1
             page.keyboard.press('Escape');assert not menu.is_visible()
-        for value in ['performers','personal','adult','models','television']:
+        for value in ['performers','personal','models','television']:
             picker.click();menu.locator('[data-people-category="'+value+'"]').click()
             assert page.evaluate('activeTab')==value
             assert menu.locator('[data-people-category="'+value+'"]').get_attribute('aria-pressed')=='true'

@@ -1,3 +1,13 @@
+## v1.0.1 — Legal, privacy and responsible-use update
+
+- Move the optional Adult Entertainer classification into the normal multi-category editor; preserve the existing local markers and other categories. Remove the dedicated navigation entry and special card flag. Retain legacy navigation compatibility as an ordinary filter. No change to search, generation or RefMod files.
+- Add visible TVMaze, Wikipedia and Wikidata links and third-party data/media notices. Add SECURITY.md with private reporting instructions and a privacy/likeness/copyright reporting procedure. Clarify historic private-testing language.
+- Add a versioned, explicit local responsible-use acknowledgment, enforced on covered generation, prompt export, reference collection, analysis and Workshop submission routes. No personal identification or telemetry; browsing, cancellation, deletion and consent revocation remain available. Acknowledgment does not verify consent or prevent misuse.
+- Require fresh explicit confirmation when a consented Personal profile changes name or linked RefMods. Keep existing unchanged consent records and all profile/model data; improve consent wording and clarify already submitted native jobs cannot necessarily be recalled.
+- Add source-level links for new cast credits, Wikipedia trait suggestions and collected reference images. Preserve existing local records and their legacy provenance; no automated Fandom scraping or search-excerpt identity suggestions. Use a project URL in Wikimedia client identification. Request strict safe search for DDGS queries; provider rights and result accuracy are not guaranteed.
+- Pin server image downloads to checked public addresses, retain TLS/HTTP hostname, reject private/mixed DNS, proxies, redirects, compressed transfer and over-limit streams. Guard manual photo save, reference export and legacy photo archiving with the acknowledgment; extend exact Personal-name/alias guards across photo keys and public research fields; skip matching keys in legacy archive and prefetch workers. No data deletion.
+- Maintainer reported 5/5 final v1.0.0 live acceptance passes and a satisfactory repository history audit. v1.0.1 live acceptance, actual provider compatibility, applicable rights and publisher settings remain separate checks. No public release authorized by the working copy.
+
 ## v1.0.0 — Initial stable release preparation
 
 - Maintainer selected MIT instead of the prior noncommercial license, using generic project attribution without personal names or email. Update About, notices, contribution policy, documentation and archive license integrity check. No generation or workflow changes.

@@ -2,11 +2,11 @@ import json, os, re, sqlite3, threading, time, random, hashlib, socket, ipaddres
 from pathlib import Path
 from functools import lru_cache
 from urllib.parse import quote, urlencode
-from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi import FastAPI, HTTPException, Query, Request, Depends
 from fastapi.responses import FileResponse, Response, StreamingResponse, JSONResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.concurrency import run_in_threadpool
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, StrictBool
 import httpx
 from PIL import Image, ImageOps, UnidentifiedImageError
 from bs4 import BeautifulSoup
@@ -346,6 +346,7 @@ def startup():
 def connect():
     conn=sqlite3.connect(external_data_path(DATA/'casting.sqlite3'),timeout=20)
     with schema_lock:
+        conn.execute('CREATE TABLE IF NOT EXISTS responsible_use (id INTEGER PRIMARY KEY CHECK(id=1), version TEXT NOT NULL, acknowledged_at INTEGER NOT NULL)')
         conn.execute('CREATE TABLE IF NOT EXISTS identity_names (key TEXT PRIMARY KEY, display_name TEXT NOT NULL)')
         conn.execute('CREATE TABLE IF NOT EXISTS choices (key TEXT PRIMARY KEY, payload TEXT NOT NULL)')
         conn.execute('CREATE TABLE IF NOT EXISTS production_selection_sets (production TEXT NOT NULL, family TEXT NOT NULL, payload TEXT NOT NULL, PRIMARY KEY(production,family))')
@@ -681,6 +682,40 @@ def changelog():
     if not path.is_file():raise HTTPException(404,'Changelog not found')
     return FileResponse(path,media_type='text/markdown',headers={'Cache-Control':'no-store'})
 
+# Local installation-level acknowledgment, not identity or consent verification.
+# Deliberately separate from exportable settings/backups and software licensing.
+RESPONSIBLE_USE_VERSION='2026-11-25.1'
+RESPONSIBLE_USE_RULES=[
+    'I will not create or distribute nonconsensual intimate or sexualized imagery of identifiable people, including synthetic imagery.',
+    'I will not create sexual or exploitative imagery of minors, including synthetic depictions.',
+    'I will not use this tool for fraud, deceptive impersonation, harassment or abuse.',
+    'I will respect applicable law, privacy, copyright, likeness rights and source/model terms, and obtain appropriate permission and consent.',
+]
+
+class ResponsibleUseAcknowledgment(BaseModel):
+    version:str=Field(max_length=40)
+    accepted:StrictBool
+
+@app.get('/api/responsible-use')
+def responsible_use_status():
+    with connect() as db:
+        row=db.execute('SELECT version FROM responsible_use WHERE id=1').fetchone()
+    return JSONResponse({'version':RESPONSIBLE_USE_VERSION,'acknowledged':bool(row and row[0]==RESPONSIBLE_USE_VERSION),'rules':RESPONSIBLE_USE_RULES},headers={'Cache-Control':'no-store'})
+
+@app.post('/api/responsible-use')
+def acknowledge_responsible_use(item:ResponsibleUseAcknowledgment):
+    if item.version!=RESPONSIBLE_USE_VERSION:raise HTTPException(409,'Responsible-use policy has changed; reload and review it')
+    if not item.accepted:raise HTTPException(400,'Explicit acknowledgment required')
+    with lock,connect() as db:
+        db.execute('INSERT OR REPLACE INTO responsible_use VALUES (1,?,?)',(RESPONSIBLE_USE_VERSION,int(time.time())))
+    return responsible_use_status()
+
+def require_responsible_use():
+    with connect() as db:
+        row=db.execute('SELECT version FROM responsible_use WHERE id=1').fetchone()
+    if not row or row[0]!=RESPONSIBLE_USE_VERSION:
+        raise HTTPException(403,'Review and acknowledge Responsible use in Casting Studio before starting this operation')
+
 @app.get('/api/legal/{document}')
 def legal_document(document: str):
     filename = {'license': 'LICENSE', 'notice': 'NOTICE.md'}.get(document)
@@ -722,6 +757,8 @@ def get_profile_categories():
 class ProfileCategories(BaseModel):
     name:str=Field(min_length=1,max_length=150)
     categories:list[str]=Field(default_factory=list,max_length=8)
+    # Compatibility: omitted means preserve the existing local classification.
+    adult:bool|None=None
 
 @app.put('/api/profiles/categories')
 def put_profile_categories(item:ProfileCategories):
@@ -734,6 +771,9 @@ def put_profile_categories(item:ProfileCategories):
             if token(canonical_name(old))==token(name) and old!=name:
                 db.execute('DELETE FROM profile_categories WHERE name=?',(old,))
         db.execute('INSERT OR REPLACE INTO profile_categories(name,categories) VALUES (?,?)',(name,json.dumps(item.categories)))
+        if item.adult is not None:
+            # One transaction for the normal categories and the legacy marker.
+            write_adult_marker(db,token(name),item.adult)
     return {'saved':True}
 
 
@@ -751,6 +791,13 @@ class ProfileMarker(BaseModel):
     name:str=Field(min_length=1,max_length=180)
     adult:bool
 
+def write_adult_marker(db,name_key,adult):
+    # Legacy storage remains compatible with existing installations and aliases.
+    for (old,) in db.execute('SELECT name FROM profile_markers').fetchall():
+        if token(canonical_name(old))==name_key:
+            db.execute('DELETE FROM profile_markers WHERE name=?',(old,))
+    db.execute('INSERT OR REPLACE INTO profile_markers(name,adult) VALUES (?,?)',(name_key,int(adult)))
+
 @app.put('/api/profiles/markers')
 def put_profile_marker(item:ProfileMarker):
     with lock:
@@ -759,11 +806,7 @@ def put_profile_marker(item:ProfileMarker):
         if name_key not in {token(p['name']) for p in normalized_catalog(discovery=True)[0]}:
             raise HTTPException(404,'Known public profile not found')
         with connect() as db:
-            # Collapse older aliases for this marker so clearing is authoritative.
-            for (old,) in db.execute('SELECT name FROM profile_markers').fetchall():
-                if token(canonical_name(old))==name_key:
-                    db.execute('DELETE FROM profile_markers WHERE name=?',(old,))
-            db.execute('INSERT OR REPLACE INTO profile_markers(name,adult) VALUES (?,?)',(name_key,int(item.adult)))
+            write_adult_marker(db,name_key,item.adult)
     return {'name':item.name,'adult':item.adult}
 
 @app.get('/api/profiles/link')
@@ -789,7 +832,7 @@ def get_profile_link(name:str=Query(min_length=1,max_length=180)):
         return {'provider':'imdb','url':row[0],'verified':True} if row[0] else default
     imdb=''
     try:
-        with httpx.Client(timeout=5,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.20 (personal catalog)'}) as client:
+        with httpx.Client(timeout=5,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.1 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
             resp=client.get('https://www.wikidata.org/w/api.php',params={'action':'wbsearchentities','search':name,'language':'en','format':'json','limit':6,'type':'item'})
             resp.raise_for_status()
             candidates=[v for v in resp.json().get('search',[]) if token(v.get('label'))==token(name)]
@@ -891,7 +934,7 @@ def wikidata_get(client,params):
     raise last_error
 
 def wikidata_profile(name):
-    with httpx.Client(timeout=20, headers={'User-Agent':'CastingStudio/1.0.0-rc.12.20 (public performer metadata; respectful research)'}) as client:
+    with httpx.Client(timeout=20, trust_env=False, headers={'User-Agent':'CastingStudio/1.0.1 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
         search=wikidata_get(client,{
             'action':'wbsearchentities','search':name,'language':'en','format':'json','type':'item','limit':8})
         candidates=[c for c in search.get('search',[]) if token(c.get('label',''))==token(name) or
@@ -1016,7 +1059,7 @@ def sync_one_public_person(name):
                 if db.execute('SELECT 1 FROM production_cast WHERE key=?',(baseline,)).fetchone():
                     continue
             record={'actress':canonical_name(name),'character':role,'production':production,
-                    'year':r.get('year'),'image':r.get('image',''),'source':r.get('source','')}
+                    'year':r.get('year'),'image':r.get('image',''),'source':r.get('source',''),'source_url':r.get('source_url','')}
             existing=db.execute('INSERT OR IGNORE INTO production_cast (key,payload) VALUES (?,?)',
                     (canonical_role_key(name,role,production),json.dumps(record,ensure_ascii=False)))
             inserted+=existing.rowcount
@@ -1250,7 +1293,8 @@ class PersonalPayload(BaseModel):
     name:str=Field(min_length=1,max_length=160)
     relationship:str=Field(default='',max_length=240)
     notes:str=Field(default='',max_length=4000)
-    consent:bool=False
+    consent:StrictBool=False
+    confirm_consent_scope:StrictBool=False
     h3_refmod:str=Field(default='',max_length=500)
     flux_refmod:str=Field(default='',max_length=500)
 
@@ -1314,6 +1358,12 @@ def personal_update(personal_id:str,item:PersonalPayload):
             raise HTTPException(409,'Remove this person from My Selections before changing their name')
     validate_personal_links(item,before)
     with lock,connect() as db:
+        current=personal_row_by_id(personal_id)
+        if current!=before:raise HTTPException(409,'Personal profile changed; reload before saving')
+        # An existing grant must not silently follow a different identity or linked model.
+        changed_scope=(name!=before['name'] or item.h3_refmod!=before['h3_refmod'] or item.flux_refmod!=before['flux_refmod'])
+        if item.consent and before['consent'] and changed_scope and not item.confirm_consent_scope:
+            raise HTTPException(409,'Confirm consent for the changed identity and linked RefMods, or save with consent unchecked')
         try:
             db.execute('UPDATE personal_profiles SET name=?,name_key=?,relationship=?,notes=?,consent=?,h3_refmod=?,flux_refmod=?,updated_at=? WHERE id=?',
                        (name,token(name),item.relationship.strip(),item.notes,int(item.consent),item.h3_refmod,item.flux_refmod,int(time.time()),personal_id))
@@ -1341,7 +1391,7 @@ def personal_remove(personal_id:str):
     invalidate_catalog_cache()
     return {'removed':True}
 
-@app.post('/api/personal/{personal_id}/portrait')
+@app.post('/api/personal/{personal_id}/portrait',dependencies=[Depends(require_responsible_use)])
 async def personal_portrait_upload(personal_id:str,request:Request):
     before=personal_row_by_id(personal_id)
     if not before:raise HTTPException(404,'Personal entry not found')
@@ -1627,7 +1677,7 @@ def validate_auto_conversion(entry):
         raise ValueError('Only still-image H3 RefMods, including picture stacks, can be converted to FLUX')
     return path
 
-@app.post('/api/choices/conversion/prepare',include_in_schema=False)
+@app.post('/api/choices/conversion/prepare',include_in_schema=False,dependencies=[Depends(require_responsible_use)])
 def prepare_auto_conversion(req:AutoConversionRequest):
     """Prepare conversion for selected roles lacking the requested FLUX format.
 
@@ -1783,7 +1833,7 @@ def library_conversion_status():
     return {'job':_casting_bridge().library_conversion_status()}
 
 
-@app.post('/api/settings/conversion/start',include_in_schema=False)
+@app.post('/api/settings/conversion/start',include_in_schema=False,dependencies=[Depends(require_responsible_use)])
 def start_library_conversion(req:LibraryConversionRequest):
     bridge=_casting_bridge()
     preview,task,fingerprints=library_conversion_plan(req.include_personal)
@@ -1871,10 +1921,16 @@ def delete_all_choices():
         db.execute('DELETE FROM prompt_overrides')
     return {'removed':count}
 
+def assert_public_photo_key(key):
+    parts=canonical_photo_key(key).split('|')
+    for term in parts[1:]:
+        if term:assert_public_name(term)
+
 def photo_mapping(db,table):
     # Preserve old keys and expose their current canonical equivalents. Exact
     # canonical entries win over older aliases; no migration deletes user data.
-    rows=list(db.execute('SELECT key,url FROM '+table))
+    private=personal_name_keys()
+    rows=[(k,u) for k,u in db.execute('SELECT key,url FROM '+table) if not private.intersection(canonical_photo_key(k).split('|')[1:])]
     result={k:local_photo_url(u,db) for k,u in rows if u}
     for k,u in rows:
         if u:result.setdefault(canonical_photo_key(k),local_photo_url(u,db))
@@ -1888,10 +1944,11 @@ class Photo(BaseModel):
     key:str=Field(min_length=4,max_length=500)
     url:str=Field(min_length=1,max_length=8192)
 
-@app.put('/api/images/saved')
+@app.put('/api/images/saved',dependencies=[Depends(require_responsible_use)])
 def save_image(item:Photo):
     if not item.url.startswith('https://'):raise HTTPException(400,'Image must be an HTTPS URL')
     key=canonical_photo_key(item.key)
+    assert_public_photo_key(key)
     # A successful manual save means readable bytes exist locally. Never replace
     # a previous selection with an unverified hotlink or a failed download.
     try:local=download_image(item.url)
@@ -1902,9 +1959,10 @@ def save_image(item:Photo):
         db.execute('INSERT OR REPLACE INTO images(key,url) VALUES (?,?)',(key,local))
     return {'saved':True,'key':key,'url':local}
 
-@app.get('/api/images/search')
+@app.get('/api/images/search',dependencies=[Depends(require_responsible_use)])
 def image_search(actress:str=Query('',max_length=120),character:str=Query('',max_length=120),production:str=Query('',max_length=140),kind:str='role',page:int=Query(1,ge=1,le=15),refmod_only:bool=False):
-    if actress:assert_public_name(actress)
+    for term in (actress,character,production):
+        if term:assert_public_name(term)
     # Real provider pagination. Each scroll requests a new page rather than revealing an already-limited result list.
     parts=[actress,character,production] if kind=='role' else ([actress] if kind=='actress' else [production])
     query=' '.join(part for part in parts if part).strip()
@@ -1912,7 +1970,7 @@ def image_search(actress:str=Query('',max_length=120),character:str=Query('',max
     images=[];warning=None
     try:
         from ddgs import DDGS
-        params={'max_results':24,'page':page}
+        params={'max_results':24,'page':page,'safesearch':'on'}
         if refmod_only:params.update(size='Medium',type_image='photo')
         with DDGS(timeout=18) as ddg:
             for item in ddg.images(query,**params):
@@ -1934,14 +1992,15 @@ def image_search(actress:str=Query('',max_length=120),character:str=Query('',max
 
 
 def search_candidates(actress, character='', production='', kind='role', max_results=10):
-    if actress:assert_public_name(actress)
+    for term in (actress,character,production):
+        if term:assert_public_name(term)
     from ddgs import DDGS
     parts=[actress,character,production] if kind=='role' else [actress]
     query=' '.join(x for x in parts if x).strip()
     if not query:return []
     results=[]
     with DDGS(timeout=12) as ddg:
-        for item in ddg.images(query,max_results=max_results):
+        for item in ddg.images(query,max_results=max_results,safesearch='on'):
             url=item.get('image') or item.get('thumbnail')
             if url and url.startswith('https://'):
                 results.append({'url':url,'thumbnail':item.get('thumbnail') or url,
@@ -1967,10 +2026,12 @@ def auto_select(results, actress, character, production, kind):
     score,_,result=max(ranked,key=lambda z:(z[0],z[1]))
     return result['url'] if score>= (5 if kind=='actress' else 7) else ''
 
-@app.get('/api/images/auto')
+@app.get('/api/images/auto',dependencies=[Depends(require_responsible_use)])
 def auto_image(key:str=Query(...,max_length=500),actress:str=Query(...,max_length=120),
                character:str=Query('',max_length=120),production:str=Query('',max_length=140),kind:str='role'):
-    assert_public_name(actress)
+    for term in (actress,character,production):
+        if term:assert_public_name(term)
+    assert_public_photo_key(key)
     if kind not in ('role','actress'):raise HTTPException(400,'Unsupported image type')
     key=canonical_photo_key(key)
     with connect() as db:
@@ -2033,7 +2094,7 @@ def prefetch_run(scope):
             prefetch_state.update(total=len(todo),done=0,found=0,failed=0,last='',started=int(time.time()),running=True,paused=False)
         for j in todo:
             if prefetch_stop.is_set(): break
-            if token(j['actress']) in personal_name_keys():
+            if personal_name_keys().intersection(canonical_photo_key(j['key']).split('|')[1:]):
                 with prefetch_lock:prefetch_state['done']+=1
                 continue
             # Intentionally paced requests to reduce image-provider throttling.
@@ -2065,7 +2126,7 @@ def prefetch_status():
 class PrefetchRequest(BaseModel):
     scope:str='installed'
 
-@app.post('/api/prefetch/start')
+@app.post('/api/prefetch/start',dependencies=[Depends(require_responsible_use)])
 def prefetch_start(config:PrefetchRequest):
     global prefetch_thread
     if config.scope not in ('installed','all'):raise HTTPException(400,'Scope must be installed or all')
@@ -2105,9 +2166,18 @@ def validate_public_url(url):
     if u.hostname.lower() in ('localhost','localhost.localdomain') or u.hostname.lower().endswith(('.local','.internal','.localhost')):
         raise ValueError('Private hosts are not permitted')
     results=socket.getaddrinfo(u.hostname,443,type=socket.SOCK_STREAM)
-    if not results or any(not ipaddress.ip_address(r[4][0]).is_global for r in results):
+    if not results or any(not ipaddress.ip_address(r[4][0]).is_global or ipaddress.ip_address(r[4][0]).is_multicast or ipaddress.ip_address(r[4][0]).is_reserved for r in results):
         raise ValueError('Private IP addresses are not permitted')
-    return u
+    # Select a validated numeric address. The request must not resolve the host again.
+    return str(ipaddress.ip_address(results[0][4][0]))
+
+def pinned_image_request(client,url,address):
+    original=httpx.URL(url)
+    # One fresh client per download, no redirects or proxy; retain the original
+    # Host and TLS certificate/SNI name when dialing the checked IP address.
+    return client.stream('GET',original.copy_with(host=address),
+        headers={'Host':original.netloc.decode('ascii'),'Accept-Encoding':'identity'},
+        extensions={'sni_hostname':original.raw_host.decode('ascii')})
 
 def local_photo_url(url, db=None):
     if not url:return ''
@@ -2126,15 +2196,17 @@ def download_image(url):
         with connect() as db:
             cached=db.execute('SELECT filename FROM photo_files WHERE url=?',(url,)).fetchone()
         if cached and safe_media_file(PHOTO_DIR,cached[0],r'[0-9a-f]{64}\.jpg'):return 'api/photos/'+cached[0]
-        validate_public_url(url)
+        address=validate_public_url(url)
         # Disable proxies and redirects; redirects must not reach private network addresses.
-        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.0-rc.12.20)'}) as client:
-            with client.stream('GET',url) as res:
+        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.1)'}) as client:
+            with pinned_image_request(client,url,address) as res:
                 if res.status_code!=200 or not res.headers.get('content-type','').lower().startswith('image/'):
                     return ''
                 if int(res.headers.get('content-length') or 0)>8*1024*1024:return ''
-                buf=io.BytesIO()
+                if res.headers.get('content-encoding','identity').lower()!='identity':return ''
+                buf=io.BytesIO(); deadline=time.monotonic()+45
                 for chunk in res.iter_bytes():
+                    if time.monotonic()>deadline:return ''
                     if buf.tell()+len(chunk)>8*1024*1024:return ''
                     buf.write(chunk)
         buf.seek(0)
@@ -2190,7 +2262,7 @@ def serve_photo(filename:str):
     if not path:raise HTTPException(404,'Not found')
     return FileResponse(path,media_type='image/jpeg',headers={'Cache-Control':'public, max-age=31536000, immutable'})
 
-@app.post('/api/photos/archive-existing')
+@app.post('/api/photos/archive-existing',dependencies=[Depends(require_responsible_use)])
 def archive_existing():
     # one-at-a-time background worker archives already selected and prefetched URLs.
     global archive_thread
@@ -2207,11 +2279,14 @@ archive_thread=None
 
 def archive_existing_worker():
     with connect() as db:
-        urls={r[0] for r in db.execute('SELECT url FROM images')}
-        urls.update(r[0] for r in db.execute('SELECT url FROM auto_images WHERE url!=""'))
-    for url in urls:
-        download_image(url)
+        rows=list(db.execute('SELECT key,url FROM images UNION SELECT key,url FROM auto_images WHERE url!=""'))
+    seen=set()
+    for key,url in rows:
         if prefetch_stop.is_set():break
+        if personal_name_keys().intersection(canonical_photo_key(key).split('|')[1:]):continue
+        if url not in seen:
+            seen.add(url)
+            download_image(url)
 
 # Editable template is separate from casting metadata and from per-selection overrides.
 SAMPLE_TEMPLATE={
@@ -2375,34 +2450,6 @@ def _character_traits_from_text(raw,character):
             if clause not in traits:traits.append(clause)
     return traits[:4]
 
-def _fandom_character_traits(client,url,character,production):
-    """Read an exact public character page's structured appearance fields only."""
-    from urllib.parse import urlsplit,unquote
-    u=urlsplit(url); host=u.hostname or ''
-    if u.scheme!='https' or not re.fullmatch(r'[a-z0-9-]+\.fandom\.com',host) or u.port or u.username or u.password or not u.path.startswith('/wiki/') or u.query or u.fragment:return []
-    if token(unquote(u.path.rsplit('/',1)[-1]))!=token(character):return []
-    with client.stream('GET',url,follow_redirects=False,headers={'User-Agent':WIKI_AGENT}) as response:
-        if response.status_code!=200:return []
-        data=bytearray()
-        for chunk in response.iter_bytes():
-            data.extend(chunk)
-            if len(data)>2_000_000:return []
-    soup=BeautifulSoup(bytes(data),'html.parser')
-    heading=soup.select_one('h1.page-header__title, h1#firstHeading, h1')
-    if not heading or token(heading.get_text(' ',strip=True))!=token(character):return []
-    # The same name can occur in unrelated franchises. Require the production
-    # to be mentioned in the article, not navigation or search query text.
-    article=soup.select_one('.mw-parser-output')
-    if not article or not _character_mentions(article.get_text(' ',strip=True),production):return []
-    fields={'species':'Species','skin':'Skin','skin color':'Skin color','skin colour':'Skin color','eyes':'Eyes','eye color':'Eye color','eye colour':'Eye color','hair':'Hair','hair color':'Hair color','hair colour':'Hair color','fur':'Fur','fur color':'Fur color','scales':'Scales','markings':'Markings','facial markings':'Facial markings','distinguishing features':'Distinguishing features','physical features':'Physical features'}
-    result=[]
-    for item in soup.select('aside.portable-infobox .pi-item.pi-data'):
-        label=item.select_one('.pi-data-label');value=item.select_one('.pi-data-value')
-        if not label or not value:continue
-        name=fields.get(label.get_text(' ',strip=True).casefold());text=re.sub(r'\[\d+\]','',value.get_text(' ',strip=True)).strip()
-        if name and 0<len(text)<=180 and not _CHAR_EXCLUDE.search(text):result.append(name+': '+text)
-    return result[:8]
-
 def research_character_traits(character,production):
     """Bounded, on-demand lookup. No bundled character or franchise profiles."""
     character=character.strip(); production=canonical_production(production).strip()
@@ -2424,26 +2471,8 @@ def research_character_traits(character,production):
                     if page.get('missing'):continue
                     exact=token(base)==token(character) and _character_mentions(raw,production)
                     production_page=token(base)==token(production)
-                    if exact or production_page:add(_character_traits_from_text(raw,character),'Wikipedia: '+title)
+                    if exact or production_page:add(_character_traits_from_text(raw,character),'Wikipedia (CC BY-SA, excerpts): https://en.wikipedia.org/wiki/'+quote(title.replace(' ','_'),safe=''))
             except (httpx.HTTPError,ValueError,TypeError,KeyError):pass
-            # Character encyclopedias often hold explicit skin/eye/species data
-            # absent from general encyclopedias. Search only public role names;
-            # never send reference images, performer files or private notes.
-            try:
-                from ddgs import DDGS
-                query=f'"{character}" "{production}" character physical appearance species skin eyes'
-                with DDGS(timeout=7) as ddg:results=list(ddg.text(query,max_results=6))
-                fandom_checked=0
-                for result in results[:6]:
-                    title=str(result.get('title') or '');body=str(result.get('body') or '');url=str(result.get('href') or '')
-                    if not _character_mentions(title,character):continue
-                    if _character_mentions(title+' '+body,production):
-                        add(_character_traits_from_text(body,character),'Public search excerpt: '+title[:160])
-                    if fandom_checked<2 and '.fandom.com/wiki/' in url:
-                        fandom_checked+=1
-                        try:add(_fandom_character_traits(client,url,character,production),'Character encyclopedia: '+url[:240])
-                        except (httpx.HTTPError,ValueError,TypeError):pass
-            except Exception:pass
     except (httpx.HTTPError,ValueError,TypeError,KeyError):pass
     return ' '.join(traits)[:1800], ' · '.join(sources)[:900]
 
@@ -2926,7 +2955,7 @@ def resolve_public_cast_model(item,family,models):
         raise ValueError('More than one compatible RefMod exists or the counterpart is character-specific; choose the intended file')
     raise ValueError(f"Saved RefMod is missing or belongs to an unrecognized model family: {saved or '(unset)'} for {item.get('person','unknown')}.")
 
-@app.get('/api/prompts/export')
+@app.get('/api/prompts/export',dependencies=[Depends(require_responsible_use)])
 def export_prompts(filename:str=Query(default='RefMod_Prompts.txt',max_length=120),model:str='h3_video'):
     selected=selected_model(model)
     with connect() as db:
@@ -3137,7 +3166,7 @@ def portrait_prompt(model):
             'Location: A seamless neutral gray studio background with soft, balanced professional portrait lighting. '
             'Photographic direction: natural skin texture, sharp facial detail, comfortable headroom, centered composition suitable for a profile thumbnail.')
 
-@app.post('/api/personal/{personal_id}/portrait-generate')
+@app.post('/api/personal/{personal_id}/portrait-generate',dependencies=[Depends(require_responsible_use)])
 def generate_personal_portrait(personal_id:str,req:PortraitRequest):
     from ..queue_bridge import Submission
     bridge=_casting_bridge()
@@ -3281,7 +3310,7 @@ def snapshot_cast_validator():
         return saved,family,path
     return validate
 
-@app.post('/api/generator/submit',include_in_schema=False)
+@app.post('/api/generator/submit',include_in_schema=False,dependencies=[Depends(require_responsible_use)])
 def generator_submit(task:CastTask):
     bridge=_casting_bridge()
     if not task.model_type:raise HTTPException(400,'Choose a WanGP model')
@@ -3361,7 +3390,7 @@ def generator_batch_preview(request:CastBatchRequest):
     except PermissionError as exc:raise HTTPException(403,str(exc))
     except (ValueError,TypeError) as exc:raise HTTPException(400,str(exc))
 
-@app.post('/api/generator/batch/submit',include_in_schema=False)
+@app.post('/api/generator/batch/submit',include_in_schema=False,dependencies=[Depends(require_responsible_use)])
 def generator_batch_submit(request:CastBatchRequest):
     bridge=_casting_bridge()
     if not request.task.model_type:raise HTTPException(400,'Choose a compatible WanGP model')
@@ -3471,7 +3500,7 @@ def clear_casting_job_history():
     with connect() as db:db.execute('DELETE FROM casting_job_history')
     return {'cleared':True}
 
-@app.post('/api/generator/jobs/{job_id}/retry-failed',include_in_schema=False)
+@app.post('/api/generator/jobs/{job_id}/retry-failed',include_in_schema=False,dependencies=[Depends(require_responsible_use)])
 def retry_failed_cast_job(job_id:str):
     try:
         bridge=_casting_bridge()
@@ -3560,6 +3589,8 @@ class CastRequest(BaseModel):
     character:str=Field(default='',max_length=150)
     year:int|None=None
     image:str=Field(default='',max_length=2048)
+    source:str=Field(default='',max_length=120)
+    source_url:str=Field(default='',max_length=2000)
 
 def production_coverage(production,cast,model='h3_video'):
     family=selected_model(model)['family']
@@ -3667,13 +3698,14 @@ class TelevisionResearch(BaseModel):
 def television_research(item:TelevisionResearch):
     name=canonical_name(item.name);assert_public_name(name)
     station=item.station.strip()
+    if station:assert_public_name(station)
     if not token(name):raise HTTPException(400,'Enter a public name')
     candidates=[];warnings=[];seen=set()
     try:
         from ddgs import DDGS
         query=' '.join(x for x in ('"'+name.replace('"','')+'"',station,'television news anchor reporter presenter') if x)
         with DDGS(timeout=10) as ddg:
-            for row in ddg.text(query,max_results=12):
+            for row in ddg.text(query,max_results=12,safesearch='on'):
                 url=str(row.get('href') or row.get('url') or '')
                 title=str(row.get('title') or '')[:300];snippet=str(row.get('body') or '')[:600]
                 if not url.startswith('https://') or url in seen or token(name) not in token(title+' '+snippet):continue
@@ -3792,7 +3824,7 @@ def add_production_cast(item:CastRequest):
     name=canonical_production(item.production)
     if not token(name) or not token(canonical_name(item.actress)):raise HTTPException(400,'Enter a valid production title and performer name')
     if item.year is not None and not 1880<=item.year<=2100:raise HTTPException(400,'Invalid release year')
-    entry={'production':name,'actress':canonical_name(item.actress),'character':item.character,'year':item.year,'image':item.image if item.image.startswith('https://') else '', 'image_source':'character' if item.image.startswith('https://') else ''}
+    entry={'production':name,'actress':canonical_name(item.actress),'character':item.character,'year':item.year,'image':item.image if item.image.startswith('https://') else '', 'image_source':'character' if item.image.startswith('https://') else '', 'source':item.source,'source_url':item.source_url}
     key=canonical_role_key(entry['actress'],entry['character'],name)
     with lock,connect() as db:
         db.execute('INSERT OR IGNORE INTO productions(key,name,year,kind) VALUES(?,?,?,?)',(token(name),name,item.year,'other'))
@@ -3869,6 +3901,7 @@ def refresh_production_credits(item:ProductionCreditRefresh):
 
 @app.get('/api/productions/lookup')
 def search_production_online(q:str=Query(min_length=2,max_length=120)):
+    assert_public_name(q)
     # TVMaze is a public series index, not a comprehensive film database.
     try:
         with httpx.Client(timeout=12,trust_env=False) as client:
@@ -3882,14 +3915,14 @@ def search_production_online(q:str=Query(min_length=2,max_length=120)):
 # Key-free film credit source. Match exact title or explicit "(film)" titles;
 # treat cast lists as suggestions for human review, not verified installed mods.
 WIKIPEDIA_API='https://en.wikipedia.org/w/api.php'
-WIKI_AGENT='CastingStudio/1.0.0-rc.12.20 (personal local catalog; Wikimedia public credits)'
+WIKI_AGENT='CastingStudio/1.0.1 (+https://github.com/berrant/wan2gp-casting-studio)'
 def wiki_api(client,params):
     r=client.get(WIKIPEDIA_API,params={**params,'format':'json','formatversion':2},headers={'User-Agent':WIKI_AGENT})
     r.raise_for_status();return r.json()
 
 def film_cast_lookup(title):
     exact=canonical_production(title)
-    with httpx.Client(timeout=16,trust_env=False,follow_redirects=True) as client:
+    with httpx.Client(timeout=16,trust_env=False,follow_redirects=False) as client:
         queries=[exact,exact+' (film)']
         page=None
         for query in queries:
@@ -3902,6 +3935,7 @@ def film_cast_lookup(title):
                     page=candidate;break
         if not page:return {'cast':[],'source':'Wikipedia film credits','note':'No exact film title found on Wikipedia. Add cast manually or supply a more specific title.','artwork':''}
         page_title=page['title']
+        source_url='https://en.wikipedia.org/wiki/'+quote(page_title.replace(' ','_'),safe='')
         sections=wiki_api(client,{'action':'parse','page':page_title,'prop':'sections'}).get('parse',{}).get('sections',[])
         section=next((x for x in sections if re.search(r'^(cast|cast and characters|voice cast)$',re.sub('<[^>]+>','',x.get('line','')).strip(),re.I)),None)
         if not section:return {'cast':[],'source':'Wikipedia film credits','note':'No identifiable Cast section on the film article. You can add credits manually.','artwork':page.get('thumbnail',{}).get('source','')}
@@ -3922,13 +3956,15 @@ def film_cast_lookup(title):
             if key in seen:continue
             seen.add(key)
             found.append({'actress':canonical_name(actor),'character':character,'image':'','source':'Wikipedia'})
-        return {'cast':found,'source':'Wikipedia film credits','matched_show':page_title,
+        return {'cast':found,'source':'Wikipedia film credits','source_url':source_url,'matched_show':page_title,
                 'note':'' if found else 'The film article has a Cast section but its format was not readable automatically. Add cast manually.',
                 'artwork':page.get('thumbnail',{}).get('source','')}
 
 @app.get('/api/productions/artwork')
 def production_artwork(name:str=Query(min_length=2,max_length=180),refresh:bool=False):
+    assert_public_name(name)
     name=canonical_production(name)
+    assert_public_name(name)
     key=token(name)
     with connect() as db:
         selected=db.execute('SELECT url FROM images WHERE key=?',('production|'+key,)).fetchone()
@@ -3946,7 +3982,7 @@ def production_artwork(name:str=Query(min_length=2,max_length=180),refresh:bool=
     # matching premiere year prevent misleading similarly named series.
     if kind!='film':
         try:
-            with httpx.Client(timeout=10,trust_env=False,follow_redirects=True) as client:
+            with httpx.Client(timeout=10,trust_env=False,follow_redirects=False) as client:
                 resp=client.get('https://api.tvmaze.com/search/shows',params={'q':name})
                 resp.raise_for_status()
                 shows=[x.get('show') or {} for x in resp.json()]
@@ -3966,7 +4002,7 @@ def production_artwork(name:str=Query(min_length=2,max_length=180),refresh:bool=
             else:variants.extend([f'{name} ({year} TV series)',f'{name} (TV series)'])
         else:variants.extend([f'{name} (TV series)',f'{name} (film)'])
         try:
-            with httpx.Client(timeout=10,trust_env=False,follow_redirects=True) as client:
+            with httpx.Client(timeout=10,trust_env=False,follow_redirects=False) as client:
                 for title in dict.fromkeys(variants):
                     result=wiki_api(client,{'action':'query','titles':title,'redirects':1,'prop':'pageimages','pithumbsize':350})
                     pages=result.get('query',{}).get('pages',[])
@@ -3989,7 +4025,9 @@ CAST_SUGGEST_CACHE={}
 CAST_SUGGEST_LOCK=threading.Lock()
 @app.get('/api/productions/cast-suggestions')
 def production_cast_suggestions(production:str=Query(min_length=2,max_length=180)):
+    assert_public_name(production)
     target=canonical_production(production)
+    assert_public_name(target)
     cache_key=token(target)
     with CAST_SUGGEST_LOCK:
         prior=CAST_SUGGEST_CACHE.get(cache_key)
@@ -4007,6 +4045,7 @@ def production_cast_suggestions(production:str=Query(min_length=2,max_length=180
                     response=client.get(f"https://api.tvmaze.com/shows/{int(show['id'])}/cast")
                     response.raise_for_status()
                     source['matched_show']=show['name']
+                    source['source_url']='https://www.tvmaze.com/shows/'+str(int(show['id']))
                     for item in response.json():
                         person=item.get('person') or {}
                         character=item.get('character') or {}
@@ -4039,9 +4078,9 @@ def production_cast_suggestions(production:str=Query(min_length=2,max_length=180
         k=canonical_role_key(item['actress'],item['character'],production)
         if k in seen:continue
         seen.add(k)
-        candidates.append({**item,'id':k,'already_added':k in existing_keys,
+        candidates.append({**item,'source':item.get('source',source['source']),'source_url':item.get('source_url',source.get('source_url','')),'id':k,'already_added':k in existing_keys,
                            'installed':token(canonical_name(item['actress'])) in installed})
-    return {'production':production,'source':source['source'],
+    return {'production':production,'source':source['source'],'source_url':source.get('source_url',''),
             'matched_show':source['matched_show'],'note':source['note'],
             'candidates':candidates}
 
@@ -4059,7 +4098,7 @@ def add_production_cast_bulk(payload:CastBulkRequest):
         person=canonical_name(member.actress)
         role=member.character.strip()
         key=canonical_role_key(person,role,production)
-        entry={'production':production,'actress':person,'character':role,'year':member.year,'image':member.image if member.image.startswith('https://') else '', 'image_source':'character' if member.image.startswith('https://') else ''}
+        entry={'production':production,'actress':person,'character':role,'year':member.year,'image':member.image if member.image.startswith('https://') else '', 'image_source':'character' if member.image.startswith('https://') else '', 'source':member.source,'source_url':member.source_url}
         values.append((key,json.dumps(entry)))
     with lock,connect() as db:
         db.execute('INSERT OR IGNORE INTO productions(key,name,year,kind) VALUES(?,?,?,?)',
@@ -4085,7 +4124,7 @@ def import_tvmaze(show_id:int):
             actress=role.get('person',{}).get('name','').strip()
             char=role.get('character',{}).get('name','').strip()
             if not actress:continue
-            entry={'production':name,'actress':actress,'character':char,'year':year,'image':((role.get('character') or {}).get('image') or {}).get('medium',''), 'image_source':'character' if (role.get('character') or {}).get('image') else ''}
+            entry={'production':name,'actress':actress,'character':char,'year':year,'image':((role.get('character') or {}).get('image') or {}).get('medium',''), 'image_source':'character' if (role.get('character') or {}).get('image') else '', 'source':'TVMaze','source_url':'https://www.tvmaze.com/shows/'+str(show_id)}
             key=canonical_role_key(actress,char,name)
             db.execute('INSERT OR IGNORE INTO production_cast(key,payload) VALUES(?,?)',(key,json.dumps(entry)))
     return get_production_cast(name)
@@ -4213,7 +4252,7 @@ def save_reference_pixels(image,person,production,character,source_url,page_url,
         return {'saved':True,'id':image_id,'width':analysis['width'],'height':analysis['height'],'sharpness':analysis['sharpness'],'face_count':analysis['face_count'],'quality_status':status,'quality_notes':notes}
 
 
-@app.post('/api/reference-images')
+@app.post('/api/reference-images',dependencies=[Depends(require_responsible_use)])
 def save_reference_image(item:ReferenceImageRequest):
     assert_public_name(item.person)
     for row in same_reference_collection(item.person,item.production,item.character):
@@ -4229,15 +4268,17 @@ def save_reference_image(item:ReferenceImageRequest):
             except (OSError,ValueError):continue
             result=save_reference_pixels(rgb,item.person,item.production,item.character,item.image_url,item.source_page,item.accept_review)
             return {**result,'reused_local':True}
-        try:validate_public_url(item.image_url)
+        try:address=validate_public_url(item.image_url)
         except Exception as e:raise HTTPException(400,str(e))
-        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.0-rc.12.20'}) as client:
-            with client.stream('GET',item.image_url) as r:
+        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.1'}) as client:
+            with pinned_image_request(client,item.image_url,address) as r:
                 if r.status_code!=200 or not r.headers.get('content-type','').lower().startswith('image/'):
                     raise HTTPException(422,'Image host did not return an image')
                 if int(r.headers.get('content-length') or 0)>15_000_000:raise HTTPException(413,'Image exceeds 15 MB limit')
-                buffer=io.BytesIO()
+                if r.headers.get('content-encoding','identity').lower()!='identity':raise HTTPException(422,'Unsupported image transfer encoding')
+                buffer=io.BytesIO(); deadline=time.monotonic()+45
                 for chunk in r.iter_bytes():
+                    if time.monotonic()>deadline:raise HTTPException(422,'Image transfer exceeded time limit')
                     if buffer.tell()+len(chunk)>15_000_000:raise HTTPException(413,'Image exceeds 15 MB limit')
                     buffer.write(chunk)
         buffer.seek(0)
@@ -4268,7 +4309,7 @@ async def read_local_image_upload(request:Request,max_bytes:int=15_000_000):
     except (OSError,UnidentifiedImageError,ValueError,Image.DecompressionBombError):
         raise HTTPException(422,'Uploaded file is not a readable image')
 
-@app.post('/api/reference-images/upload')
+@app.post('/api/reference-images/upload',dependencies=[Depends(require_responsible_use)])
 async def upload_reference_image(request:Request,person:str=Query(min_length=2,max_length=150),
                                  production:str='',character:str='',accept_review:bool=False):
     assert_public_name(person)
@@ -4303,9 +4344,10 @@ def cleanup_temporary_files():
             except OSError:failed+=1
     return {'removed':count,'bytes':total,'failed':failed}
 
-@app.post('/api/images/upload')
+@app.post('/api/images/upload',dependencies=[Depends(require_responsible_use)])
 async def upload_selected_photo(request:Request,key:str=Query(min_length=4,max_length=500)):
     key=canonical_photo_key(key)
+    assert_public_photo_key(key)
     image=await read_local_image_upload(request,8_000_000)
     if image.width<80 or image.height<80:raise HTTPException(422,'Picture is too small')
     image.thumbnail((1400,1400),Image.Resampling.LANCZOS)
@@ -4419,7 +4461,7 @@ def delete_reference_image(image_id:str):
         if not shared and reference_file_exists(row[0]):(REFERENCE_DIR/row[0]).unlink(missing_ok=True)
     return {'deleted':True}
 
-@app.get('/api/reference-images/export')
+@app.get('/api/reference-images/export',dependencies=[Depends(require_responsible_use)])
 def export_reference_images(person:str=Query(min_length=2),production:str='',character:str|None=None):
     rows=[x for x in list_reference_images(person,production,character) if x['quality_status'] in ('passed','reviewed')]
     if not rows:raise HTTPException(409,'No quality-approved images to export. Audit older images and review flagged files first.')
@@ -4674,7 +4716,7 @@ def resolve_appearance_images(task):
         for image in images:image.close()
         raise
 
-@app.post('/api/appearance/batch')
+@app.post('/api/appearance/batch',dependencies=[Depends(require_responsible_use)])
 def appearance_batch(req:AppearanceBatch):
     bridge=appearance_bridge(); tasks=[];seen=set()
     for selection in req.selections:
@@ -4917,7 +4959,7 @@ def validate_workshop_task(task):
     return True
 
 
-@app.post('/api/workshop/create')
+@app.post('/api/workshop/create',dependencies=[Depends(require_responsible_use)])
 def workshop_create(item:WorkshopCreateRequest):
     bridge=workshop_relay()
     if item.family not in ('minimax_h3','flux2'):raise HTTPException(400,'Unsupported RefMod family')
@@ -4969,7 +5011,7 @@ def workshop_create(item:WorkshopCreateRequest):
     return {'job_id':job,'operation':'extract','target':name}
 
 
-@app.post('/api/workshop/decompile')
+@app.post('/api/workshop/decompile',dependencies=[Depends(require_responsible_use)])
 def workshop_decompile(item:WorkshopDecompileRequest):
     bridge=workshop_relay()
     if not re.fullmatch(r'celebs/(?:[A-Za-z0-9_-]+/)*[A-Za-z0-9_-]+',item.name):

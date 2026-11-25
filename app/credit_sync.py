@@ -116,6 +116,6 @@ def parse_tvmaze_castcredits(credits, person_name):
         if not isinstance(photo,str) or not photo.startswith('https://'):photo=''
         year=year_of(show.get('premiered'))
         r={'actress':person_name,'character':character,'production':prod,'year':year,
-           'kind':'series','image':photo,'source':'TVMaze'}
+           'kind':'series','image':photo,'source':'TVMaze','source_url':('https://www.tvmaze.com/shows/'+str(show['id'])) if type(show.get('id')) is int and show['id']>0 else ''}
         result[(key(prod),key(character))]=r
     return list(result.values())

@@ -1,3 +1,21 @@
+Casting Studio v1.0.1 — privacy and responsible-use update
+Measured verification (2026-11-25)
+
+FINAL COMPLETE CUMULATIVE REGRESSION GATE
+460 collected, 458 passed, zero failures, 2 approved retired standalone Docker skips.
+Group 1: 156 passed, 2 skipped, 221 warnings in 147.62s (0:02:27)
+Group 2: 142 passed, 164 warnings in 175.75s (0:02:55)
+Group 3: 160 passed, 236 warnings in 155.61s (0:02:35)
+All three exit codes zero; all 97 test modules covered exactly once. 621 non-failing warnings. Final Python, HTML and JSON fingerprints match the tested tree. Python, JSON and inline JavaScript syntax checks passed.
+
+The initial cumulative run detected one outdated browser fixture which still clicked the removed dedicated Adult navigation entry. The corrected fixture exercises the normal performer filter with actual pointer events. A follow-up audit found an acknowledgment and private-key gap in the legacy photo archive path; the fix and permanent regression test passed the final 12-test focused check. The complete cumulative gate was rerun after both corrections.
+
+Exact v1.0.0 synthetic Git upgrade and fresh installation passed after final corrections, preserving local classifications, unchanged consent, custom templates, approved profiles, reference and model bytes and SQLite integrity. No tracked-file deletions. Staged source guard passed 135 files.
+
+Network tests used synthetic DNS and HTTP transports; actual external provider compatibility, GPU inference and native live upgrade remain maintainer acceptance tasks. No assertion of comprehensive legal compliance, verified consent, unrestricted provider reuse or multi-user security. The maintainer confirmed 5/5 v1.0.0 live checks; v1.0.1 has not been installed live. Publisher-side private reporting, applicable rights and launch clearance remain outstanding.
+
+Previous release record follows.
+
 Casting Studio v1.0.0 — Initial stable release preparation
 Measured verification (2026-11-25)
 

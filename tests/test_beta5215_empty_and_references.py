@@ -64,7 +64,7 @@ def test_reuse_url_without_network(photo_setup,monkeypatch):
     original=httpx.Client;calls=[]
     def handler(req):
         calls.append(str(req.url));return httpx.Response(200 if len(calls)==1 else 403,headers={'Content-Type':'image/png'},content=raw)
-    monkeypatch.setattr(srv,'validate_public_url',lambda url:None)
+    monkeypatch.setattr(srv,'validate_public_url',lambda url:'93.184.216.34')
     monkeypatch.setattr(srv.httpx,'Client',lambda **kw:original(transport=httpx.MockTransport(handler),**kw))
     body={'person':'Example Anchor','production':'Example News','image_url':'https://example.org/portrait.png'}
     first=c.post(API+'/reference-images',json=body);assert first.status_code==200,first.text

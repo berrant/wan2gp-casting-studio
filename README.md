@@ -1,19 +1,19 @@
 # Casting Studio for WanGP
 
-Version: v1.0.0
+Version: v1.0.1
 Date: 2026-11-25
 
 
 ## License
 
-Casting Studio uses the [MIT License](LICENSE) for independently licensable project material. Use, modification, distribution and commercial use are permitted subject to the license notices. See [notices](NOTICE.md) and [contribution policy](CONTRIBUTING.md). WanGP, Refmod-Fork and other third-party material retain their applicable terms; no upstream rights or ownership of user outputs are granted or claimed. The project uses generic attribution without a personal name or email. Publication requires publisher clearance; version 1.0.0 does not itself authorize publication.
+Casting Studio uses the [MIT License](LICENSE) for independently licensable project material. Use, modification, distribution and commercial use are permitted subject to the license notices. See [notices](NOTICE.md) and [contribution policy](CONTRIBUTING.md). WanGP, Refmod-Fork and other third-party material retain their applicable terms; no upstream rights or ownership of user outputs are granted or claimed. The project uses generic attribution without a personal name or email. The version number does not itself authorize publication.
 
 ## Quick start
 
 Casting Studio is a native local WanGP plugin for building a cast, organizing reference images and submitting independently reviewed image/video prompts. It does not include WanGP, Refmod-Fork, model weights, a populated performer database or a remote generation service.
 
-1. Install and launch WanGP and the separately maintained [Refmod-Fork](https://github.com/jedsdead/Refmod-Fork). Finish jobs and back up external data before upgrades. In WanGP's Apps & PlugIn Manager, install `https://github.com/berrant/wan2gp-casting-studio`, then restart. The repository remains private until release approval; authorized testers need Git access. For manual installation, use the wrapped installation ZIP (not GitHub's source ZIP).
-2. Open Casting Studio inside WanGP. In **Getting started**, run the local checks. Use Settings to verify the RefMod root, then **Rescan RefMods** if files were added or moved. Choose an installed compatible model/checkpoint rather than guessing from the family name.
+1. Install and launch WanGP and the separately maintained [Refmod-Fork](https://github.com/jedsdead/Refmod-Fork). Finish jobs and back up external data before upgrades. In WanGP's Apps & PlugIn Manager, install `https://github.com/berrant/wan2gp-casting-studio`, then restart. If the repository is private, authorized testers need Git access. For manual installation, use the wrapped installation ZIP (not GitHub's source ZIP).
+2. Open Casting Studio inside WanGP. Review the Responsible use acknowledgment before beginning covered operations. In **Getting started**, run the local checks. Use Settings to verify the RefMod root, then **Rescan RefMods** if files were added or moved. Choose an installed compatible model/checkpoint rather than guessing from the family name.
 3. Find a production or public performer, choose a role and exact RefMod, or manage a consented Personal profile separately. Use explicit research or collection controls to add reference images. The initial catalog is empty except for locally discovered information.
 4. Open the generator, review model settings and each image or video prompt, adjust the wardrobe/action fields, and submit. Identity captions are optional; saved manual final prompts are preserved. Track the active task in the live monitor or inspect the native queue. Do not resubmit simply because a status request is temporarily unavailable.
 5. Use the Workshop to create or inspect RefMods and compatible conversion tools. For AI character appearance analysis, explicitly choose the portrayal, local character reference images and available vision engine. Review before approving; the submitted analysis waits for an idle native queue. No automatic model downloads or background vision runs.
@@ -62,7 +62,7 @@ AI appearance analysis describes traits that remain independent of costume. Obvi
 - Concurrent cold inventory requests share a single scan, while cached readers remain available during a forced refresh. Failed scans release the scan owner. Explicit rescans remain available.
 - Recheck Personal exclusions before returning inventory results and preserve invalidation when Personal or path settings change during a scan. This prevents a scan from overwriting a newer invalidation.
 - Add permanent concurrency, Personal-registration and refresh-failure regression tests. Public quick-start, model and troubleshooting documentation expanded; no generation prompt, bridge or model changes.
-- Private testing only pending live checks, final copyright/asset clearance and publisher-account review.
+- Historical RC12.23 gate: private testing was pending live checks, rights clearance and publisher-account review.
 
 ## RC12.22 — Live generation monitor recovery
 
@@ -226,9 +226,15 @@ If a saved prompt template is damaged, the catalog remains usable and the editor
 
 ## Responsible use, ethics and disclaimer
 
+The optional **Adult Entertainer** label is a local professional classification alongside other categories, not a separate workspace. Existing user-entered markers remain available. Select it only when supported by reliable public professional credits. It is not evidence of age, permission, or consent, and does not alter reference search or generation behavior. Do not infer or publicly share unverified occupational classifications. Imported RefMods are not bundled with the plugin and their provenance and terms remain the user's responsibility.
+
+See [NOTICE.md](NOTICE.md) for separate TVMaze, Wikimedia and media-source obligations. See [SECURITY.md](SECURITY.md) for reporting security, privacy, copyright and likeness concerns without posting sensitive material publicly.
+
 Casting Studio is a community software project created through collaboration between the project creator and ChatGPT, an AI assistant developed by OpenAI. The project creator directed the design, requirements and testing, with ChatGPT assisting in writing, reviewing and refining the code. This acknowledgment is not an endorsement by OpenAI, WanGP or Refmod-Fork.
 
 The software is intended for lawful, ethical and responsible creative work. Its availability does not grant permission to use another person's likeness, private photographs, copyrighted material or other protected content. Users are responsible for obtaining appropriate consent, permissions and licenses; respecting privacy, intellectual property and applicable laws; and reviewing any generated material before using, publishing or distributing it. A publicly available photograph is not, by itself, consent to AI-generated depictions. Do not use this software to create or distribute non-consensual intimate imagery, sexual content involving minors, deceptive impersonations, harassment, fraud or other unlawful or harmful material.
+
+Before covered generation, prompt export, reference collection, appearance analysis and Workshop operations, the local installation requires explicit acknowledgment of the current responsible-use policy. This acknowledgment is stored in the local database, is not sent to a remote service or included in prompt backups, and must be renewed if the policy version changes. It is not an additional MIT license condition, verified consent, authentication, or a content moderation system. You may defer acknowledgment and continue browsing and managing existing data, including deleting records, cancelling tasks and revoking consent. For Personal profiles, confirm informed permission for the intended use and linked references; changing the name or linked RefMods of a consented profile requires fresh explicit confirmation or saving with consent unchecked. Revocation blocks new submissions and revalidated queued work; it cannot recall already submitted native jobs or completed outputs.
 
 The software is provided **“AS IS” and “AS AVAILABLE,” without warranties of any kind, express or implied**, including fitness for a particular purpose, merchantability, non-infringement, accuracy, security or uninterrupted operation. To the maximum extent permitted by applicable law, the project creator, contributors and providers of AI assistance disclaim liability for misuse of the software, user-generated content, or losses or damages arising from its use, including inappropriate, unlawful or unethical use by others. Users are responsible for their own actions, their source materials and their generated outputs.
 
@@ -262,6 +268,14 @@ Missing subfolders are skipped; the settings screen does not create, move or del
 ## GPU temperature
 
 The live generation monitor displays server GPU core temperatures in its header, even when collapsed or idle. NVIDIA readings use the installed `nvidia-smi` utility with a two-second timeout and shared five-second cache; no CUDA initialization, external service, or additional Python dependency is required. Readings are requested only while the browser document is visible. Multiple supported GPUs show individually indexed values. Unsupported hardware or unavailable sensors show N/A, not an invented temperature. Advisory colors: below 75°C green, 75–84°C amber, 85°C and above red. These are conservative display thresholds, not manufacturer-specific safe limits, and do not throttle or abort jobs.
+
+## External research and network privacy
+
+TVMaze and Wikimedia public APIs provide metadata, not permission to reuse likenesses or artwork. Newly imported cast credits retain available source-page links. Wikipedia character-trait suggestions retain specific article links; the plugin extracts relevant clauses, not complete articles. Automatic Fandom page scraping and copying search-result snippets into character traits have been removed. Existing local descriptions and source records are retained, so legacy entries may need source/rights review. See [notices](NOTICE.md).
+
+Online image and broadcast searches use the separately installed DDGS metasearch library. Its search results come from external providers; their terms, availability and rights vary. The plugin requests strict safe search, which is a filter rather than a guarantee of suitability or permission. Do not bypass provider access restrictions, and use manual local uploads or open the source page when rights or access are unclear. No provider contract or unrestricted reuse right is claimed. Public query terms and network addresses are visible to the services contacted; remote preview images may contact their hosts directly from the browser. The plugin suppresses referrer headers where supported, but is not an anonymity proxy. Do not enter private identities or secrets in public research fields. Exact registered Personal names and aliases are excluded from supported public research paths; this is not a comprehensive detector of private information in free text.
+
+Server-side reference/image downloads connect to a validated public numeric IP while retaining the original TLS certificate hostname and HTTP Host header; proxies, redirects, private/mixed DNS answers, unsupported content encoding and oversized responses are rejected. Transfers have bounded size and time checks; a slow read/DNS lookup can still delay a request. This does not cover arbitrary browser-side remote previews, upstream dependency networking or direct host access. Use the plugin only in a trusted local WanGP installation. Do not upload private data or generated media to support channels.
 
 ## Resuming reference collections
 

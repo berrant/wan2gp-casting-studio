@@ -14,7 +14,7 @@ PACKAGE=Path(__file__).resolve().parents[1]
 
 
 @pytest.fixture()
-def installation(tmp_path,monkeypatch):
+def installation(tmp_path,monkeypatch,request):
     # Test private and public installation paths, not the user's actual files.
     h3=tmp_path/'refmods'/'minimax_h3'/'celebs';h3.mkdir(parents=True)
     private=tmp_path/'refmods'/'minimax_h3'/'personal';private.mkdir()
@@ -61,7 +61,11 @@ def installation(tmp_path,monkeypatch):
     web_app=plugin.create_web_app()
     host=FastAPI()
     host.mount('/casting-studio',web_app)
-    yield TestClient(host),plugin,tmp_path,import_module(prefix+'.compat_adapter')
+    client=TestClient(host)
+    if getattr(request,'param',True):
+        policy=client.get('/casting-studio/api/responsible-use').json()
+        assert client.post('/casting-studio/api/responsible-use',json={'version':policy['version'],'accepted':True}).status_code==200
+    yield client,plugin,tmp_path,import_module(prefix+'.compat_adapter')
 
 
 def test_native_mount_routes_and_assets(installation):

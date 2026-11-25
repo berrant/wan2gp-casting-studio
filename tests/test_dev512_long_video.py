@@ -60,7 +60,7 @@ def test_productions_first_people_dropdown_and_no_nav_counts(page):
     tab,errors=page
     assert tab.locator('#navTabs .tab-count').count()==0
     assert tab.locator('#navTabs #productionsTab').count()==1
-    assert tab.locator('#peopleMenu button span').all_text_contents()==['Performers','Personal','Adult Entertainment','Models / Influencers','Television Personalities']
+    assert tab.locator('#peopleMenu button span').all_text_contents()==['Performers','Personal','Models / Influencers','Television Personalities']
     tab.locator('#peopleMenuButton').click();tab.locator('[data-people-category=\"'+str('performers')+'\"]').click()
     assert tab.locator('#browseSection').is_visible()
     tab.locator('#peopleMenuButton').click();tab.locator('[data-people-category=\"'+str('personal')+'\"]').click()

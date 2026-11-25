@@ -17,7 +17,7 @@ def test_manual_url_is_archived_and_survives_source_failure(installation,monkeyp
         calls.append(str(req.url))
         if req.url.path=='/good.png':return httpx.Response(200,headers={'Content-Type':'image/png'},content=raw)
         return httpx.Response(403)
-    monkeypatch.setattr(srv,'validate_public_url',lambda u:None)
+    monkeypatch.setattr(srv,'validate_public_url',lambda u:'93.184.216.34')
     monkeypatch.setattr(srv.httpx,'Client',lambda **kw:client_class(transport=httpx.MockTransport(handler),**kw))
     key='actress|exampleperson'
     r=c.put(API+'/images/saved',json={'key':key,'url':'https://example.com/good.png'})

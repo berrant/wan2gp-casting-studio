@@ -6,13 +6,14 @@ network activity is optional and failure does not remove existing roles.
 from __future__ import annotations
 import re
 import time
+from urllib.parse import quote
 import httpx
 try:
     from .credit_sync import clean, key, parse_tvmaze_castcredits, parse_wikipedia_filmography
 except ImportError:  # standalone Docker module path
     from credit_sync import clean, key, parse_tvmaze_castcredits, parse_wikipedia_filmography
 
-AGENT = 'CastingStudio/1.0.0-rc.12 (public screen credits sync; user initiated or slow background refresh)'
+AGENT = 'CastingStudio/1.0.1 (+https://github.com/berrant/wan2gp-casting-studio)'
 
 def fetch_credits(name, timeout=14):
     name=clean(name)
@@ -21,7 +22,7 @@ def fetch_credits(name, timeout=14):
     result={};warnings=[]
     # Search for a person, not a production. Never arbitrarily take the first
     # similar-name match; homonymous entries remain pending review.
-    with httpx.Client(timeout=timeout, headers={'User-Agent':AGENT}, follow_redirects=True) as client:
+    with httpx.Client(timeout=timeout, headers={'User-Agent':AGENT}, follow_redirects=False, trust_env=False) as client:
         try:
             response=client.get('https://api.tvmaze.com/search/people', params={'q':name});response.raise_for_status()
             matches=[x['person'] for x in response.json() if key(x.get('person',{}).get('name'))==key(name)]
@@ -43,6 +44,7 @@ def fetch_credits(name, timeout=14):
             title=re.sub(r'\s*\([^)]*\)$','',str(item.get('title','')))
             if key(title)==key(name):
                 for r in parse_wikipedia_filmography(item.get('text') or '',name):
+                    r['source_url']='https://en.wikipedia.org/wiki/'+quote(str(item.get('title') or name).replace(' ','_'),safe='')
                     result.setdefault((key(r['production']),key(r['character'])),r)
             else:
                 warnings.append('Wikipedia: no exact article match')

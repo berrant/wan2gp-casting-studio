@@ -33,21 +33,21 @@ def test_automatic_traits_and_local_cache(research):
     with srv.connect() as db:db.execute('INSERT INTO character_identity_suggestions VALUES (?,?,?,?)',(srv.character_identity_key(q['character'],q['production']),'','',int(srv.time.time())))
     d=c.get(API+'/characters/identity',params=q).json()
     assert d['source']=='researched' and 'blue-skinned' in d['traits'] and 'horns' in d['traits'] and 'silver eyes' in d['traits']
-    assert 'Species: Example species' in d['traits'] and 'Skin color: Blue' in d['traits']
+    assert 'Species: Example species' not in d['traits'] and 'https://en.wikipedia.org/wiki/Example_Alien' in d['reference']
     assert all(x not in d['traits'] for x in ('red eyes','green hair','robe','portrayed','Coat'))
-    assert calls==['wiki','search','encyclopedia']
+    assert calls==['wiki']
     assert c.get(API+'/characters/identity',params=q).json()==d
-    assert calls==['wiki','search','encyclopedia']
+    assert calls==['wiki']
     # Prompt building is local; identity is included in every still/video segment.
     item={'person':'Example Performer','character':q['character'],'production':q['production'],'refmod':'example.safetensors'}
     for prompt in srv.prompt_for_selection(item,{**srv.SAMPLE_TEMPLATE,'video_count':4}).split('\n\n'):
-        assert 'Species: Example species' in prompt
+        assert 'blue-skinned' in prompt
     image=srv.image_prompts_for_selection(item,'flux2_dev',srv.ImageTemplate().model_dump(),srv.SAMPLE_TEMPLATE,{})
-    assert all('Species: Example species' in prompt and 'take precedence over the performer’s everyday appearance' in prompt for prompt in image.split('\n\n'))
-    assert calls==['wiki','search','encyclopedia']
+    assert all('blue-skinned' in prompt and 'take precedence over the performer’s everyday appearance' in prompt for prompt in image.split('\n\n'))
+    assert calls==['wiki']
     assert c.put(API+'/characters/identity',json={**q,'traits':'Custom violet skin'}).status_code==200
     assert c.get(API+'/characters/identity',params={**q,'refresh':'true'}).json()['traits']=='Custom violet skin'
-    assert calls==['wiki','search','encyclopedia']
+    assert calls==['wiki']
 
 def test_failed_refresh_preserves_cache_and_private_guard(research,monkeypatch):
     c,p,root,srv,calls=research

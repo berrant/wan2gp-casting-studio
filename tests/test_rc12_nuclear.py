@@ -67,7 +67,7 @@ def test_terminal_history_bounded_by_completion_order(installation):
 def photo_transport(s,monkeypatch,handler=None):
     buf=io.BytesIO();Image.new('RGB',(180,220),'blue').save(buf,format='PNG');raw=buf.getvalue()
     cls=httpx.Client
-    monkeypatch.setattr(s,'validate_public_url',lambda _:None)
+    monkeypatch.setattr(s,'validate_public_url',lambda _:'93.184.216.34')
     monkeypatch.setattr(s.httpx,'Client',lambda **kw:cls(transport=httpx.MockTransport(handler or (lambda _:httpx.Response(200,headers={'Content-Type':'image/png'},content=raw))),**kw))
 
 

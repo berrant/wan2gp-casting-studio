@@ -28,7 +28,14 @@ def test_workshop_hides_selections_and_restores_state():
             assert page.locator('#generationMonitor').is_visible()
             assert page.locator('#castingSelectionsPanel').evaluate('(el)=>el.getBoundingClientRect().height')==0
             if tab=='productions':page.locator('#productionsTab').click()
-            else:page.locator('#peopleMenuButton').click();page.locator('[data-people-category=\"'+str(tab)+'\"]').click()
+            else:
+                page.locator('#peopleMenuButton').click()
+                page.locator('[data-people-category="'+('performers' if tab=='adult' else tab)+'"]').click()
+                if tab=='adult':
+                    # The former dedicated tab is now an ordinary local performer filter.
+                    page.locator('#filter').select_option('adult')
+                    assert page.evaluate('activeTab')=='performers'
+                    assert page.locator('#filter').input_value()=='adult'
             assert panel.is_visible()
             assert not page.locator('#workshopSection').is_visible()
             assert page.evaluate("JSON.stringify({choices,model:$('promptModel').value,open:$('selectionDetails').open})")==state

@@ -1,3 +1,9 @@
+# v1.0.1 — Unreleased phase 2
+- [x] Four new focused cases: legacy marker and multiple categories, private-profile rejection, browser category editor/legacy navigation, provider links. Three existing license tests plus 17 related navigation, icon, long-video and identity checks passed (24 total).
+- [x] Three new phase 2 tests cover direct API rejection, strict explicit acknowledgment, stale policy, persistence across initialization, backup isolation, consent scope edits, and actual browser checkbox/save-failure retry. Focused suite: 57 passed, 2 approved skips, 94 FastAPI deprecation warnings across two disjoint focused groups (includes phase 1, native, portrait, conversion, deferred analysis, navigation, layout, backup and branding).
+- [ ] Review remaining identifiable-person safeguards and external provider/image-download behavior. Verify source-level attribution, terms and privacy boundaries. Confirm private reporting configuration.
+- [ ] Complete cumulative gate on final application/test code, syntax, exact Git upgrade, fresh installation, source/archive/index privacy and live acceptance. No release ZIP from this intermediate phase.
+
 # v1.0.0 — Initial stable release preparation
 - [x] RC12.26 focused live acceptance: 6/6 maintainer-reported passes.
 - [x] MIT selected with generic attribution; maintainer reports GitHub email privacy settings configured.
@@ -486,3 +492,11 @@ Use a Python environment with plugin dependencies, pytest and optional Playwrigh
 ## RC12.20 Native session state
 - Synthetic host lifecycle: one and two main-form injection passes before tab creation, original shared component retained, wrapper resolves state before H3-to-FLUX conversion dispatch.
 - Live conversion, actual GPU execution and current host revision verification remain required. See TEST_RESULTS.txt for measured gate.
+
+## v1.0.1 provider and download safeguards
+- Synthetic private/mixed DNS responses, pinned IPv4 and IPv6 connections with original TLS/HTTP hostname, policy gates on manual photo save, reference export and legacy photo archiving; exclude private keys from archive worker, exact private-name lookup and artwork isolation, persisted cast provenance.
+- Verify existing metadata, photo collection, cache, prompt, navigation, generation, licensing, native bridge and data-preservation behavior in the complete final cumulative gate.
+- Live acceptance: new first-use prompt, classification/legacy records, attribution links, real HTTPS image downloads and provider compatibility, explicit local analysis/generation, preserved Personal profiles and consent. Private vulnerability reporting and lawful promotional material clearance are publisher-side.
+
+- [x] Final v1.0.1 cumulative gate: 458 passed, zero failed, 2 approved skips; 460 collected in 97 modules. See TEST_RESULTS.txt.
+- [x] Final synthetic upgrade, fresh installation and staged-source audit passed.
