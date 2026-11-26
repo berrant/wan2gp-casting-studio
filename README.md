@@ -1,7 +1,7 @@
 # Casting Studio for WanGP
 
-Version: v1.0.2
-Date: 2026-11-25
+Version: v1.0.3
+Date: 2026-11-26
 
 
 ## License
@@ -30,7 +30,13 @@ These are recognized options, not a guarantee that every checkpoint, encoder, GP
 
 ### Finding films
 
-Use **Find film cast online** with the title, optionally followed by the release year. Film discovery checks Wikipedia article titles, redirects and documented alternate titles, rather than assuming that a search hit is the correct movie. Review the matched article and suggested credits before adding them. A failed lookup can be retried; some filmographies and complex cast formats still need manual entry. Local production keys remain title-based, so use distinct titles for conflicting adaptations.
+Use **Find film cast online** with the title, optionally followed by the release year. Film discovery checks Wikipedia article titles, redirects and documented alternate titles, rather than assuming that a search hit is the correct movie. Review the matched article and suggested credits before adding them. A failed lookup can be retried; some filmographies and complex cast formats still need manual entry. Verified different film release years use separate local production records (for example, `The Thing` and `The Thing (2011 film)`); existing records and their keys are preserved. Film discovery reads explicit credits in cast lists, tables, separate voice-cast sections and recognized additional-cast paragraphs. The cast picker reports unresolved billed credits and incomplete sections rather than guessing roles. Wikipedia is not an exhaustive billing database; TVMaze supplies the main series cast, not episode-only guest roles.
+
+### Queue & Next and Queue All
+
+The main queue actions stage the current selection and advance, or stage all remaining selections in the current scope together. The counter tracks remaining selections (Queue All also shows the total configured image count). Queue All submits all configured images, or the first video per remaining selection; the Bulk queue workspace can review all configured video segments instead. Saved final prompts and role identities are resolved separately for each task; current model/checkpoint and generation settings apply across the batch. The preflight must succeed and you confirm the batch size before staging.
+
+Selections are marked staged only after a successful job receipt, not after GPU completion. Progress is kept in the current browser tab's session storage per model/checkpoint, shared across overlapping scopes, and survives a reload when session storage is available. At the end, queue buttons are disabled. Start new queue pass deliberately clears progress for the current scope; it does not cancel previous jobs. A failed or aborted native job can be retried via existing job-history controls. Inspect the native queue and job receipts after a lost response or browser/session change; this local pass is not a server-wide exactly-once guarantee. Queue one task in the optional help workflow remains an explicit single-task test.
 
 ### Troubleshooting
 

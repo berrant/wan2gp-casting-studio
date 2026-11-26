@@ -52,7 +52,7 @@ def test_image_set_count_fields_and_single_click_multi_image_queue(page):
     tab.evaluate('closeImageEditor()')
     tab.evaluate('openGenerator()')
     tab.wait_for_function("document.querySelector('#generatorModelType').value==='h3_ref2va_pruned_checkpoint'")
-    assert tab.locator('#generatorSubmit').text_content().strip()=='▶ Queue 3 images'
+    assert tab.locator('#generatorSubmit').text_content().strip()=='▶ Queue 3 images & next (3 left)'
     assert tab.locator('#generatorBatchMode').input_value()=='all'
     assert 'All 3 configured images' in tab.locator('#generatorBatchMode option[value=all]').text_content()
     tab.locator('#generatorSubmit').click()

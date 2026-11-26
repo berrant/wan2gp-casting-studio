@@ -1,3 +1,19 @@
+Casting Studio v1.0.3 — Queue-pass and cast coverage repairs
+Measured verification (2026-11-26)
+
+FINAL COMPLETE CUMULATIVE REGRESSION GATE
+479 collected; 477 passed; 2 approved retired standalone Docker skips; zero failures.
+Group 1: 155 passed, 2 skipped, 221 warnings in 145.93s.
+Group 2: 148 passed, 0 skipped, 170 warnings in 177.50s.
+Group 3: 174 passed, 0 skipped, 260 warnings in 161.22s.
+All three exit codes zero; 99 modules covered exactly once. 651 non-failing warnings. Final Python, JSON and HTML fingerprints match the tested tree. Python, JSON and inline JavaScript syntax checks passed.
+
+Six new permanent regression cases; 19 focused tests passed after final corrections. Tested 100 distinct tasks in one native synthetic manifest, duplicate and missing keys, scope protection, last-selection receipt and tab-session progress, intentional new pass, Queue All excluding the staged first of 100 selections, failed preflight, separate remakes and unknown-year legacy metadata, nested lists/tables/prose/voice cast extraction, missing billed roles, partial-provider recovery, exact private-name exclusions and acknowledged-dialog browser controls. Existing UI fixtures updated to use the new primary control and explicit repeat workflow; no tests removed. Early test fixture lacked browser session storage; corrected and re-tested. A preliminary cumulative run was stopped and restarted from final code after additional legacy-year/partial-provider corrections. Only the final complete gate counts.
+
+Exact synthetic Git fast-forward from v1.0.2: all 28 database tables, 14 seeded rows, public/private model bytes and reference bytes preserved; SQLite integrity and persisted responsible-use acceptance passed. Separate fresh startup passed. No tracked deletions. Staged privacy audit passed. Provider responses and native relay are synthetic in tests; live host, Safari, actual GPU, and current provider behavior require maintainer acceptance. Wikipedia cannot guarantee complete billing and TVMaze main cast excludes episode-only guests. Queue-pass progress is local to a browser tab and does not constitute a global exactly-once guarantee. No upstream, licensing or database schema changes. Public launch remains gated.
+
+Previous release record follows.
+
 Casting Studio v1.0.2 — Film title discovery repair
 Measured verification (2026-11-25)
 

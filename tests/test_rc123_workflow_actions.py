@@ -27,11 +27,11 @@ def test_production_removal_is_undoable(page):
 
 
 def test_keyboard_shortcut_does_not_intercept_editing(tab):
-    tab.evaluate('openGenerator()');tab.wait_for_function('!!generatorDetails&&!generatorRequestInProgress&&!$("generatorSubmitNext").disabled')
+    tab.evaluate('openGenerator()');tab.wait_for_function('!!generatorDetails&&!generatorRequestInProgress&&!$("generatorSubmit").disabled')
     tab.evaluate("$('generatorPreviewPanel').open=true")
     tab.locator('#generatorPreview').focus();tab.keyboard.press('Alt+n')
     assert tab.evaluate('window.responses.length')==0
-    tab.locator('#generatorSubmitNext').focus();tab.keyboard.press('Alt+n')
+    tab.locator('#generatorSubmit').focus();tab.keyboard.press('Alt+n')
     tab.wait_for_function('window.responses.length===1')
 
 

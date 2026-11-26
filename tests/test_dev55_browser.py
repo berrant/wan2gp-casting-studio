@@ -118,7 +118,7 @@ def test_select_all_is_idempotent_and_missing_refmod_is_never_queued(page):
  assert tab.locator('#generatorScope').input_value()=='production:darkmatter'
  assert tab.locator('#generatorChoice option').count()==2
  assert 'Other' not in tab.locator('#generatorChoice').inner_text()
- tab.wait_for_function("document.querySelector('#generatorSubmitNext').disabled===false")
+ tab.wait_for_function("document.querySelector('#generatorSubmit').disabled===false")
  tab.evaluate('submitGenerator(true)')
  tab.wait_for_function('window.responses.length===1')
  assert tab.evaluate('window.responses[0].choice_key') in ['zoiepalmer|theandroid|darkmatter','alicebraga|amandalucas|darkmatter']

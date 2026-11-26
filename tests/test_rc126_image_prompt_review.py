@@ -39,6 +39,8 @@ def test_five_editable_prompts_save_before_queue(tab):
     tab.wait_for_function('window.submits.length===1')
     assert sorted(tab.evaluate('Object.values(window.submits[0].edits)'))==[f'Unique edited prompt for image {i}' for i in (1,3,5)]
     assert tab.evaluate('window.submits[0].request.scene_mode')=='all'
+    # Deliberately start a fresh queue pass before editing the submitted selection.
+    tab.once('dialog',lambda d:d.accept());tab.locator('#generatorRestartPass').click()
     tab.evaluate('previewGenerator()');tab.wait_for_function("!$('generatorSubmit').disabled")
     assert tab.get_by_role('textbox',name='Image 5 final prompt').input_value()=='Unique edited prompt for image 5'
     tab.once('dialog',lambda d:d.accept())
@@ -52,7 +54,7 @@ def test_missing_preview_and_save_failure_prevent_queue(tab):
     tab.evaluate('window.failScene=4;previewGenerator()')
     tab.wait_for_function("$('generatorPreviewInfo').textContent==='Preview unavailable'")
     assert tab.locator('#generatorSubmit').is_disabled()
-    assert tab.locator('#generatorSubmitNext').is_disabled()
+    assert tab.locator('#generatorQueueAll').is_disabled()
     tab.evaluate('submitGenerator()');assert tab.evaluate('window.submits.length')==0
     tab.evaluate('window.failScene=0;previewGenerator()');tab.wait_for_function("!$('generatorSubmit').disabled")
     tab.evaluate('window.failSaveScene=4')

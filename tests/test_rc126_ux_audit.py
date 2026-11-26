@@ -71,7 +71,7 @@ def test_queue_waits_for_prompt_reset_to_finish(tab):
     }''')
     tab.wait_for_function('window.resetWaiting')
     assert tab.locator('#generatorSubmit').is_disabled()
-    assert tab.locator('#generatorSubmitNext').is_disabled()
+    assert tab.locator('#generatorQueueAll').is_disabled()
     tab.evaluate('window.releaseReset()')
     tab.wait_for_function("!$('generatorSubmit').disabled")
     assert not tab.evaluate('window.submits.length')

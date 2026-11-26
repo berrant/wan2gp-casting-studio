@@ -18,7 +18,7 @@ def test_queue_confirmation_pinned_and_survives_next_selection(page):
         for scroll in (0,750,100000):
             tab.evaluate('(n)=>{$("generatorModal").querySelector(".panel").scrollTop=n}',scroll)
             assert visible_in_panel(tab,'#generatorReceipt','#generatorModal .panel'),(width,scroll)
-            assert visible_in_panel(tab,'#generatorSubmitNext','#generatorModal .panel'),(width,scroll)
+            assert visible_in_panel(tab,'#generatorSubmit','#generatorModal .panel'),(width,scroll)
         tab.evaluate("$('generatorStatus').textContent='Loaded next selection model defaults'")
         assert 'first-job · queued' in tab.locator('#generatorReceipt').inner_text()
     assert not errors,errors

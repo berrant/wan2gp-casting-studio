@@ -1,3 +1,10 @@
+## v1.0.3 — Queue-pass and cast coverage repairs
+- Consolidate the primary queue actions into Queue & Next and Queue All, with remaining-selection and image-job counts, receipt-based queue-pass tracking, explicit new pass and protection against repeated last-selection submission. Queue All checks and stages only remaining selections in the current scope using their individual saved prompts. Tab-session progress is separate per model/checkpoint; native job completion and retry history remain separate.
+- Verified remakes with the same base title receive distinct local production keys; fill an unknown release year only when existing credits do not conflict. Keep existing cast records and keys intact. Do not guess which release a conflicting legacy record describes.
+- Read explicit cast roles from nested lists, actor/character tables, voice and additional cast sections, and recognized cast-enumeration paragraphs. Report missing billed roles, partial provider errors and TVMaze main-cast scope; do not invent missing roles or claim exhaustive coverage. Exact Personal matches remain excluded from public cast suggestions and bulk saves/imports.
+- Responsible-use dialog hides disabled acknowledgment controls after acceptance and shows a clear acknowledged status and Close button; policy and saved acknowledgment unchanged.
+- Local live acceptance remains required; no upstream changes, schema changes, license changes or publication authorization.
+
 ## v1.0.2 — Film title discovery repair
 
 - Resolve film titles using Wikipedia direct lookup, redirects and a bounded title-search fallback. Check film lead metadata and documented titles, including alternate subtitles, punctuation, capitalization and optional episode notation. Reject explicit year/episode mismatches and ambiguous matches rather than importing a search hit blindly.
