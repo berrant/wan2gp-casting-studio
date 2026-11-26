@@ -1,3 +1,19 @@
+Casting Studio v1.0.4 — Production integrity follow-up
+Measured verification (2026-11-26)
+
+FINAL COMPLETE CUMULATIVE REGRESSION GATE
+484 collected; 482 passed; 2 approved retired standalone Docker skips; zero failures.
+Group 1: 160 passed, 2 skipped, 231 warnings in 142.12s.
+Group 2: 148 passed, 0 skipped, 170 warnings in 173.72s.
+Group 3: 174 passed, 0 skipped, 260 warnings in 155.66s.
+All three exits zero; all 100 test modules covered exactly once. 661 non-failing warnings. Final application/test fingerprints and Python, JSON and inline JavaScript syntax checks passed.
+
+Three reproduced failures on v1.0.3: valid qualified film poster rejected; same-title television import overwrites metadata and combines cast; wrong-year bulk cast accepted. Five new permanent tests cover these and repeat/ambiguous TV imports, exact year artwork/credit matching, private-name exclusion, legacy-year conflict validation and atomic mixed-year rejection. Final focused run: 35 passed before version update; entire final tree rerun in the cumulative gate above. No tests removed. The maintainer reported 8/8 v1.0.3 focused live tests passed; v1.0.4 live testing remains separate.
+
+Exact synthetic Git fast-forward from v1.0.3: preserved all 28 database tables, 14 seeded rows, model/reference bytes and acceptance. Separate fresh startup passed; SQLite integrity OK; staged privacy check passed. Existing historical mixed records remain intact. Previously cached artwork may need forced refresh/manual replacement. Tests use synthetic providers/native relay; actual WanGP/Safari/GPU and provider verification remain outstanding. No upstream or schema or licensing changes. Public release and publisher clearance remain gated.
+
+Previous release records follow.
+
 Casting Studio v1.0.3 — Queue-pass and cast coverage repairs
 Measured verification (2026-11-26)
 

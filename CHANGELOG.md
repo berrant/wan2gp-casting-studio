@@ -1,3 +1,9 @@
+## v1.0.4 — Production integrity follow-up
+- Keep same-title TV adaptations with conflicting premiere years in separate production keys, preserve existing metadata and cast, and reuse the qualified record on repeat imports. Select the matching TVMaze premiere for cast suggestions and artwork; refuse ambiguous title-only suggestions.
+- Validate explicit cast release years against production metadata, qualified titles and legacy credits. Reject conflicting or invalid bulk imports atomically, with no cast changes; yearless manual entries remain supported.
+- Verify film poster lookup using the same film title/alias/year checks as the cast importer, without fetching cast sections. Preserve manually selected artwork. Qualified production labels use the recorded release year in prompts.
+- Existing mixed historical records are not automatically split or rewritten. Local live acceptance and publisher clearance remain required.
+
 ## v1.0.3 — Queue-pass and cast coverage repairs
 - Consolidate the primary queue actions into Queue & Next and Queue All, with remaining-selection and image-job counts, receipt-based queue-pass tracking, explicit new pass and protection against repeated last-selection submission. Queue All checks and stages only remaining selections in the current scope using their individual saved prompts. Tab-session progress is separate per model/checkpoint; native job completion and retry history remain separate.
 - Verified remakes with the same base title receive distinct local production keys; fill an unknown release year only when existing credits do not conflict. Keep existing cast records and keys intact. Do not guess which release a conflicting legacy record describes.

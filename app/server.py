@@ -832,7 +832,7 @@ def get_profile_link(name:str=Query(min_length=1,max_length=180)):
         return {'provider':'imdb','url':row[0],'verified':True} if row[0] else default
     imdb=''
     try:
-        with httpx.Client(timeout=5,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.3 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
+        with httpx.Client(timeout=5,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.4 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
             resp=client.get('https://www.wikidata.org/w/api.php',params={'action':'wbsearchentities','search':name,'language':'en','format':'json','limit':6,'type':'item'})
             resp.raise_for_status()
             candidates=[v for v in resp.json().get('search',[]) if token(v.get('label'))==token(name)]
@@ -934,7 +934,7 @@ def wikidata_get(client,params):
     raise last_error
 
 def wikidata_profile(name):
-    with httpx.Client(timeout=20, trust_env=False, headers={'User-Agent':'CastingStudio/1.0.3 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
+    with httpx.Client(timeout=20, trust_env=False, headers={'User-Agent':'CastingStudio/1.0.4 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
         search=wikidata_get(client,{
             'action':'wbsearchentities','search':name,'language':'en','format':'json','type':'item','limit':8})
         candidates=[c for c in search.get('search',[]) if token(c.get('label',''))==token(name) or
@@ -2198,7 +2198,7 @@ def download_image(url):
         if cached and safe_media_file(PHOTO_DIR,cached[0],r'[0-9a-f]{64}\.jpg'):return 'api/photos/'+cached[0]
         address=validate_public_url(url)
         # Disable proxies and redirects; redirects must not reach private network addresses.
-        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.3)'}) as client:
+        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.4)'}) as client:
             with pinned_image_request(client,url,address) as res:
                 if res.status_code!=200 or not res.headers.get('content-type','').lower().startswith('image/'):
                     return ''
@@ -2396,7 +2396,7 @@ def portrayal_production_label(item):
     """
     production=clean_line(item.get('production',''))
     if not production:return ''
-    disambiguated=re.search(r'\s*\(((?:19|20)\d{2}) film\)\s*$',production,re.I)
+    disambiguated=re.search(r'\s*\(((?:19|20)\d{2}) (?:film|TV series)\)\s*$',production,re.I)
     if disambiguated:return production[:disambiguated.start()].rstrip()+f' ({disambiguated.group(1)})'
     if re.search(r'\((?:19|20)\d{2}\)\s*$',production):return production
     explicit=re.search(r'\b((?:19|20)\d{2})\s*$',production)
@@ -3831,12 +3831,25 @@ def add_production(item:ProductionRequest):
                 known_years={r['year'] for r in saved_cast_rows(db) if r.get('year') and token(canonical_production(r['production']))==token(name)} if not existing[1] else {existing[1]}
                 if (item.year and known_years and known_years!={item.year}) or existing[2] not in (item.kind,'other'):
                     raise HTTPException(409,'An existing production with this title has different metadata. Use a distinct title.')
-                if not existing[1] and item.year:
-                    db.execute('UPDATE productions SET year=? WHERE key=?',(item.year,token(name)))
+                if (not existing[1] and item.year) or existing[2]=='other':
+                    db.execute('UPDATE productions SET year=COALESCE(year,?),kind=? WHERE key=?',(item.year,item.kind,token(name)))
                 return {'saved':True,'name':existing[0]}
         statement='INSERT OR IGNORE' if item.preserve_existing else 'INSERT OR REPLACE'
         db.execute(statement+' INTO productions(key,name,year,kind) VALUES (?,?,?,?)',(token(name),name,item.year,item.kind))
     return {'saved':True,'name':name}
+
+def validate_cast_release(db,production,years):
+    years={year for year in years if year is not None}
+    if any(not 1880<=year<=2100 for year in years):raise HTTPException(400,'Invalid release year')
+    if not years:return
+    key=token(production)
+    existing=db.execute('SELECT year FROM productions WHERE key=?',(key,)).fetchone()
+    known={existing[0]} if existing and existing[0] else {r['year'] for r in saved_cast_rows(db) if r.get('year') and token(canonical_production(r['production']))==key}
+    explicit=film_title_parts(production)[1] or tv_title_parts(production)[1]
+    if explicit:known.add(explicit)
+    if len(years)>1 or (known and known!=years):
+        raise HTTPException(409,'Cast release year conflicts with the production. Choose the matching production before importing.')
+
 
 @app.post('/api/productions/cast')
 def add_production_cast(item:CastRequest):
@@ -3847,6 +3860,7 @@ def add_production_cast(item:CastRequest):
     entry={'production':name,'actress':canonical_name(item.actress),'character':item.character,'year':item.year,'image':item.image if item.image.startswith('https://') else '', 'image_source':'character' if item.image.startswith('https://') else '', 'source':item.source,'source_url':item.source_url}
     key=canonical_role_key(entry['actress'],entry['character'],name)
     with lock,connect() as db:
+        validate_cast_release(db,name,[item.year])
         db.execute('INSERT OR IGNORE INTO productions(key,name,year,kind) VALUES(?,?,?,?)',(token(name),name,item.year,'other'))
         db.execute('INSERT OR REPLACE INTO production_cast(key,payload) VALUES(?,?)',(key,json.dumps(entry)))
     return {'saved':True,**entry}
@@ -3935,7 +3949,7 @@ def search_production_online(q:str=Query(min_length=2,max_length=120)):
 # Key-free film credit source. Search is discovery only: accept a verified
 # film article with a matching title, documented alias or explicit redirect.
 WIKIPEDIA_API='https://en.wikipedia.org/w/api.php'
-WIKI_AGENT='CastingStudio/1.0.3 (+https://github.com/berrant/wan2gp-casting-studio)'
+WIKI_AGENT='CastingStudio/1.0.4 (+https://github.com/berrant/wan2gp-casting-studio)'
 def wiki_api(client,params):
     r=client.get(WIKIPEDIA_API,params={**params,'format':'json','formatversion':2},headers={'User-Agent':WIKI_AGENT})
     r.raise_for_status();return r.json()
@@ -3946,6 +3960,12 @@ def film_title_parts(title):
     year=int(match.group(1) or match.group(2)) if match else None
     base=raw[:match.start()].strip() if match else raw
     return re.sub(r'\s*\(film\)$','',base,flags=re.I).strip(),year
+
+def tv_title_parts(title):
+    raw=str(title).strip()
+    match=re.search(r'\s*\((\d{4}) TV series\)$',raw,re.I)
+    return (raw[:match.start()].strip(),int(match.group(1))) if match else (raw,None)
+
 
 def film_title_key(title,omit_episode=False):
     base,_=film_title_parts(title)
@@ -4007,7 +4027,7 @@ def film_cast_rows(html,year):
                 add(actor,role)
     return found
 
-def film_cast_lookup(title):
+def film_cast_lookup(title,include_cast=True):
     exact,year=film_title_parts(title)
     assert_public_name(exact)
     omit_episode=not bool(re.search(r'\bepisode\s+(?:[ivxlcdm]+|[0-9]+)\b',exact,re.I))
@@ -4064,6 +4084,7 @@ def film_cast_lookup(title):
         page,actual_year,billed=matches[0];page_title=page['title']
         source_url='https://en.wikipedia.org/wiki/'+quote(page_title.replace(' ','_'),safe='')
         result={**empty,'source_url':source_url,'matched_show':page_title,'year':actual_year,'artwork':page.get('thumbnail',{}).get('source','')}
+        if not include_cast:return {**result,'note':''}
         sections=query({'action':'parse','page':page_title,'prop':'sections'}).get('parse',{}).get('sections',[])
         cast_sections=[x for x in sections if re.search(r'^(cast(?: and characters)?|voice cast|additional cast|supporting cast|main cast)$',re.sub('<[^>]+>','',x.get('line','')).strip(),re.I)]
         if not cast_sections:return {**result,'note':'No identifiable Cast section on the film article. You can add credits manually.'}
@@ -4103,12 +4124,15 @@ def production_artwork(name:str=Query(min_length=2,max_length=180),refresh:bool=
     # TVMaze has a production-specific official show poster; exact title and
     # matching premiere year prevent misleading similarly named series.
     if kind!='film':
+        tv_name,tv_year=tv_title_parts(name)
+        assert_public_name(tv_name)
+        year=year or tv_year
         try:
             with httpx.Client(timeout=10,trust_env=False,follow_redirects=False) as client:
-                resp=client.get('https://api.tvmaze.com/search/shows',params={'q':name})
+                resp=client.get('https://api.tvmaze.com/search/shows',params={'q':tv_name})
                 resp.raise_for_status()
                 shows=[x.get('show') or {} for x in resp.json()]
-                exact=[x for x in shows if token(x.get('name',''))==key]
+                exact=[x for x in shows if token(x.get('name',''))==token(tv_name)]
                 if year is not None:
                     exact=[x for x in exact if str(x.get('premiered') or '').startswith(str(year))]
                 if len(exact)==1:
@@ -4117,12 +4141,17 @@ def production_artwork(name:str=Query(min_length=2,max_length=180),refresh:bool=
                     if isinstance(candidate,str) and candidate.startswith('https://'):
                         url=candidate;source='TVMaze series poster'
         except (httpx.HTTPError,ValueError,TypeError,KeyError):pass
-    if not url:
-        variants=[name]
-        if year:
-            if kind=='film':variants.extend([f'{name} ({year} film)',f'{name} (film)'])
-            else:variants.extend([f'{name} ({year} TV series)',f'{name} (TV series)'])
-        else:variants.extend([f'{name} (TV series)',f'{name} (film)'])
+    if kind=='film' or (kind=='other' and year and not url and not tv_title_parts(name)[1]):
+        try:
+            base,explicit_year=film_title_parts(name)
+            lookup_year=year or explicit_year
+            film=film_cast_lookup(f'{base} ({lookup_year})' if lookup_year else base,include_cast=False)
+            candidate=film.get('artwork','')
+            if film.get('matched_show') and isinstance(candidate,str) and candidate.startswith('https://'):
+                url=candidate;source='Wikimedia'
+        except (httpx.HTTPError,ValueError,TypeError,KeyError):pass
+    if not url and kind!='film':
+        variants=[f'{tv_name} ({year} TV series)'] if year else [name,f'{name} (TV series)',f'{name} (film)']
         try:
             with httpx.Client(timeout=10,trust_env=False,follow_redirects=False) as client:
                 for title in dict.fromkeys(variants):
@@ -4130,7 +4159,10 @@ def production_artwork(name:str=Query(min_length=2,max_length=180),refresh:bool=
                     pages=result.get('query',{}).get('pages',[])
                     if pages and not pages[0].get('missing'):
                         page=pages[0]
-                        if token(re.sub(r'\s*\([^)]*\)$','',page.get('title','')))!=key:continue
+                        if year:
+                            page_base,page_year=tv_title_parts(page.get('title',''))
+                            if page_year!=year or token(page_base)!=token(tv_name):continue
+                        elif token(re.sub(r'\s*\([^)]*\)$','',page.get('title','')))!=key:continue
                         candidate=page.get('thumbnail',{}).get('source','')
                         if candidate.startswith('https://'):
                             url=candidate;source='Wikimedia';break
@@ -4156,12 +4188,16 @@ def production_cast_suggestions(production:str=Query(min_length=2,max_length=180
             years={r['year'] for r in saved_cast_rows(db) if r.get('year') and token(canonical_production(r['production']))==token(target)}
             if len(years)==1:metadata=(next(iter(years)),metadata[1])
     if kind=='auto' and metadata and metadata[1]=='film':kind='film'
+    tv_name,tv_year=tv_title_parts(target)
+    assert_public_name(tv_name)
+    tv_year=tv_year or (metadata[0] if metadata else None) or film_title_parts(production)[1]
+    known_series=bool(metadata and metadata[1]=='series') or bool(tv_title_parts(target)[1])
     if kind=='film':assert_public_name(film_title_parts(production)[0])
     requested_year=film_title_parts(production)[1]
     # A verified alternate release can coexist with the original title-keyed record.
-    collision=kind=='film' and metadata and metadata[0] and requested_year and metadata[0]!=requested_year
-    film_query=production if film_title_parts(production)[1] or not metadata or not metadata[0] else f'{production} ({metadata[0]})'
-    cache_key=(kind,token(film_query))
+    collision=kind=='film' and metadata and ((metadata[0] and requested_year and metadata[0]!=requested_year) or metadata[1]=='series')
+    film_query=production if film_title_parts(production)[1] or not metadata or not metadata[0] or metadata[1]=='series' else f'{production} ({metadata[0]})'
+    cache_key=(kind,token(film_query),tv_year,known_series)
     with CAST_SUGGEST_LOCK:
         prior=CAST_SUGGEST_CACHE.get(cache_key)
     if prior and time.time()-prior[0]<1800:
@@ -4173,14 +4209,16 @@ def production_cast_suggestions(production:str=Query(min_length=2,max_length=180
                 source.update(film_cast_lookup(film_query))
             else:
                 with httpx.Client(timeout=15,trust_env=False) as client:
-                    found=client.get('https://api.tvmaze.com/search/shows',params={'q':target})
+                    found=client.get('https://api.tvmaze.com/search/shows',params={'q':tv_name})
                     found.raise_for_status()
-                    exact=[x['show'] for x in found.json() if token(x.get('show',{}).get('name',''))==token(target)]
-                    if exact:
+                    exact=[x['show'] for x in found.json() if token(x.get('show',{}).get('name',''))==token(tv_name)]
+                    if tv_year:exact=[x for x in exact if str(x.get('premiered') or '').startswith(str(tv_year)+'-')]
+                    if len(exact)==1:
                         show=exact[0]
                         response=client.get(f"https://api.tvmaze.com/shows/{int(show['id'])}/cast")
                         response.raise_for_status()
                         source['matched_show']=show['name']
+                        source['year']=int(show['premiered'][:4]) if show.get('premiered') else tv_year
                         source['coverage']='Main series cast (TVMaze; excludes episode-only guests)'
                         source['note']='TVMaze main series cast, ordered by appearances; episode-only guest roles are not included.'
                         source['source_url']='https://www.tvmaze.com/shows/'+str(int(show['id']))
@@ -4193,12 +4231,15 @@ def production_cast_suggestions(production:str=Query(min_length=2,max_length=180
                             role=str(character.get('name') or '').strip()
                             photo=((character.get('image') or {}).get('medium') or '')
                             if not isinstance(photo,str) or not photo.startswith('https://'):photo=''
-                            source['cast'].append({'actress':name,'character':role,'image':photo,'image_source':'character' if photo else ''})
+                            source['cast'].append({'actress':name,'character':role,'image':photo,'image_source':'character' if photo else '', 'year':source['year']})
+                    elif len(exact)>1:
+                        source['note']='Multiple series share this title. Use Find TV shows online to choose the correct release.'
+                        source['matched_show']=tv_name
                     else:
                         source['note']='No exact TVMaze series match. Add a performer manually or select another production.'
         except Exception:
             source['note']='Film lookup temporarily unavailable. Retry or add manually.' if kind=='film' else 'Cast lookup is temporarily unavailable. Manual entry remains available.'
-        if kind!='film' and not source['cast'] and not source['matched_show']:
+        if kind!='film' and not known_series and not source['cast'] and not source['matched_show']:
             try:
                 movie=film_cast_lookup(film_query)
                 if movie['cast'] or movie.get('matched_show') or not source['note'] or 'No exact' in source['note']:
@@ -4207,8 +4248,8 @@ def production_cast_suggestions(production:str=Query(min_length=2,max_length=180
                 source['note']='Film lookup unavailable ('+type(ex).__name__+'); manual entry remains available.'
         if source['cast'] and 'cast section(s) unavailable' not in source.get('note',''):
             with CAST_SUGGEST_LOCK:CAST_SUGGEST_CACHE[cache_key]=(time.time(),source)
-    if collision and source.get('cast') and source.get('year')==requested_year:
-        production=f'{film_title_parts(production)[0]} ({requested_year} film)'
+    if collision and source.get('cast') and source.get('year') and (not requested_year or source['year']==requested_year):
+        production=f"{film_title_parts(production)[0]} ({source['year']} film)"
     existing=get_production_cast(production)['cast']
     existing_keys={canonical_role_key(it['actress'],it.get('character',''),production) for it in existing}
     installed={token(canonical_name(model['name'])):model['path'] for model in scan()}
@@ -4243,6 +4284,7 @@ def add_production_cast_bulk(payload:CastBulkRequest):
         entry={'production':production,'actress':person,'character':role,'year':member.year,'image':member.image if member.image.startswith('https://') else '', 'image_source':'character' if member.image.startswith('https://') else '', 'source':member.source,'source_url':member.source_url}
         values.append((key,json.dumps(entry)))
     with lock,connect() as db:
+        validate_cast_release(db,production,[member.year for member in payload.members])
         db.execute('INSERT OR IGNORE INTO productions(key,name,year,kind) VALUES(?,?,?,?)',
                    (token(production),production,None,'other'))
         db.executemany('INSERT OR REPLACE INTO production_cast(key,payload) VALUES(?,?)',values)
@@ -4262,7 +4304,22 @@ def import_tvmaze(show_id:int):
     name=canonical_production(info['name']); year=int(info['premiered'][:4]) if info.get('premiered') else None
     assert_public_name(name);private=personal_name_keys()
     with lock,connect() as db:
-        db.execute('INSERT OR REPLACE INTO productions(key,name,year,kind) VALUES(?,?,?,?)',(token(name),name,year,'series'))
+        def metadata(title):
+            row=db.execute('SELECT name,year,kind FROM productions WHERE key=?',(token(title),)).fetchone()
+            years={row[1]} if row and row[1] else {r['year'] for r in saved_cast_rows(db) if r.get('year') and token(canonical_production(r['production']))==token(title)}
+            return row,years
+        existing,known=metadata(name)
+        if (known and known!={year}) or (existing and existing[2] not in ('series','other')):
+            if not year:raise HTTPException(409,'Conflicting series title without a verified premiere year.')
+            name=f'{name} ({year} TV series)'
+            if len(name)>180:raise HTTPException(409,'Conflicting series title is too long to distinguish safely.')
+            existing,known=metadata(name)
+            if (known and known!={year}) or (existing and existing[2] not in ('series','other')):
+                raise HTTPException(409,'Conflicting series metadata; use a distinct production title.')
+        if existing:
+            name=existing[0]
+            db.execute('UPDATE productions SET year=COALESCE(year,?),kind=? WHERE key=?',(year,'series',token(name)))
+        else:db.execute('INSERT INTO productions(key,name,year,kind) VALUES(?,?,?,?)',(token(name),name,year,'series'))
         for role in roles:
             actress=role.get('person',{}).get('name','').strip()
             char=role.get('character',{}).get('name','').strip()
@@ -4413,7 +4470,7 @@ def save_reference_image(item:ReferenceImageRequest):
             return {**result,'reused_local':True}
         try:address=validate_public_url(item.image_url)
         except Exception as e:raise HTTPException(400,str(e))
-        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.3'}) as client:
+        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.4'}) as client:
             with pinned_image_request(client,item.image_url,address) as r:
                 if r.status_code!=200 or not r.headers.get('content-type','').lower().startswith('image/'):
                     raise HTTPException(422,'Image host did not return an image')

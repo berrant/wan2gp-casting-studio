@@ -1,3 +1,8 @@
+# v1.0.4 — Production integrity follow-up
+- [x] Five new permanent regression tests: reproduction and correction of TV remake collision, wrong-year cast writes and qualified film poster, repeated and ambiguous TV lookups, atomic mixed-year rejection and exact private-name exclusions. Complete final gate: 482 passed, 2 approved skips, 0 failures, 484 collected across 100 test modules.
+- [x] Exact v1.0.3 synthetic upgrade and separate fresh startup; final fingerprints and syntax checks; distribution privacy gate before delivery.
+- [ ] Live acceptance: finish generation and back up external data before update. Verify separate original/remake TV records, repeat import, matching TV credits and artwork; check film remake poster and correct cast credits. Continue earlier outstanding functional checks. Do not modify real user records to test an invalid import. Publisher clearance and explicit launch authorization remain separate.
+
 # v1.0.3 — Queue-pass, remake isolation and cast coverage
 - [x] Six permanent focused regressions cover 100-task manifests, unique subset validation, last-selection protection and tab-session persistence, Queue All with 99 remaining and failed preflight, separate remake records including an unknown legacy year, multi-format film credits including partial-provider recovery/private-name exclusion, and acknowledged dialog controls. Existing 13 film regressions passed with these six in the final focused run.
 - [x] Complete cumulative gate: 477 passed, 2 approved retired Docker skips, 0 failures, 479 collected, 99 modules; final fingerprints and syntax checks passed. Synthetic exact v1.0.2 Git fast-forward and separate fresh startup passed. Distribution privacy audit required before delivery.

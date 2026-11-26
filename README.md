@@ -1,6 +1,6 @@
 # Casting Studio for WanGP
 
-Version: v1.0.3
+Version: v1.0.4
 Date: 2026-11-26
 
 
@@ -31,6 +31,10 @@ These are recognized options, not a guarantee that every checkpoint, encoder, GP
 ### Finding films
 
 Use **Find film cast online** with the title, optionally followed by the release year. Film discovery checks Wikipedia article titles, redirects and documented alternate titles, rather than assuming that a search hit is the correct movie. Review the matched article and suggested credits before adding them. A failed lookup can be retried; some filmographies and complex cast formats still need manual entry. Verified different film release years use separate local production records (for example, `The Thing` and `The Thing (2011 film)`); existing records and their keys are preserved. Film discovery reads explicit credits in cast lists, tables, separate voice-cast sections and recognized additional-cast paragraphs. The cast picker reports unresolved billed credits and incomplete sections rather than guessing roles. Wikipedia is not an exhaustive billing database; TVMaze supplies the main series cast, not episode-only guest roles.
+
+### Remakes and matching artwork
+
+TVMaze imports with different premiere years use separate local records (for example, `Example Series` and `Example Series (2020 TV series)`). Choose the intended result by its premiere year in Find TV shows online. Repeated imports reuse the qualified record; cast suggestions and TVMaze posters check the matching premiere. Film poster searches use the same verified film article matching as the cast search. Explicitly conflicting cast years are rejected before any row is saved. Previously mixed historical records are retained for manual review, not automatically split. Cached artwork from an earlier version may require a forced lookup or manual replacement. Provider coverage is not exhaustive.
 
 ### Queue & Next and Queue All
 
