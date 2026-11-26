@@ -10,8 +10,8 @@
 - Run `python check_release_privacy.py --git-index` after staging. The checker also supports normalized source and installation ZIP files with the ZIP path as argument. This guard does not inspect prior Git history or author metadata.
 - Use a pseudonymous Git author name and the exact GitHub-provided private noreply address in repository-local Git configuration; enable private email and block pushes exposing private email in GitHub settings. Verify existing history independently.
 - Before changing visibility, review the actual repository history, author/committer metadata, branches, tags, prior release assets, issues and settings for private data. The local staged-index guard cannot inspect these.
-- After publisher clearance and explicit launch approval, create tag `v1.0.4` and publish a stable GitHub release. Upload the unchanged verified installation ZIP as the release asset. Verify native plugin-manager installation after publication.
+- After publisher clearance and explicit launch approval, create tag `v1.0.5` and publish a stable GitHub release. Upload the unchanged verified installation ZIP as the release asset. Verify native plugin-manager installation after publication.
 
 - Wardrobe separation passed live on RC12.25; review existing saved profiles manually where needed.
 
-- Before promoting v1.0.4, confirm private vulnerability reporting is enabled, review public-facing examples and screenshots for rights/consent clearance, and complete the focused live acceptance checks. Do not claim legal immunity or verified consent.
+- Before promoting v1.0.5, confirm private vulnerability reporting is enabled, review public-facing examples and screenshots for rights/consent clearance, and complete the outstanding v1.0.4 production-integrity checks and v1.0.5 compact-header live acceptance checks. Do not claim legal immunity or verified consent.

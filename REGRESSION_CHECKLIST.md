@@ -1,3 +1,8 @@
+# v1.0.5 — Compact application header
+- [x] Five focused header/navigation tests after restoring 16px minimum text, including one new permanent test across ten viewport widths with conditional AI activity and mode/navigation actions. Seven related tests after synchronizing the older classification test with visible card layout. Supplemental long-status, failure/retry and modal/keyboard audit passed.
+- [x] Final complete cumulative gate: 483 passed, 2 approved skips, 0 failures, 485 collected across 101 modules. Final syntax and application/test fingerprints passed. Exact synthetic v1.0.4 upgrade preserved all 28 database tables, 8 seeded rows, reference and model bytes, and SQLite integrity.
+- [ ] Live: finish generations and back up external data before installing. Verify About v1.0.5 and MIT; all header controls visible at desktop and smaller widths; AI activity, maintenance state, rescan and People menu remain usable. Confirm existing selections, settings and approved profiles intact. Complete outstanding v1.0.4 production integrity checks. Publisher clearance and launch approval remain separate.
+
 # v1.0.4 — Production integrity follow-up
 - [x] Five new permanent regression tests: reproduction and correction of TV remake collision, wrong-year cast writes and qualified film poster, repeated and ambiguous TV lookups, atomic mixed-year rejection and exact private-name exclusions. Complete final gate: 482 passed, 2 approved skips, 0 failures, 484 collected across 100 test modules.
 - [x] Exact v1.0.3 synthetic upgrade and separate fresh startup; final fingerprints and syntax checks; distribution privacy gate before delivery.

@@ -1,12 +1,16 @@
 # Casting Studio for WanGP
 
-Version: v1.0.4
+Version: v1.0.5
 Date: 2026-11-26
 
 
 ## License
 
 Casting Studio uses the [MIT License](LICENSE) for independently licensable project material. Use, modification, distribution and commercial use are permitted subject to the license notices. See [notices](NOTICE.md) and [contribution policy](CONTRIBUTING.md). WanGP, Refmod-Fork and other third-party material retain their applicable terms; no upstream rights or ownership of user outputs are granted or claimed. The project uses generic attribution without a personal name or email. The version number does not itself authorize publication.
+
+## v1.0.5 interface update
+
+The compact application header groups the logo, title, version and status alongside the existing actions. The toolbar and navigation wrap on narrow displays, retain the 16px minimum navigation text size, and preserve the People menu, AI analysis activity, and maintenance indicators. Existing external data and generation behavior are unchanged.
 
 ## Quick start
 

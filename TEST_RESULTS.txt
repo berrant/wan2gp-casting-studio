@@ -1,3 +1,19 @@
+Casting Studio v1.0.5 — Compact application header
+Measured verification (2026-11-26)
+
+FINAL COMPLETE CUMULATIVE REGRESSION GATE
+485 collected; 483 passed; 2 approved retired standalone Docker skips; zero failures.
+Group 1: 160 passed, 2 skipped, 202 warnings in 161.23s (0:02:41)
+Group 2: 162 passed, 222 warnings in 159.75s (0:02:39)
+Group 3: 161 passed, 237 warnings in 148.23s (0:02:28)
+All three exits zero; all 101 test modules covered exactly once. 661 non-failing warnings. Final application/test fingerprints and Python, JSON and inline JavaScript syntax checks passed.
+
+The preliminary run detected a navigation readability regression (15.84px, below the existing 16px minimum). Corrected both navigation and People picker font-size lower bounds, reran the five focused header/navigation tests (all passed), then restarted the entire cumulative suite on corrected application/test code. The next full run identified a timing-sensitive older classification assertion: newly inserted content-visibility:auto cards can report empty innerText before layout. Preserved the assertions, scrolled the card into view and used a visible-text assertion with auto-wait. Seven related tests passed; the full gate was repeated after the test correction. Only the final complete run counts. One new permanent browser test covers ten viewport widths from 320 to 2048 pixels with idle and active AI analysis state, header/status bounds, mode toggle, About and People selection. Supplemental browser audit: four dialog controls, rescan failure and retry, eight widths with long error strings, waiting appearance analysis and active maintenance, longest category label, keyboard menu dismissal, no header overlap/navigation overflow or JavaScript errors. Actual Chromium viewport 1440 CSS pixels: combined header/navigation height 223 to 114 CSS pixels (49% reduction); at 1280: 277 to 114 (59% reduction). These are synthetic browser renders, not measurements on the live host.
+
+Exact synthetic v1.0.4 to v1.0.5 Git fast-forward and restart preserved all 28 database tables, 8 seeded records, reference image bytes and model bytes. SQLite integrity OK; persisted responsible-use acceptance and custom prompt template verified. Reference-image quality inspection used a synthetic fixture. No actual GPU, Safari, live network provider or user-data tests. Live acceptance remains required. No schema, queue, licensing or upstream changes. Public release and Discord announcement remain gated by publisher clearance and explicit approval.
+
+--- Earlier release evidence ---
+
 Casting Studio v1.0.4 — Production integrity follow-up
 Measured verification (2026-11-26)
 

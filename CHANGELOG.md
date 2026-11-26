@@ -1,3 +1,8 @@
+## v1.0.5 — Compact application header
+- Group branding, release version, inventory scan status and maintenance state alongside a smaller logo. Keep Rescan RefMods, Settings, Getting started, Batch history, mode toggle and About in a single desktop toolbar, with responsive wrapping when necessary.
+- Reduce primary navigation height without removing labels, keyboard access, the People category menu, or the established 16px minimum navigation text size. Preserve visible appearance-analysis activity and sticky navigation/maintenance/selection bands.
+- Scoped application masthead styles do not change nested panel headers, generation behavior, persisted data, licensing or upstream plugins. Live host acceptance and publisher clearance remain separate.
+
 ## v1.0.4 — Production integrity follow-up
 - Keep same-title TV adaptations with conflicting premiere years in separate production keys, preserve existing metadata and cast, and reuse the qualified record on repeat imports. Select the matching TVMaze premiere for cast suggestions and artwork; refuse ambiguous title-only suggestions.
 - Validate explicit cast release years against production metadata, qualified titles and legacy credits. Reject conflicting or invalid bulk imports atomically, with no cast changes; yearless manual entries remain supported.

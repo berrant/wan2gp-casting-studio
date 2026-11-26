@@ -25,7 +25,7 @@ class CastingStudioPlugin(WAN2GPPlugin):
     def __init__(self):
         super().__init__()
         self.name='Casting Studio for WanGP'
-        self.version='1.0.4'
+        self.version='1.0.5'
         self.description='Native casting, reference-photo curation, and prompt management for Refmod-Fork.'
         self.wangp_root=Path(__file__).resolve().parents[2]
         self.adapter=RefmodForkAdapter(self.wangp_root)

@@ -53,7 +53,13 @@ def test_classification_editor_preserves_crossover_and_legacy_navigation(page):
     assert tab.evaluate('savedCategory')=={'name':'Synthetic Performer','categories':['Actor','Musician'],'adult':False}
     assert tab.locator('#list article').count()==0
     tab.locator('#filter').select_option('all')
-    assert 'Actor / Musician' in tab.locator('#list article').filter(has_text='Synthetic Performer').inner_text()
+    # The performer list uses content-visibility:auto. A newly inserted card
+    # may not have completed its first layout/paint after the filter changes.
+    from playwright.sync_api import expect
+    card=tab.locator('#list article').filter(has_text='Synthetic Performer')
+    card.scroll_into_view_if_needed()
+    expect(card).to_be_visible()
+    expect(card).to_contain_text('Actor / Musician',use_inner_text=True)
     assert not errors,errors
 
 
