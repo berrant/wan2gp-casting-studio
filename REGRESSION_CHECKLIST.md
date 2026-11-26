@@ -1,3 +1,8 @@
+# v1.0.2 — Film title discovery repair
+- [x] 13 permanent focused tests: exact reported search, alias/redirect handling, year and episode checks, ambiguity, retry after failure, local metadata preservation, private-name isolation and browser picker reuse. Full cumulative gate: 471 passed, zero failures, 2 approved skips, 473 collected, 98 modules. See TEST_RESULTS.txt.
+- [x] Exact v1.0.1 synthetic Git fast-forward and separate fresh local startup passed; database integrity and runtime data preservation verified. Final syntax and fingerprints passed.
+- [ ] Live native plugin-manager update; retry the reported lowercase film search and verify the 1977 article, actor/role names, release year, source link and selected cast import. Test another film and a TV series; finish remaining v1.0.1 privacy/consent and provider live checks. Publisher clearance and launch approval remain separate.
+
 # v1.0.1 — Unreleased phase 2
 - [x] Four new focused cases: legacy marker and multiple categories, private-profile rejection, browser category editor/legacy navigation, provider links. Three existing license tests plus 17 related navigation, icon, long-video and identity checks passed (24 total).
 - [x] Three new phase 2 tests cover direct API rejection, strict explicit acknowledgment, stale policy, persistence across initialization, backup isolation, consent scope edits, and actual browser checkbox/save-failure retry. Focused suite: 57 passed, 2 approved skips, 94 FastAPI deprecation warnings across two disjoint focused groups (includes phase 1, native, portrait, conversion, deferred analysis, navigation, layout, backup and branding).

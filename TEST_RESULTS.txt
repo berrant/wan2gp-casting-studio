@@ -1,3 +1,19 @@
+Casting Studio v1.0.2 — Film title discovery repair
+Measured verification (2026-11-25)
+
+FINAL COMPLETE CUMULATIVE REGRESSION GATE
+473 collected; 471 passed; 2 approved retired standalone Docker skips; zero failures.
+Group 1: 155 passed, 2 skipped, 221 warnings in 193.63s.
+Group 2: 148 passed, 0 skipped, 170 warnings in 230.96s.
+Group 3: 168 passed, 0 skipped, 254 warnings in 200.07s.
+All three exit codes zero; 98 test modules covered exactly once. 645 non-failing warnings. Final Python, JSON and HTML fingerprints match the tested tree. Python, JSON and inline JavaScript syntax checks passed.
+
+Thirteen new regression cases passed in a focused gate and again in the complete gate. They cover the reported lowercase Star Wars search, alternate subtitles, original article name, explicit year, incorrect film/year/episode, redirects, provider error recovery, saved film metadata, private names, ambiguity and a browser cast picker using one result. Wikipedia public API responses were independently inspected: the user's exact query resolves to the film article, with 1977 release metadata and a Cast section. The plugin's network calls were tested using synthetic responses; the build environment could not resolve the external domain directly. Live WanGP/provider acceptance remains a maintainer task. Existing MediaWiki section lookup remains functional but the provider marks that API property deprecated; monitor future compatibility.
+
+Exact synthetic Git fast-forward from the v1.0.1 source passed. All database table rows, saved consent, classifications, cast credits, prompt templates, approved identity traits, reference and model bytes were preserved. The expected inventory scan cache may be regenerated. SQLite integrity passed; no tracked deletions. Separate fresh local server startup passed. No upstream, model, database schema or licensing changes. v1.0.1 archives also matched handoff hashes and passed privacy audits. v1.0.2 staged and archive audits are separate packaging gates. Live acceptance, publisher clearance and explicit launch approval remain outstanding.
+
+Previous release record follows.
+
 Casting Studio v1.0.1 — privacy and responsible-use update
 Measured verification (2026-11-25)
 

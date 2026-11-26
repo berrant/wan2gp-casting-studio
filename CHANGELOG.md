@@ -1,3 +1,10 @@
+## v1.0.2 — Film title discovery repair
+
+- Resolve film titles using Wikipedia direct lookup, redirects and a bounded title-search fallback. Check film lead metadata and documented titles, including alternate subtitles, punctuation, capitalization and optional episode notation. Reject explicit year/episode mismatches and ambiguous matches rather than importing a search hit blindly.
+- The explicit film button no longer searches TVMaze first; reuse the reviewed result in the cast picker. Ignore obsolete responses after a search changes. Preserve release years in new production and cast records; do not overwrite conflicting existing production metadata. Failed or empty lookups are not cached.
+- Preserve source attribution. Separate slash-delimited performer credits and stop role names at descriptive text, retaining parenthetical role names. Complex prose-only or table-only casts still require manual entry. No changes to upstream code, model settings, database schema or licensing.
+- The maintainer reported a live v1.0.1 failed lookup for the 1977 Star Wars film. v1.0.2 still requires live provider and host acceptance before publication.
+
 ## v1.0.1 — Legal, privacy and responsible-use update
 
 - Move the optional Adult Entertainer classification into the normal multi-category editor; preserve the existing local markers and other categories. Remove the dedicated navigation entry and special card flag. Retain legacy navigation compatibility as an ordinary filter. No change to search, generation or RefMod files.

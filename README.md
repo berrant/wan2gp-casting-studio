@@ -1,6 +1,6 @@
 # Casting Studio for WanGP
 
-Version: v1.0.1
+Version: v1.0.2
 Date: 2026-11-25
 
 
@@ -27,6 +27,10 @@ Casting Studio is a native local WanGP plugin for building a cast, organizing re
 | FLUX stills | FLUX.2 Dev, Klein 4B, Klein 9B, pi-FLUX.2, FLUX.3 Klein |
 
 These are recognized options, not a guarantee that every checkpoint, encoder, GPU or operating system combination is installed or has been tested. Refmod-Fork compatibility is checked using metadata and live capabilities; an unsupported model or unavailable exact checkpoint is not silently substituted. Vision uses the compatible locally installed WanGP engines discovered by the bridge. The maintainer reported successful live RC12.22 tests of image/video previews, cancellation, bidirectional RefMod conversion, Workshop creation/decompilation, appearance inference, GPU cleanup, prompt/caption behavior and Git update on WanGP 20.20 (revision 72d50753). The maintainer subsequently reported 13/13 RC12.25 live checks passed, including deferred GPU scheduling, waiting/running cancellation, Safari reload recovery, correct portrayal navigation, autosave and wardrobe separation. Independent testing of other configurations remains outstanding. The maintainer subsequently reported all six RC12.26 focused live checks passed, including valid references, prior profile preservation, batch review and approval, generation recovery and explicit inventory refresh.
+
+### Finding films
+
+Use **Find film cast online** with the title, optionally followed by the release year. Film discovery checks Wikipedia article titles, redirects and documented alternate titles, rather than assuming that a search hit is the correct movie. Review the matched article and suggested credits before adding them. A failed lookup can be retried; some filmographies and complex cast formats still need manual entry. Local production keys remain title-based, so use distinct titles for conflicting adaptations.
 
 ### Troubleshooting
 

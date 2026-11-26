@@ -1,6 +1,9 @@
 # Casting Board — cumulative requirements
 
-Authoritative development baseline: v1.0.0, MIT-licensed, with all five final live smoke checks reported passed. Work toward v1.0.1 is a legal, privacy and responsible-use update; this working copy is not a release. Do not build from earlier ZIPs. Before making a release, compare this document and REGRESSION_CHECKLIST.md with the working tree; retain user data outside the package. The requirements below were recovered from development chats and earlier release notes, not inferred from the newest code alone.
+Authoritative development baseline: v1.0.1, MIT-licensed; v1.0.2 repairs the reported film title lookup defect. Public launch and live acceptance remain gated. Do not build from earlier ZIPs. Before making a release, compare this document and REGRESSION_CHECKLIST.md with the working tree; retain user data outside the package. The requirements below were recovered from development chats and earlier release notes, not inferred from the newest code alone.
+
+## Film discovery
+- Explicit film searches use Wikipedia rather than TVMaze. Validate film articles and matching documented titles or redirects, retain release year and provenance, reject conflicting year or episode notation and ambiguous matches. Do not cache failed/empty results, open a stale cast picker, or replace existing production metadata during lookup. Preserve manual entry for unsupported article formats and title-key conflicts.
 
 ## Integration and packaging
 - Native WanGP plugin only, no Docker distribution, no patches to WanGP or Refmod-Fork core. Use documented native session/Gradio queue integration; check installed models and custom settings. Correct native queue submission is the acceptance criterion, not whether a GPU can render it. Target portable Windows/macOS/Linux paths, UTF-8, no developer machine paths, private databases, identity mappings, photos, selections, LoRA preferences or inventory shipped. Preserve external user data. Full cumulative ZIP. Synchronize version metadata at release boundaries; do not create unnecessary release candidates.
