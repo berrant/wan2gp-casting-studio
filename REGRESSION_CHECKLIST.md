@@ -1,3 +1,11 @@
+## v1.0.7 focused maintenance acceptance
+
+- [x] Targeted synthetic tests: cooldown/force/error-only eligibility, classification scope, preserved manual category, reviewed short-stage identifier, stage-name article anchoring, bounded history, interrupted status, additive tables, formula-safe role CSV and Chromium request wiring. Existing v1.0.6 targeted tests passed alongside them.
+- [x] Complete final cumulative gate: 492 passed, 2 approved Docker skips, zero failures, 494 collected in 104 modules; all three exits zero. Exact v1.0.6 synthetic startup upgrade, fresh startup, syntax and fingerprints passed. Distribution privacy audit required before delivery. See TEST_RESULTS.txt.
+- [ ] Live: finish active generation and back up external data, update, restart, verify About and existing settings/selections, scroll retention and saved historical totals.
+- [ ] Live: Settings shows due/force/retry role buttons, due-unclassified classification and both error downloads. Inspect force confirmation and cancel without starting a bulk lookup. Run a small intentional error retry if appropriate; verify counts, stop and restart history. Only bind a one-character name after reviewing the actual public identity and QID. No bulk force run required for acceptance.
+- [ ] Publisher: verify exact remote revision, public clean installation, asset integrity and version-specific authorization before tag/release.
+
 ## v1.0.6 focused live acceptance
 
 - [ ] Select and deselect consecutive roles deep in a long filmography without jumping to the top.

@@ -362,6 +362,8 @@ def connect():
             http_status INTEGER, error_detail TEXT NOT NULL, attempts INTEGER NOT NULL DEFAULT 1,
             last_checked INTEGER NOT NULL)''')
         conn.execute("CREATE TABLE IF NOT EXISTS credit_refresh (name_key TEXT PRIMARY KEY, checked INTEGER NOT NULL DEFAULT 0, count INTEGER NOT NULL DEFAULT 0, status TEXT NOT NULL DEFAULT 'pending', detail TEXT NOT NULL DEFAULT '')")
+        conn.execute("CREATE TABLE IF NOT EXISTS research_runs (id TEXT PRIMARY KEY, kind TEXT NOT NULL, mode TEXT NOT NULL, started INTEGER NOT NULL, updated INTEGER NOT NULL, status TEXT NOT NULL, summary TEXT NOT NULL)")
+        conn.execute("CREATE TABLE IF NOT EXISTS short_stage_identities (name_key TEXT PRIMARY KEY, qid TEXT NOT NULL)")
         conn.execute('CREATE TABLE IF NOT EXISTS profile_markers (name TEXT PRIMARY KEY, adult INTEGER NOT NULL DEFAULT 0)')
         conn.execute("CREATE TABLE IF NOT EXISTS profile_links (name TEXT PRIMARY KEY, imdb_url TEXT NOT NULL DEFAULT '', checked INTEGER NOT NULL)")
         conn.execute('CREATE TABLE IF NOT EXISTS productions (key TEXT PRIMARY KEY, name TEXT NOT NULL, year INTEGER, kind TEXT NOT NULL)')
@@ -832,7 +834,7 @@ def get_profile_link(name:str=Query(min_length=1,max_length=180)):
         return {'provider':'imdb','url':row[0],'verified':True} if row[0] else default
     imdb=''
     try:
-        with httpx.Client(timeout=5,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.6 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
+        with httpx.Client(timeout=5,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.7 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
             resp=client.get('https://www.wikidata.org/w/api.php',params={'action':'wbsearchentities','search':name,'language':'en','format':'json','limit':6,'type':'item'})
             resp.raise_for_status()
             candidates=[v for v in resp.json().get('search',[]) if token(v.get('label'))==token(name)]
@@ -933,8 +935,70 @@ def wikidata_get(client,params):
         if ENRICH_STOP.wait(delay):raise ResearchCancelled()
     raise last_error
 
+def short_stage_profile(name, *, qid=None):
+    """Resolve a one-character stage name only with a user-reviewed stable ID."""
+    assert_public_name(name)
+    if token(canonical_name(name)) in fictional_game_name_keys(include_damaged=True):
+        raise ValueError('Fictional profiles cannot be researched')
+    if qid is None:
+        with connect() as db:
+            row=db.execute('SELECT qid FROM short_stage_identities WHERE name_key=?',(token(name),)).fetchone()
+        qid=row[0] if row else ''
+    if not re.fullmatch(r'Q[1-9][0-9]{0,14}',qid):
+        raise ValueError('Short stage name requires a reviewed Wikidata QID in Settings')
+    with httpx.Client(timeout=20,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.7'}) as client:
+        response=client.get('https://www.wikidata.org/w/api.php',params={'action':'wbgetentities','ids':qid,'props':'claims|labels|aliases|sitelinks','languages':'en','sitefilter':'enwiki','format':'json'})
+        response.raise_for_status()
+        entity=response.json().get('entities',{}).get(qid,{})
+    claims=entity.get('claims',{})
+    def values(prop):
+        return [v.get('mainsnak',{}).get('datavalue',{}).get('value') for v in claims.get(prop,[])]
+    label=entity.get('labels',{}).get('en',{}).get('value','')
+    aliases=[x.get('value','') for x in entity.get('aliases',{}).get('en',[])]
+    if not any(isinstance(x,dict) and x.get('id')=='Q5' for x in values('P31')) or not any(str(x).casefold()==name.casefold() for x in [label,*aliases]):
+        raise ValueError('Wikidata identity must be human and list the exact stage name')
+    categories=sorted({OCCUPATIONS[x['id']] for x in values('P106') if isinstance(x,dict) and x.get('id') in OCCUPATIONS})
+    imdb=next((x for x in values('P345') if isinstance(x,str) and re.fullmatch(r'nm\d{7,10}',x)),'')
+    return {'status':'matched','categories':categories,'imdb_id':imdb,'qid':qid,'label':label},entity.get('sitelinks',{}).get('enwiki',{}).get('title','')
+
+class StageIdentityRequest(BaseModel):
+    person:str=Field(min_length=1,max_length=1)
+    qid:str=Field(pattern=r'^Q[1-9][0-9]{0,14}$')
+    confirmed:StrictBool=False
+
+@app.put('/api/research/stage-identity')
+def save_stage_identity(item:StageIdentityRequest):
+    if not item.confirmed:raise HTTPException(400,'Review the public identity before confirming')
+    people,_=normalized_catalog(discovery=True)
+    name=next((p['name'] for p in people if p['name'].casefold()==item.person.casefold()),None)
+    if not name or len(name)!=1 or not token(name):raise HTTPException(404,'Known short public stage name not found')
+    try:profile,title=short_stage_profile(name,qid=item.qid)
+    except ValueError as exc:raise HTTPException(400,str(exc)) from exc
+    except httpx.HTTPError as exc:raise HTTPException(502,'Wikidata lookup unavailable') from exc
+    with lock,connect() as db:
+        assert_public_name(name)
+        if token(name) in fictional_game_name_keys(include_damaged=True):raise HTTPException(400,'Fictional profile')
+        existing=db.execute('SELECT qid FROM short_stage_identities WHERE name_key=?',(token(name),)).fetchone()
+        if existing and existing[0]!=item.qid:raise HTTPException(409,'A different stage identity is already linked; review existing roles before changing it')
+        db.execute('INSERT OR IGNORE INTO short_stage_identities VALUES (?,?)',(token(name),item.qid))
+    return {'saved':True,'label':profile['label'],'article':title}
+
+def researched_credits(name):
+    if len(name.strip())!=1:return fetch_credits(name)
+    _,title=short_stage_profile(name)
+    if not title:raise ValueError('Reviewed identity has no English Wikipedia article')
+    with httpx.Client(timeout=20,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.7'}) as client:
+        response=client.get('https://en.wikipedia.org/w/api.php',params={'action':'parse','page':title,'prop':'text','format':'json','formatversion':'2'})
+        response.raise_for_status()
+        article=response.json().get('parse') or {}
+    if article.get('title')!=title:raise ValueError('Reviewed article title changed; no credits imported')
+    records=parse_wikipedia_filmography(article.get('text') or '',name)
+    for r in records:r['source_url']='https://en.wikipedia.org/wiki/'+quote(title.replace(' ','_'),safe='')
+    return records,[]
+
 def wikidata_profile(name):
-    with httpx.Client(timeout=20, trust_env=False, headers={'User-Agent':'CastingStudio/1.0.6 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
+    if len(name.strip())==1:return short_stage_profile(name)[0]
+    with httpx.Client(timeout=20, trust_env=False, headers={'User-Agent':'CastingStudio/1.0.7 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
         search=wikidata_get(client,{
             'action':'wbsearchentities','search':name,'language':'en','format':'json','type':'item','limit':8})
         candidates=[c for c in search.get('search',[]) if token(c.get('label',''))==token(name) or
@@ -975,30 +1039,63 @@ def research_error_record(name,exc):
             (token(name),name,typ,http_status,detail,int(time.time())))
     return (f'HTTP {http_status} ' if http_status else '')+typ+': '+detail
 
+def research_snapshot(kind,mode,run_id,state,status,started):
+    summary={k:v for k,v in state.items() if k in ('total','done','added','matched','classified','failed','skipped')}
+    try:
+        with connect() as db:
+            db.execute('INSERT OR REPLACE INTO research_runs VALUES (?,?,?,?,?,?,?)',(run_id,kind,mode,started,int(time.time()),status,json.dumps(summary)))
+            # Bounded local history, independent per worker kind.
+            db.execute('DELETE FROM research_runs WHERE kind=? AND id NOT IN (SELECT id FROM research_runs WHERE kind=? ORDER BY started DESC,rowid DESC LIMIT 100)',(kind,kind))
+    except sqlite3.Error as exc:
+        print('Research history write failed:',type(exc).__name__,flush=True)
+
+def saved_research_runs(db,kind,running):
+    rows=db.execute('SELECT mode,started,updated,status,summary FROM research_runs WHERE kind=? ORDER BY started DESC,rowid DESC LIMIT 10',(kind,)).fetchall()
+    result=[]
+    for i,(mode,started,updated,status,summary) in enumerate(rows):
+        try:data=json.loads(summary)
+        except (ValueError,TypeError):continue
+        if not isinstance(data,dict):continue
+        result.append({'mode':mode,'started':started,'updated':updated,'status':('interrupted' if status=='running' and (not running or i>0) else status),**{k:v for k,v in data.items() if k in ('total','done','added','matched','classified','failed','skipped')}})
+    return result
+
 def enrichment_job(mode='all'):
+    run_id=uuid.uuid4().hex;started=int(time.time());outcome='completed' 
     try:
         people,_=normalized_catalog()
         fictional=fictional_game_name_keys(include_damaged=True)
-        allowed={token(p['name']):p['name'] for p in people if token(p['name']) not in fictional}
+        private=personal_name_keys()
+        allowed={token(p['name']):p['name'] for p in people if token(p['name']) not in fictional and token(p['name']) not in private}
+        unclassified={token(p['name']) for p in people if not p.get('categories')}
+        excluded=len(people)-len(allowed)
         with connect() as db:
             existing={key:(status,checked) for key,status,checked in db.execute('SELECT name_key,status,checked FROM public_profiles')}
             failures={k for (k,) in db.execute('SELECT name_key FROM enrichment_failures')}
         now=int(time.time())
-        if mode=='errors':
-            todo=[name for key,name in allowed.items() if key in failures]
-        else:
-            todo=[name for key,name in allowed.items() if key not in existing or now-existing[key][1] > 30*86400 or key in failures]
+        scope={k:n for k,n in allowed.items() if mode!='unclassified' or k in unclassified}
+        due={k:n for k,n in scope.items() if mode=='force' or (k in failures if mode=='errors' else k not in existing or now-existing[k][1]>30*86400 or k in failures)}
+        todo=list(due.values())
+        skipped={'excluded':excluded,'outside_scope':len(allowed)-len(scope),'cooldown':len(scope)-len(due) if mode!='errors' else 0,'not_failed':len(scope)-len(due) if mode=='errors' else 0,'became_ineligible':0}
         with ENRICH_LOCK:
-            ENRICH_STATE.update(total=len(todo),done=0,matched=0,classified=0,failed=0,last='',last_error='')
+            ENRICH_STATE.update(total=len(todo),done=0,matched=0,classified=0,failed=0,last='',last_error='',skipped=skipped)
+        research_snapshot('classification',mode,run_id,ENRICH_STATE,'running',started)
         for name in todo:
             if ENRICH_STOP.is_set():break
             # Re-evaluate privacy at execution time: users may add a Personal profile while running.
             if token(name) in personal_name_keys() or token(name) in fictional_game_name_keys(include_damaged=True):
-                with ENRICH_LOCK:ENRICH_STATE['done']+=1
+                with ENRICH_LOCK:
+                    ENRICH_STATE['done']+=1;skipped['became_ineligible']+=1
                 continue
+            cancelled=False
             try:
                 result=wikidata_profile(name)
                 with lock,connect() as db:
+                    if token(name) in personal_name_keys() or token(name) in fictional_game_name_keys(include_damaged=True):
+                        with ENRICH_LOCK:skipped['became_ineligible']+=1
+                        continue
+                    previous=db.execute('SELECT status,qid FROM public_profiles WHERE name_key=?',(token(name),)).fetchone()
+                    if previous and previous[0]=='matched' and (result['status']!='matched' or (previous[1] and result['qid']!=previous[1])):
+                        raise ValueError('Previously matched identity needs review; saved profile preserved')
                     db.execute('INSERT OR REPLACE INTO public_profiles(name_key,matched_name,qid,imdb_id,categories,status,checked) VALUES(?,?,?,?,?,?,?)',
                                (token(name),result['label'],result['qid'],result['imdb_id'],json.dumps(result['categories']),result['status'],int(time.time())))
                     db.execute('DELETE FROM enrichment_failures WHERE name_key=?',(token(name),))
@@ -1007,8 +1104,12 @@ def enrichment_job(mode='all'):
                     ENRICH_STATE['classified']+=int(bool(result['categories']))
                     ENRICH_STATE['last']=name+' — '+result['status']
             except ResearchCancelled:
+                cancelled=True;outcome='stopped'
                 break
             except Exception as exc:
+                if token(name) in personal_name_keys() or token(name) in fictional_game_name_keys(include_damaged=True):
+                    with ENRICH_LOCK:skipped['became_ineligible']+=1
+                    continue
                 try:reason=research_error_record(name,exc)
                 except Exception as log_exc:reason=f'{type(exc).__name__}: {str(exc)[:200]} (error-log failure: {type(log_exc).__name__})'
                 with ENRICH_LOCK:
@@ -1017,15 +1118,20 @@ def enrichment_job(mode='all'):
                     ENRICH_STATE['last_error']=name+' — '+reason
                 print('Research failure:',name,reason,flush=True)
             finally:
-                with ENRICH_LOCK:ENRICH_STATE['done']+=1
+                if not cancelled:
+                    with ENRICH_LOCK:ENRICH_STATE['done']+=1
+                research_snapshot('classification',mode,run_id,ENRICH_STATE,'running',started)
             if ENRICH_STOP.wait(2.5):break
     except Exception as exc:
+        outcome='error'
         # A setup failure previously left the UI looking like a completed research job.
         with ENRICH_LOCK:
             ENRICH_STATE['last_error']='Research job failed to start: '+type(exc).__name__+': '+str(exc)[:400]
         print(ENRICH_STATE['last_error'],flush=True)
     finally:
-        with ENRICH_LOCK:ENRICH_STATE['running']=False
+        with ENRICH_LOCK:
+            research_snapshot('classification',mode,run_id,ENRICH_STATE,'stopped' if ENRICH_STOP.is_set() and outcome!='error' else outcome,started)
+            ENRICH_STATE['running']=False
 
 # Filmography discovery. Only verified person-level credits with named roles.
 CREDIT_LOCK=threading.Lock()
@@ -1045,9 +1151,11 @@ def sync_one_public_person(name):
     people,_=normalized_catalog(discovery=True)
     if person_key not in {token(x['name']) for x in people}:
         raise ValueError('Only known public performers can be researched')
-    records, warnings=fetch_credits(name)
+    records, warnings=researched_credits(name)
     inserted=0
     with lock,connect() as db:
+        assert_public_name(name)
+        if person_key in fictional_game_name_keys(include_damaged=True):raise ValueError('Profile is now fictional')
         for r in records:
             production=canonical_production(r['production'])
             role=r['character'].strip()
@@ -1072,6 +1180,8 @@ def sync_one_public_person(name):
 
 def credit_sync_worker():
     global CREDIT_ACTIVE
+    run_id=uuid.uuid4().hex;started=int(time.time());mode=CREDIT_STATE.get('mode','due');outcome='completed'
+    research_snapshot('credits',mode,run_id,CREDIT_STATE,'running',started)
     try:
         while not CREDIT_STOP.is_set():
             with CREDIT_LOCK:
@@ -1079,7 +1189,10 @@ def credit_sync_worker():
                 name=CREDIT_PENDING.pop(0)
                 CREDIT_ACTIVE=name
             if token(name) in personal_name_keys() or token(name) in fictional_game_name_keys(include_damaged=True):
-                with CREDIT_LOCK:CREDIT_STATE['done']+=1
+                with CREDIT_LOCK:
+                    CREDIT_STATE['done']+=1
+                    CREDIT_STATE.setdefault('skipped',{}).setdefault('became_ineligible',0)
+                    CREDIT_STATE['skipped']['became_ineligible']+=1
                 continue
             try:
                 result=sync_one_public_person(name)
@@ -1088,6 +1201,11 @@ def credit_sync_worker():
             except Exception as e:
                 # Failed imports must not remove known/manual roles. Retry later.
                 with lock,connect() as db:
+                    if token(name) in personal_name_keys() or token(name) in fictional_game_name_keys(include_damaged=True):
+                        with CREDIT_LOCK:
+                            CREDIT_STATE.setdefault('skipped',{}).setdefault('became_ineligible',0)
+                            CREDIT_STATE['skipped']['became_ineligible']+=1
+                        continue
                     db.execute('INSERT OR REPLACE INTO credit_refresh(name_key,checked,count,status,detail) VALUES (?,?,?,?,?)',
                                (token(name),int(time.time()),0,'error',f'{type(e).__name__}: {e}'[:400]))
                 with CREDIT_LOCK:
@@ -1095,22 +1213,27 @@ def credit_sync_worker():
                     CREDIT_STATE['error']=f'{name}: {str(e)[:160]}'
             finally:
                 with CREDIT_LOCK:CREDIT_STATE['done']+=1
+                research_snapshot('credits',mode,run_id,CREDIT_STATE,'running',started)
             if CREDIT_STOP.wait(8):break  # polite pacing for public services
+    except Exception:
+        outcome='error'
+        raise
     finally:
         with CREDIT_LOCK:
+            research_snapshot('credits',mode,run_id,CREDIT_STATE,'stopped' if CREDIT_STOP.is_set() and outcome!='error' else outcome,started)
             CREDIT_ACTIVE=''
             CREDIT_PENDING.clear()
             CREDIT_STATE['running']=False
 
 
-def launch_credit_sync(names):
+def launch_credit_sync(names,mode='due',skipped=None):
     global CREDIT_THREAD
     names=list(dict.fromkeys(names))
     if not names:return False
     with CREDIT_LOCK:
         if CREDIT_STATE['running']:return False
         CREDIT_PENDING[:]=names
-        CREDIT_STATE.update(running=True,total=len(names),done=0,added=0,failed=0,last='',error='')
+        CREDIT_STATE.update(running=True,total=len(names),done=0,added=0,failed=0,last='',error='',mode=mode,skipped=skipped or {})
         CREDIT_STOP.clear()
     try:
         CREDIT_THREAD=threading.Thread(target=credit_sync_worker,daemon=True,name='casting-credit-sync')
@@ -1141,17 +1264,23 @@ def credit_sync_status():
     with connect() as db:
         result['last_refresh']=db.execute('SELECT MAX(checked) FROM credit_refresh').fetchone()[0]
         result['history']={status:{'performers':count,'credits':int(credits or 0)} for status,count,credits in db.execute('SELECT status,COUNT(*),SUM(count) FROM credit_refresh GROUP BY status')}
+        result['runs']=saved_research_runs(db,'credits',result['running'])
     return result
 
 class CreditRefreshRequest(BaseModel):
     person:str=''  # empty = refresh installed public performers due for update
     force:bool=False
+    retry_errors:bool=False
 
 @app.post('/api/credits/refresh')
 def credit_refresh(item:CreditRefreshRequest):
     people,_=normalized_catalog()
     fictional=fictional_game_name_keys(include_damaged=True)
-    public={token(p['name']):p['name'] for p in people if token(p['name']) not in personal_name_keys() and token(p['name']) not in fictional}
+    private=personal_name_keys()
+    public={token(p['name']):p['name'] for p in people if token(p['name']) not in private and token(p['name']) not in fictional}
+    if item.force and item.retry_errors:raise HTTPException(400,'Choose force or retry errors')
+    skipped={'excluded':len(people)-len(public),'cooldown':0,'not_failed':0}
+    mode='person' if item.person else 'errors' if item.retry_errors else 'force' if item.force else 'due'
     if item.person:
         name=public.get(token(item.person))
         if not name:raise HTTPException(404,'Installed public performer not found')
@@ -1162,12 +1291,17 @@ def credit_refresh(item:CreditRefreshRequest):
         with connect() as db:
             checked={k:(v,status) for k,v,status in db.execute('SELECT name_key,checked,status FROM credit_refresh')}
         now=int(time.time())
-        names=[name for k,name in public.items() if (item.force or k not in checked or
-                now-checked[k][0] > (7*86400 if checked[k][1]=='ok' else 12*3600))]
+        names=[name for k,name in public.items() if ((k in checked and checked[k][1]=='error') if item.retry_errors else (item.force or k not in checked or now-checked[k][0] > (7*86400 if checked[k][1]=='ok' else 12*3600)))]
+        skipped['not_failed' if item.retry_errors else 'cooldown']=len(public)-len(names)
         # Bring newer/no-roles performers forward, but do not flood the providers.
         names.sort(key=lambda n:(checked.get(token(n),(0,''))[0],n.casefold()))
-    started=launch_credit_sync(names)
-    return {'started':started,'pending':len(names),'reason':'' if started else 'Credit refresh already running or nothing is due'}
+    started=launch_credit_sync(names,mode=mode,skipped=skipped)
+    if not names:
+        with CREDIT_LOCK:
+            if not CREDIT_STATE['running']:
+                CREDIT_STATE.update(total=0,done=0,added=0,failed=0,last='',error='',mode=mode,skipped=skipped)
+                research_snapshot('credits',mode,uuid.uuid4().hex,CREDIT_STATE,'completed',int(time.time()))
+    return {'started':started,'pending':len(names),'skipped':skipped,'reason':'' if started else 'Credit refresh already running or nothing is due'}
 
 @app.post('/api/credits/stop')
 def credit_stop():
@@ -1225,14 +1359,15 @@ def enrichment_status():
     with connect() as db:
         state['recorded_errors']=db.execute('SELECT COUNT(*) FROM enrichment_failures').fetchone()[0]
         state['history']={status:count for status,count in db.execute('SELECT status,COUNT(*) FROM public_profiles GROUP BY status')}
+        state['runs']=saved_research_runs(db,'classification',state['running'])
     return state
 
 @app.post('/api/enrichment/start')
-def enrichment_start():
+def enrichment_start(mode:str=Query('all',pattern='^(all|unclassified|force)$')):
     with ENRICH_LOCK:
         if ENRICH_STATE['running']:return {'started':False,'reason':'already running'}
-        ENRICH_STATE['running']=True;ENRICH_STOP.clear()
-    try:threading.Thread(target=enrichment_job,kwargs={'mode':'all'},daemon=True).start()
+        ENRICH_STATE.update(running=True,total=0,done=0,matched=0,classified=0,failed=0,last='',last_error='',skipped={});ENRICH_STOP.clear()
+    try:threading.Thread(target=enrichment_job,kwargs={'mode':mode},daemon=True).start()
     except Exception as exc:
         with ENRICH_LOCK:ENRICH_STATE.update(running=False,last_error='Could not start research worker')
         raise HTTPException(503,'Could not start research worker; retry.') from exc
@@ -1242,7 +1377,7 @@ def enrichment_start():
 def enrichment_retry_errors():
     with ENRICH_LOCK:
         if ENRICH_STATE['running']:return {'started':False,'reason':'already running'}
-        ENRICH_STATE['running']=True;ENRICH_STOP.clear()
+        ENRICH_STATE.update(running=True,total=0,done=0,matched=0,classified=0,failed=0,last='',last_error='',skipped={});ENRICH_STOP.clear()
     try:threading.Thread(target=enrichment_job,kwargs={'mode':'errors'},daemon=True).start()
     except Exception as exc:
         with ENRICH_LOCK:ENRICH_STATE.update(running=False,last_error='Could not start research worker')
@@ -1253,29 +1388,48 @@ def enrichment_retry_errors():
 def enrichment_stop():
     ENRICH_STOP.set();return {'stopping':True}
 
+def csv_safe(value):
+    text=str(value if value is not None else '')
+    return "'"+text if text.lstrip().startswith(('=','+','-','@')) or text.startswith(('\t','\r','\n')) else text
+
+@app.get('/api/credits/errors.csv')
+def credit_errors_csv():
+    import csv
+    people,_=normalized_catalog()
+    private=personal_name_keys()|fictional_game_name_keys(include_damaged=True)
+    names={token(p['name']):p['name'] for p in people if token(p['name']) not in private}
+    buf=io.StringIO();writer=csv.writer(buf)
+    writer.writerow(['name','detail','last_checked_unix'])
+    with connect() as db:
+        for k,detail,checked in db.execute("SELECT name_key,detail,checked FROM credit_refresh WHERE status='error' ORDER BY checked DESC"):
+            if k in names:writer.writerow([csv_safe(names[k]),csv_safe(detail),checked])
+    return Response(buf.getvalue(),media_type='text/csv',headers={'Content-Disposition':'attachment; filename="screen_role_errors.csv"'})
+
 @app.get('/api/enrichment/errors.csv')
 def enrichment_errors_csv():
     import csv
-    private=personal_name_keys()
+    private=personal_name_keys();fictional=fictional_game_name_keys(include_damaged=True)
     buf=io.StringIO();writer=csv.writer(buf)
     writer.writerow(['name','error_type','http_status','detail','attempts','last_checked_unix'])
     with connect() as db:
         rows=db.execute('SELECT name_key,name,error_type,http_status,error_detail,attempts,last_checked FROM enrichment_failures ORDER BY last_checked DESC').fetchall()
     for key,name,err_type,http_status,detail,attempts,checked in rows:
-        if key not in private:writer.writerow([name,err_type,http_status or '',detail,attempts,checked])
+        if key not in private and key not in fictional:writer.writerow([csv_safe(name),csv_safe(err_type),http_status or '',csv_safe(detail),attempts,checked])
     return Response(buf.getvalue(),media_type='text/csv',headers={'Content-Disposition':'attachment; filename="refmod_research_errors.csv"'})
 
 @app.get('/api/enrichment/review.csv')
 def enrichment_review():
     import csv
     out=io.StringIO();w=csv.writer(out)
-    w.writerow(['name','classification','status','wikidata_id','imdb_id','source'])
+    w.writerow(['name','classification','status','wikidata_id','imdb_id','source','screen_credit_evidence'])
     people,_=normalized_catalog()
     with connect() as db:
         public={k:(qid,imdb,status) for k,qid,imdb,status in db.execute('SELECT name_key,qid,imdb_id,status FROM public_profiles')}
+        evidence={k:count for k,count in db.execute("SELECT name_key,count FROM credit_refresh WHERE status='ok' AND count>0")}
     for p in people:
         qid,imdb,status=public.get(token(p['name']),('','','not checked'))
-        w.writerow([p['name'],p['type'],status,qid,imdb,'https://www.wikidata.org/wiki/'+qid if qid else ''])
+        count=evidence.get(token(p['name']),0) if 'Video game character' not in p.get('categories',[]) else 0
+        w.writerow([csv_safe(x) for x in [p['name'],p['type'],status,qid,imdb,'https://www.wikidata.org/wiki/'+qid if qid else '',f'{count} discovered screen credits; review Actor classification' if count else '']])
     return Response(out.getvalue(),media_type='text/csv',headers={'Content-Disposition':'attachment; filename="refmod_classification_review.csv"'})
 
 # v6.8 — Personal profiles: locally stored metadata and portraits, no public enrichment.
@@ -2200,7 +2354,7 @@ def download_image(url):
         if cached and safe_media_file(PHOTO_DIR,cached[0],r'[0-9a-f]{64}\.jpg'):return 'api/photos/'+cached[0]
         address=validate_public_url(url)
         # Disable proxies and redirects; redirects must not reach private network addresses.
-        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.6)'}) as client:
+        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.7)'}) as client:
             with pinned_image_request(client,url,address) as res:
                 if res.status_code!=200 or not res.headers.get('content-type','').lower().startswith('image/'):
                     return ''
@@ -3794,7 +3948,7 @@ def discover_people(q:str=Query(min_length=1,max_length=160)):
             if wanted in token(p['name']) or token(p['name']) in role_names][:100]
 
 @app.get('/api/discovery/credits')
-def discover_credits(name:str=Query(min_length=2,max_length=160),online:bool=False,model:str='h3_video'):
+def discover_credits(name:str=Query(min_length=1,max_length=160),online:bool=False,model:str='h3_video'):
     assert_public_name(name)
     people,roles=normalized_catalog(discovery=True)
     wanted=token(canonical_name(name))
@@ -3805,7 +3959,7 @@ def discover_credits(name:str=Query(min_length=2,max_length=160),online:bool=Fal
         if wanted in fictional_game_name_keys(include_damaged=True):
             raise HTTPException(400,'Video-game characters cannot be researched as human performers')
         try:
-            remote,warnings=fetch_credits(name)
+            remote,warnings=researched_credits(name)
             for r in remote:
                 if r.get('production') and r.get('character'):
                     entry={**r,'actress':canonical_name(name)}
@@ -3951,7 +4105,7 @@ def search_production_online(q:str=Query(min_length=2,max_length=120)):
 # Key-free film credit source. Search is discovery only: accept a verified
 # film article with a matching title, documented alias or explicit redirect.
 WIKIPEDIA_API='https://en.wikipedia.org/w/api.php'
-WIKI_AGENT='CastingStudio/1.0.6 (+https://github.com/berrant/wan2gp-casting-studio)'
+WIKI_AGENT='CastingStudio/1.0.7 (+https://github.com/berrant/wan2gp-casting-studio)'
 def wiki_api(client,params):
     r=client.get(WIKIPEDIA_API,params={**params,'format':'json','formatversion':2},headers={'User-Agent':WIKI_AGENT})
     r.raise_for_status();return r.json()
@@ -4472,7 +4626,7 @@ def save_reference_image(item:ReferenceImageRequest):
             return {**result,'reused_local':True}
         try:address=validate_public_url(item.image_url)
         except Exception as e:raise HTTPException(400,str(e))
-        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.6'}) as client:
+        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.7'}) as client:
             with pinned_image_request(client,item.image_url,address) as r:
                 if r.status_code!=200 or not r.headers.get('content-type','').lower().startswith('image/'):
                     raise HTTPException(422,'Image host did not return an image')

@@ -1,3 +1,18 @@
+Casting Studio v1.0.7 — Research maintenance
+Measured verification (2026-11-27)
+
+FINAL COMPLETE CUMULATIVE REGRESSION GATE
+494 collected; 492 passed; 2 approved retired standalone Docker skips; zero failures.
+Group 1: 163 passed, 2 skipped, 231 warnings in 153.52s.
+Group 2: 154 passed, 178 warnings in 185.94s.
+Group 3: 175 passed, 262 warnings in 161.76s.
+All 104 test modules covered exactly once in three disjoint groups; all exits zero. 671 non-failing warnings. Python, JSON and inline JavaScript syntax checks passed; 121 final application/test fingerprints checked unchanged after the gate.
+Focused run: 9 passed (5 new permanent tests plus 4 existing v1.0.6 research/scroll cases), 10 warnings in 10.30s.
+Exact v1.0.6 to working v1.0.7 synthetic startup: 28 existing tables, 9 stored rows including 8 seeded user records, 2 additive tables, model and photo bytes preserved; SQLite integrity ok. Fresh isolated startup passed; no automatic research started.
+No actual WanGP/GPU/Safari/provider acceptance, public repository update, release tag or actual user database access was performed. Provider responses in new tests are synthetic; identity of any real single-character performer requires maintainer review. Classification evidence is review-only. The existing provider matching rules for longer names are unchanged. Distribution privacy and exact staged-index audit required before delivery.
+
+--- Earlier release evidence ---
+
 Casting Studio v1.0.6 — Selection stability and research reporting
 Measured verification (2026-11-27)
 

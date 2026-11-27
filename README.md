@@ -1,12 +1,18 @@
 # Casting Studio for WanGP
 
-Version: v1.0.6
+Version: v1.0.7
 Date: 2026-11-27
 
 
 ## License
 
 Casting Studio uses the [MIT License](LICENSE) for independently licensable project material. Use, modification, distribution and commercial use are permitted subject to the license notices. See [notices](NOTICE.md) and [contribution policy](CONTRIBUTING.md). WanGP, Refmod-Fork and other third-party material retain their applicable terms; no upstream rights or ownership of user outputs are granted or claimed. The project uses generic attribution without a personal name or email. The version number does not itself authorize publication.
+
+## v1.0.7 research maintenance
+
+In Settings → Background research & maintenance, choose due role sync, forced role sync or retry role errors; classification can research due performers, due unclassified performers only, recorded errors, or explicitly force refresh. Force actions ask for confirmation and bypass the usual cooldowns but retain provider pacing. No research is started automatically. The role error CSV and existing classification CSVs are local diagnostics, not files to publish. Research reports separate cooldown, scope and eligibility exclusions; up to 100 aggregate runs per worker are retained locally, with the latest ten of each shown in Settings. Interrupted runs do not automatically resume. Screen-credit counts in the classification review CSV are review evidence only, never automatic Actor classification or proof of identity.
+
+For a single-character stage name, review the correct human Wikidata identity independently, then enter the local stage name and its QID under Resolve a single-character public stage name. A confirmed link must pass an exact label/alias and human-entity check; roles are imported only from the linked English Wikipedia article if its title still matches. Retry research manually. No name-only guessing, no automatic relinking to a different QID and no replacement of existing roles. Short-name resolution requires the actual provider to have appropriate metadata. The two new SQLite tables are additive; existing records are retained. Back up external data before updating. Live host acceptance and publisher approval are separate from automated verification.
 
 ## v1.0.6 maintenance update
 

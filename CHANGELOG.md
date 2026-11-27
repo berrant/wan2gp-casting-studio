@@ -1,3 +1,11 @@
+## v1.0.7 — Explicit research maintenance
+
+- Add confirmed force and error-only screen-role sync and role error CSV; expose due unclassified-only and forced classification research alongside existing retry controls.
+- Explain scope, eligibility and cooldown exclusions. Save bounded aggregate run history in additive local SQLite tables; show interrupted runs without resuming them.
+- Require a user-reviewed Wikidata QID for single-character public stage names, validate human entity and exact alias, and import only from the linked verified-title article. No automatic identity selection or replacement.
+- Preserve manual category choices and previously matched profiles on ambiguous/conflicting refresh. Report discovered screen-credit counts as classification review evidence, not automatic Actor classification. Guard error CSV cells against formula interpretation and exclude private/fictional identities.
+- Retain v1.0.6 scroll-preserving selection controls. No automatic research, new queue behavior, upstream changes or licensing changes.
+
 ## v1.0.6 — Selection stability and research reporting
 
 - Preserve performer role DOM on choice-only changes, retaining scroll anchors, focus, open menus and model variant pickers.
