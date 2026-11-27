@@ -25,7 +25,7 @@ def test_all_models_factory_scenarios(installation):
     segments=full.split('\n\n');assert len(segments)==4
     for segment,expected in zip(segments,('three-quarter profile','begins walking','expressive gesture','closing portrait')):
         assert expected in segment and 'all images provided' in segment
-        assert 'Captain as portrayed by Ada Test in Example Show (2025)' in segment
+        assert 'Captain as seen in Example Show (2025)' in segment
         assert 'non_diegetic_music:\nN/A' in segment
         no_old(segment)
     models=[x['id'] for x in srv.MODEL_OPTIONS if x['kind']=='image'];assert len(models)==8
@@ -39,7 +39,7 @@ def test_all_models_factory_scenarios(installation):
             assert 'all images provided' in prompt
             assert srv.IMAGE_REFERENCE_LABEL[model] not in prompt
             assert 'Bottom caption:' not in prompt
-            assert 'Captain as portrayed by Ada Test in Example Show (2025)' in prompt
+            assert 'Captain as seen in Example Show (2025)' in prompt
             no_old(prompt)
             assert 'wardrobe_description:' in prompt
 

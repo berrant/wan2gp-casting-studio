@@ -521,7 +521,7 @@ def test_h3_character_first_prompts_and_years(installation):
     scenes=video.split('\n\n')
     assert len(scenes)==4
     for scene in scenes:
-        assert '<Subject 1> is Princess Leia Organa as portrayed by Carrie Fisher in Star Wars: A New Hope (1977).' in scene
+        assert '<Subject 1> is Princess Leia Organa as seen in Star Wars: A New Hope (1977).' in scene
         assert 'all images provided' in scene
         assert '<Subject 2>' not in scene
         assert '<Subject 1> (throughout [Shot 1]): partially_preserved' in scene

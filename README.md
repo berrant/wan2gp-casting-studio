@@ -1,12 +1,16 @@
 # Casting Studio for WanGP
 
-Version: v1.0.7
+Version: v1.0.8
 Date: 2026-11-27
 
 
 ## License
 
 Casting Studio uses the [MIT License](LICENSE) for independently licensable project material. Use, modification, distribution and commercial use are permitted subject to the license notices. See [notices](NOTICE.md) and [contribution policy](CONTRIBUTING.md). WanGP, Refmod-Fork and other third-party material retain their applicable terms; no upstream rights or ownership of user outputs are granted or claimed. The project uses generic attribution without a personal name or email. The version number does not itself authorize publication.
+
+## v1.0.8 character-first prompting
+
+Fictional live-action role prompts now follow Option D: identify the character as seen in the recorded production/year and use all images provided for facial identity only. The character’s physical form, including pigmentation, irises, hair or biological head structures and permanent markings, comes from the production and the saved character appearance profile. The actor name remains part of casting, reference selection and the optional identity caption, not the generated factory identity prose. MiniMax H3 video retains its six-section structure; image models use model-family-specific reference wording without guessed picture numbers. FLUX receives concise reference instructions. The factory still-image style uses character-accurate surface texture and coloration; the previous exact factory style is substituted when rendering fictional roles. Other custom visual styles and final prompt edits are not overwritten. Existing templates and profiles remain stored unchanged. For a new generation using the updated default, remove a previously saved final-prompt override only if desired. Actual identity adherence must be checked on the live models.
 
 ## v1.0.7 research maintenance
 

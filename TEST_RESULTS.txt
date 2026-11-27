@@ -1,3 +1,17 @@
+Casting Studio v1.0.8 — Character-first Option D
+Measured verification (2026-11-27)
+
+FINAL COMPLETE CUMULATIVE REGRESSION GATE
+496 collected; 494 passed; 2 approved retired standalone Docker skips; zero failures.
+Group 1: 164 passed, 2 skipped, 216 warnings in 168.15s.
+Group 2: 165 passed, 228 warnings in 171.45s.
+Group 3: 165 passed, 231 warnings in 165.51s.
+All 105 test modules covered exactly once in three disjoint groups; all exits zero; 675 non-failing warnings. Python, JSON and inline JavaScript syntax validated; final application and test fingerprints verified unchanged.
+Initial full run detected one legacy assertion requiring retired performer-centric prose; the assertion was updated to check character physical authority, facial-reference scope, and omission of performer name. The targeted correction passed and the entire final cumulative gate was rerun. Ten initial focused cases passed, including two new permanent tests covering all supported still models and H3 video, character traits, and custom overrides.
+Exact archived v1.0.7 to working v1.0.8 synthetic startup preserved all 30 tables, 11 stored rows including 10 seeded user records, and model/photo bytes. No schema changes; SQLite integrity and fresh isolated startup passed. No actual WanGP/GPU model quality, Safari/provider acceptance, user database access, repository push or tag was performed. Previous live acceptance remains pending.
+
+--- Earlier release evidence ---
+
 Casting Studio v1.0.7 — Research maintenance
 Measured verification (2026-11-27)
 

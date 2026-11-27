@@ -43,7 +43,7 @@ def test_automatic_traits_and_local_cache(research):
     for prompt in srv.prompt_for_selection(item,{**srv.SAMPLE_TEMPLATE,'video_count':4}).split('\n\n'):
         assert 'blue-skinned' in prompt
     image=srv.image_prompts_for_selection(item,'flux2_dev',srv.ImageTemplate().model_dump(),srv.SAMPLE_TEMPLATE,{})
-    assert all('blue-skinned' in prompt and 'take precedence over the performer’s everyday appearance' in prompt for prompt in image.split('\n\n'))
+    assert all('blue-skinned' in prompt and 'The production-specific character defines the complete physical appearance' in prompt and 'facial identity only' in prompt and 'Example Performer' not in prompt for prompt in image.split('\n\n'))
     assert calls==['wiki']
     assert c.put(API+'/characters/identity',json={**q,'traits':'Custom violet skin'}).status_code==200
     assert c.get(API+'/characters/identity',params={**q,'refresh':'true'}).json()['traits']=='Custom violet skin'

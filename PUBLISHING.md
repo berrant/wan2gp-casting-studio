@@ -17,3 +17,5 @@
 - v1.0.5 publisher clearance and 22/22 live checks were reported complete; v1.0.4 production integrity was covered by subsequent live acceptance. Public v1.0.5 release was observed November 27. Public clean installation and release asset integrity remain unverified. Confirm security settings, rights/consent clearance for any new promotional material and version-specific approval. Do not claim legal immunity or verified consent.
 
 - v1.0.6 focused live acceptance remains unreported. If upgrading directly to v1.0.7, combine its remaining checks with the new research acceptance; do not repeat the completed v1.0.5 suite. No automatic publication or tag.
+
+- v1.0.8 character-first prompt defaults require focused live model comparison with the previous release (Hera and Ahsoka or equivalent nonhuman roles). Verify H3 video and stills, FLUX stills, saved custom prompt preservation, and one human role. v1.0.6/v1.0.7 outstanding live checks remain outstanding unless separately reported.

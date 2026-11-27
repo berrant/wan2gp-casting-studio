@@ -834,7 +834,7 @@ def get_profile_link(name:str=Query(min_length=1,max_length=180)):
         return {'provider':'imdb','url':row[0],'verified':True} if row[0] else default
     imdb=''
     try:
-        with httpx.Client(timeout=5,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.7 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
+        with httpx.Client(timeout=5,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.8 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
             resp=client.get('https://www.wikidata.org/w/api.php',params={'action':'wbsearchentities','search':name,'language':'en','format':'json','limit':6,'type':'item'})
             resp.raise_for_status()
             candidates=[v for v in resp.json().get('search',[]) if token(v.get('label'))==token(name)]
@@ -946,7 +946,7 @@ def short_stage_profile(name, *, qid=None):
         qid=row[0] if row else ''
     if not re.fullmatch(r'Q[1-9][0-9]{0,14}',qid):
         raise ValueError('Short stage name requires a reviewed Wikidata QID in Settings')
-    with httpx.Client(timeout=20,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.7'}) as client:
+    with httpx.Client(timeout=20,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.8'}) as client:
         response=client.get('https://www.wikidata.org/w/api.php',params={'action':'wbgetentities','ids':qid,'props':'claims|labels|aliases|sitelinks','languages':'en','sitefilter':'enwiki','format':'json'})
         response.raise_for_status()
         entity=response.json().get('entities',{}).get(qid,{})
@@ -987,7 +987,7 @@ def researched_credits(name):
     if len(name.strip())!=1:return fetch_credits(name)
     _,title=short_stage_profile(name)
     if not title:raise ValueError('Reviewed identity has no English Wikipedia article')
-    with httpx.Client(timeout=20,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.7'}) as client:
+    with httpx.Client(timeout=20,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.8'}) as client:
         response=client.get('https://en.wikipedia.org/w/api.php',params={'action':'parse','page':title,'prop':'text','format':'json','formatversion':'2'})
         response.raise_for_status()
         article=response.json().get('parse') or {}
@@ -998,7 +998,7 @@ def researched_credits(name):
 
 def wikidata_profile(name):
     if len(name.strip())==1:return short_stage_profile(name)[0]
-    with httpx.Client(timeout=20, trust_env=False, headers={'User-Agent':'CastingStudio/1.0.7 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
+    with httpx.Client(timeout=20, trust_env=False, headers={'User-Agent':'CastingStudio/1.0.8 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
         search=wikidata_get(client,{
             'action':'wbsearchentities','search':name,'language':'en','format':'json','type':'item','limit':8})
         candidates=[c for c in search.get('search',[]) if token(c.get('label',''))==token(name) or
@@ -2354,7 +2354,7 @@ def download_image(url):
         if cached and safe_media_file(PHOTO_DIR,cached[0],r'[0-9a-f]{64}\.jpg'):return 'api/photos/'+cached[0]
         address=validate_public_url(url)
         # Disable proxies and redirects; redirects must not reach private network addresses.
-        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.7)'}) as client:
+        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.8)'}) as client:
             with pinned_image_request(client,url,address) as res:
                 if res.status_code!=200 or not res.headers.get('content-type','').lower().startswith('image/'):
                     return ''
@@ -2757,14 +2757,20 @@ def is_broadcast_credit(item):
         row=db.execute('SELECT payload FROM production_cast WHERE key=?',(canonical_role_key(name,role,production),)).fetchone()
     return bool(row and (decoded_cast(row[0]) or {}).get('source')=='user-confirmed broadcast credit')
 
-def portrayal_reference_authority(traits):
-    """RefMods can encode several pictures and may be appended after native refs.
-    The plugin does not expose the actual runtime reference map at preview time.
-    Scope the aggregate reference instead of inventing picture numbers or roles.
+def portrayal_reference_authority(traits, *, concise=False):
+    """Option D: one production-specific character, anonymous likeness references.
+
+    RefMod-Fork owns the runtime image mapping. Never invent a picture number,
+    additional subject, or an attached previous output. Saved traits remain the
+    authority for the chosen portrayal; reference photos supply facial likeness.
     """
-    text=("Use all images provided for the performer’s recognizable facial geometry, proportions and apparent age. "
-          "Everyday performer photos supply facial identity only; any in-character references reinforce the specified portrayal. "
-          "The character’s phenotype and anatomy take precedence over the performer’s everyday appearance, defining skin, irises, scalp or biological head structures and permanent markings.")
+    if concise:
+        text=('Use all images provided for facial identity only: recognizable facial geometry, proportions and apparent age. '
+              'The production-specific character defines the complete physical appearance, including pigmentation, eyes, hair or biological head structures, anatomy and permanent markings.')
+    else:
+        text=('Use all images provided for facial identity only: recognizable facial geometry, proportions and apparent age. '
+              'Everyday reference photos establish facial likeness; any in-character references reinforce the specified portrayal. '
+              'The subject is the character in their established physical form. The character’s production-specific phenotype defines pigmentation, irises, hair or biological head structures, anatomy and permanent markings.')
     if traits:
         text+=' Fixed character appearance: '+flatten(traits)
     return text
@@ -2822,7 +2828,7 @@ def prompt_for_selection(item,t,personal=False):
     elif broadcast:
         identity=(f'<Subject 1> is {actress}, appearing as themselves, known for their on-air role as {character} on {production}. all images provided collectively establish their recognizable facial identity, features and natural proportions.')
     elif character and production:
-        identity=(f'<Subject 1> is {character} as portrayed by {actress} in {portrayal}. '
+        identity=(f'<Subject 1> is {character} as seen in {portrayal}. '
                   +portrayal_reference_authority(traits))
     else:
         identity=(f'<Subject 1> is {actress}, appearing as themselves. '
@@ -2843,7 +2849,7 @@ def prompt_for_selection(item,t,personal=False):
         live_character=bool(character and production and not personal and not broadcast and not game_character)
         if live_character:
             description='[reference generation] A photorealistic 15-second live-action shot of <Subject 1> in a new scene, following the action below.'
-            keep=('<Subject 1> (throughout [Shot 1]): partially_preserved — Preserve performer facial identity and apparent age; '
+            keep=('<Subject 1> (throughout [Shot 1]): partially_preserved — Preserve the reference-derived facial likeness and apparent age; '
                   'the defined character phenotype, anatomy, pigmentation, irises and permanent markings remain consistent from first frame to last. '
                   'Expressions, movement and scene presentation follow the shot direction.')
             dress=wardrobe
@@ -2936,6 +2942,9 @@ class ImageShot(BaseModel):
     expression: str = Field(default='', max_length=2500)
     setting: str = Field(default='', max_length=3500)
 
+LEGACY_IMAGE_VISUAL_STYLE = 'Photorealistic cinematic portrait, natural skin texture, high facial detail, coherent spatial lighting and production-appropriate setting.'
+CHARACTER_IMAGE_VISUAL_STYLE = 'Photorealistic cinematic portrait, character-accurate surface texture and coloration, high facial detail, coherent spatial lighting and production-appropriate setting.'
+
 class ImageTemplate(BaseModel):
     # Older installations store the first five images as scene1..scene5 and
     # two shared wardrobe strings. Retain those fields solely for migration.
@@ -2946,7 +2955,7 @@ class ImageTemplate(BaseModel):
     scene3: str = Field(default=IMAGE_SCENE_DEFAULTS['scene3'],max_length=5000)
     scene4: str = Field(default=IMAGE_SCENE_DEFAULTS['scene4'],max_length=5000)
     scene5: str = Field(default=IMAGE_SCENE_DEFAULTS['scene5'],max_length=5000)
-    visual_style: str = Field(default='Photorealistic cinematic portrait, natural skin texture, high facial detail, coherent spatial lighting and production-appropriate setting.',max_length=5000)
+    visual_style: str = Field(default=CHARACTER_IMAGE_VISUAL_STYLE,max_length=5000)
     include_caption: bool = False
     image_count: int = Field(default=5, ge=1, le=10)
     shots: list[ImageShot] = Field(default_factory=list, max_length=10)
@@ -3042,7 +3051,7 @@ def image_prompts_for_selection(item,model,template,video_template,installed,per
     elif broadcast:
         subject=f'{performer} appearing as themselves, known for their on-air role as {character} on {production}.'
     else:
-        subject=(f'{character} as portrayed by {performer} in {portrayal}.' if character and production
+        subject=(f'{character} as seen in {portrayal}.' if character and production
                  else f'{performer} appearing as themselves.')
     caption=' - '.join(filter(None,((performer,clean_line(item.get('relationship',''))) if personal else (performer,character,portrayal or production))))
     identity=('all images provided collectively establish the same person’s recognizable facial identity, natural anatomy and proportions.' if personal else
@@ -3067,8 +3076,11 @@ def image_prompts_for_selection(item,model,template,video_template,installed,per
         if game_character:setting=game_world_setting(item,setting)
         live_character=bool(character and production and not personal and not broadcast and not game_character)
         if live_character:
-            reference=portrayal_reference_authority(traits)
-            if MODEL_BY_ID[model]['family']=='minimax_h3':
+            is_h3=MODEL_BY_ID[model]['family']=='minimax_h3'
+            reference=portrayal_reference_authority(traits,concise=not is_h3)
+            style=template.get('visual_style') or CHARACTER_IMAGE_VISUAL_STYLE
+            if style==LEGACY_IMAGE_VISUAL_STYLE:style=CHARACTER_IMAGE_VISUAL_STYLE
+            if is_h3:
                 reference='Reference roles: '+reference
             # Complete target image, not an edit/transform instruction. The same
             # natural-language reference scoping is valid across still models.
@@ -3080,7 +3092,7 @@ def image_prompts_for_selection(item,model,template,video_template,installed,per
                     ' '.join(x for x in (scene,flatten(shot['framing']),flatten(shot['expression'])) if x),
                     'wardrobe_description: '+wardrobe,
                     'Location: '+setting,
-                    flatten(template.get('visual_style') or ImageTemplate().visual_style)]
+                    flatten(style)]
         else:
             fields=[
                 f'### Image {n}/{template["image_count"]} — {MODEL_BY_ID[model]["label"]} — RefMod: {filepath}',
@@ -4105,7 +4117,7 @@ def search_production_online(q:str=Query(min_length=2,max_length=120)):
 # Key-free film credit source. Search is discovery only: accept a verified
 # film article with a matching title, documented alias or explicit redirect.
 WIKIPEDIA_API='https://en.wikipedia.org/w/api.php'
-WIKI_AGENT='CastingStudio/1.0.7 (+https://github.com/berrant/wan2gp-casting-studio)'
+WIKI_AGENT='CastingStudio/1.0.8 (+https://github.com/berrant/wan2gp-casting-studio)'
 def wiki_api(client,params):
     r=client.get(WIKIPEDIA_API,params={**params,'format':'json','formatversion':2},headers={'User-Agent':WIKI_AGENT})
     r.raise_for_status();return r.json()
@@ -4626,7 +4638,7 @@ def save_reference_image(item:ReferenceImageRequest):
             return {**result,'reused_local':True}
         try:address=validate_public_url(item.image_url)
         except Exception as e:raise HTTPException(400,str(e))
-        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.7'}) as client:
+        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.8'}) as client:
             with pinned_image_request(client,item.image_url,address) as r:
                 if r.status_code!=200 or not r.headers.get('content-type','').lower().startswith('image/'):
                     raise HTTPException(422,'Image host did not return an image')

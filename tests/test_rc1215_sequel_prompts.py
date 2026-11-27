@@ -21,7 +21,7 @@ def test_character_invariants_and_six_video_sections(installation):
         assert part.count(traits)==1 and part.count('<Subject 1> is')==1
         assert 'partially_preserved' in part and 'all images provided' in part
         assert 'facial identity only' in part and 'any in-character references' in part and 'exposed skin surfaces' in part
-        assert 'Pilot as portrayed by Ada Test in Example Series (2025)' in part
+        assert 'Pilot as seen in Example Series (2025)' in part
         assert 'following Video' not in part and 'at the end of Video' not in part
         assert '<Picture ' not in part and '<Subject 2>' not in part
         assert 'Custom jacket.' in part.split('wardrobe_description:',1)[1]

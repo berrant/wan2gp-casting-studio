@@ -1,3 +1,9 @@
+# v1.0.8 — Character-first Option D
+- [x] Focused prompt tests: 10 passed, including every supported still-image model and H3 video, Hera/Ahsoka trait preservation, no performer name in factory generation identity, no invented extra subjects, legacy factory style substitution and exact custom prompt/style preservation.
+- [x] Final full cumulative automated gate: 494 passed, 2 approved skips, zero failures across 105 modules; 496 collected. Legacy assertion corrected and full gate repeated. See TEST_RESULTS.txt.
+- [x] Synthetic v1.0.7 upgrade and fresh install, 30 existing tables preserved, no schema changes.
+- [ ] Live generation comparison: nonhuman anatomy, pigmentation, irises and face; human role identity; optional captions; custom final prompt retained. Previous outstanding live acceptance remains pending.
+
 ## v1.0.7 focused maintenance acceptance
 
 - [x] Targeted synthetic tests: cooldown/force/error-only eligibility, classification scope, preserved manual category, reviewed short-stage identifier, stage-name article anchoring, bounded history, interrupted status, additive tables, formula-safe role CSV and Chromium request wiring. Existing v1.0.6 targeted tests passed alongside them.

@@ -1,3 +1,10 @@
+## v1.0.8 — Character-first generation defaults (Option D)
+
+- Name the character and recorded production/year in generated fictional live-action prompts; the selected RefMod supplies reference-derived facial likeness and apparent age. Do not name the performer in factory identity prose or invent a second subject or numbered picture assignment.
+- Fixed production-specific appearance defines pigmentation, irises, hair or biological head structures, anatomy and permanent markings; preserve the selected portrayal across frames and visible skin surfaces. H3 retains its structured video sections and reference-role descriptions; FLUX uses concise character-first prose.
+- Replace the legacy factory natural-skin-texture style in fictional live-action still prompts with character-accurate surface texture and coloration. Explicit user style edits, final prompt overrides, role-specific identity records, wardrobe/action fields, captions and performer/RefMod selection remain intact. No data migration, model or upstream changes.
+- Verify Hera/Ahsoka prompt rendering for every supported model family, saved custom style and exact final override preservation; actual generation quality still requires live model testing.
+
 ## v1.0.7 — Explicit research maintenance
 
 - Add confirmed force and error-only screen-role sync and role error CSV; expose due unclassified-only and forced classification research alongside existing retry controls.
