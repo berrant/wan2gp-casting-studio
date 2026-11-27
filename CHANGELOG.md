@@ -1,3 +1,12 @@
+## v1.0.11 — Integrated scene preparation and queue workflow
+
+- Add generation-scope AI scene preparation before any generation is staged. Support reference-assisted and explicitly reviewed production-knowledge-only wardrobe/location drafts using the native local model. Pass saved scene clues as untrusted input; retain exact portrayal/year and the physical-identity image requirement. Label AI provenance, exclude unsupported scene-analysis roles before staging, and protect complete reviewed scenes by default in bulk preparation.
+- Add bulk approval with independent per-role outcomes and conflict protection; retain failed and edited review drafts. Refresh shared clean scene panels and affected prompt previews without resetting custom prompts or resubmitting generation. Preserve pending manual edits; warn before queueing saved descriptions instead of unsaved scene drafts.
+- Allow AI preparation to pause remaining sequential public lookups after the current request, retaining the selected scope. Populate paused panels from saved AI results without another public lookup. Do not implicitly start analysis or generation.
+- Clarify browser queue-pass history versus the actual native queue; add direct navigation to the next unstaged role. Preserve duplicate protections and explicit new passes. Restore scene-specific review labels after activity recovery. No schema or upstream changes.
+
+- Split Workshop into Make and Decompile tabs. Direct entry has no selected photo collection or installed RefMod; explicit links select only matching collections. Preserve Make draft while switching tabs, lazily load the relevant library, stop scan polling on exit, and ignore stale photo/result responses. H3-only decompile retains its compatible encoder.
+
 ## v1.0.10 — Global portrayal scene scope
 
 - Load a separate wardrobe and setting panel for every selected public character role in the video editor's global scope, regardless of generation queue/pass state. Individual scope loads only the selected role. Run public lookups sequentially; stop starting new lookups on scope change or close. Retain unsaved scene drafts by choice key and ignore stale responses.

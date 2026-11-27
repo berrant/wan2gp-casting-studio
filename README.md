@@ -1,12 +1,24 @@
 # Casting Studio for WanGP
 
-Version: v1.0.10
+Version: v1.0.11
 Date: 2026-11-27
 
 
 ## License
 
 Casting Studio uses the [MIT License](LICENSE) for independently licensable project material. Use, modification, distribution and commercial use are permitted subject to the license notices. See [notices](NOTICE.md) and [contribution policy](CONTRIBUTING.md). WanGP, Refmod-Fork and other third-party material retain their applicable terms; no upstream rights or ownership of user outputs are granted or claimed. The project uses generic attribution without a personal name or email. The version number does not itself authorize publication.
+
+## v1.0.11 integrated AI scene preparation and queue workflow
+
+In **Send to WanGP**, choose the casting scope and use **Prepare wardrobe & settings with AI** before queuing generation. The global video template editor also has **Analyze all portrayals with AI**. These open local analysis preparation for the selected roles, regardless of browser queue-pass history. Scene drafting supports zero to four approved character photographs per role; when no photos are chosen, the engine uses its production knowledge and any saved scene clues. The exact portrayal and year remain required. Source-based clues and AI suggestions are not proof of canonical accuracy. Review the wardrobe, named story-world location, architecture, furnishings, lighting and background details before saving. Physical-identity analysis still requires one to four approved images and excludes wardrobe.
+
+A batch includes at most 20 portrayals. Unsupported roles (including game-world roles) are excluded during preparation and reported before analysis starts. Complete reviewed scene profiles are initially unchecked in batch mode; explicitly include them if a new draft is desired. AI analysis starts only after an explicit confirmation, uses the existing native GPU acquisition and waits for generation work. No new AI model downloads, upstream patches or hidden GPU jobs. Hosts without the direct vision interface can use a supported text-only route for a no-photo scene batch; compatibility and actual model output require live verification. Any available pictures must belong to the exact portrayal. The native engine can return empty fields when uncertain.
+
+Review each resulting draft and use **Approve & save scene** individually or **Approve & save all reviewed scenes** after reviewing the batch. Each approval independently validates the selected portrayal, source fingerprints and saved scene baseline; errors keep that draft editable while other approvals proceed. The saved profile is shared between automatic FLUX and H3 prompt fields, and clean open scene panels and affected generation previews refresh. Manual unsaved edits are protected; custom template, per-shot and final prompt overrides remain authoritative. When the global editor is still fetching public sources, opening AI preparation finishes the current lookup then pauses remaining requests. Refresh public details to resume or save an AI draft to populate the corresponding panel. No generation is submitted by any of these preparation or approval actions.
+
+The queue scope displays the number of selections remaining in the current browser-tab/model/checkpoint pass and previously staged selections, not the live WanGP queue count. **Next unstaged role** moves from an already staged selection to a pending selection. **Start new queue pass** intentionally allows repeat generation and does not cancel prior jobs. Existing queue history and duplicate-submission protections are retained. If a manual scene draft is unsaved, submission asks whether to use the last saved description or return to editing. No database schema changes. Back up the external data before installation.
+
+RefMod Workshop now has separate **Make RefMod** and **Decompile RefMod** tabs. Opening Workshop directly starts at Make with no collection selected; Decompile starts with no installed RefMod selected. Links from a cast or photo-collection pane select the exact available collection, never an unrelated one. Switching tabs retains the current Make draft (photo selection and filename). Decompile uses H3; Make restores its selected family. Only the relevant library is loaded and scan-status polling stops when leaving Decompile. In-flight jobs still report status.
 
 ## v1.0.10 global scene preparation
 
@@ -18,7 +30,7 @@ The video template editor, image set builder and generator identity workspace sh
 
 Opening the selected role's editor checks a seven-day local cache and a bounded English Wikipedia query when due. The lookup accepts only a matching dated production article mentioning the role, and extracts explicitly attributed wardrobe and story-world location clauses. Source links and CC BY-SA attribution are displayed; public descriptions are suggestions, not proof of accuracy. Sparse articles, unavailable providers or ambiguous titles may yield empty fields. Missing factory fields use a neutral portrait fallback, not an invented canonical location. No library-wide research scan or network call occurs in prompt rendering or queue submission. Unvisited bulk selections use saved data or the fallback.
 
-For more detailed wardrobe and backgrounds, use Analyze wardrobe & setting with AI. Select 1–4 approved pictures of the exact portrayal. The installed local WanGP vision model drafts a costume and a single recognizable setting, including architecture, furnishings, lighting and background elements. This uses the same non-interrupting native queue and requires explicit review and approval; AI knowledge may be wrong. It does not replace the physical identity profile. Personal and broadcast profiles are excluded from public scene research; game-world prompt behavior remains unchanged. Scene data is stored in one new additive local table and included in prompt backups. No new models, curated character catalog, or upstream modifications are shipped.
+For more detailed wardrobe and backgrounds, use Analyze wardrobe & setting with AI. In v1.0.9 this required 1–4 approved pictures of the exact portrayal; v1.0.11 also supports production-knowledge-only drafts. The installed local WanGP vision model drafts a costume and a single recognizable setting, including architecture, furnishings, lighting and background elements. This uses the same non-interrupting native queue and requires explicit review and approval; AI knowledge may be wrong. It does not replace the physical identity profile. Personal and broadcast profiles are excluded from public scene research; game-world prompt behavior remains unchanged. Scene data is stored in one new additive local table and included in prompt backups. No new models, curated character catalog, or upstream modifications are shipped.
 
 ## v1.0.8 character-first prompting
 

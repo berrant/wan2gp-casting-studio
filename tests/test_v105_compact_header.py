@@ -1,6 +1,7 @@
 """Compact masthead keeps all controls and dynamic status accessible."""
 from pathlib import Path
 import shutil
+import json
 import pytest
 pw=pytest.importorskip('playwright.sync_api')
 from test_generator_session_browser import setup_js
@@ -40,7 +41,8 @@ def test_compact_header_responsive_and_live_status():
         assert page.locator('body').evaluate("e=>e.classList.contains('ux-basic')")
         page.locator('#integrationButton').click()
         assert page.locator('#aboutModal').is_visible()
-        assert 'v1.0.10' in page.locator('#aboutModal').inner_text()
+        version=json.loads((Path(__file__).resolve().parents[1]/'plugin_info.json').read_text())['version']
+        assert f'v{version} ·' in page.locator('#aboutModal').inner_text()
         page.evaluate("$('aboutModal').classList.remove('open')")
         page.locator('#peopleMenuButton').click()
         assert page.locator('#peopleMenu').is_visible()

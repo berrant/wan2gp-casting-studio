@@ -347,7 +347,7 @@ button.primary:hover{background:linear-gradient(115deg,#9768d5,#6664c8)}
 @media(max-width:1050px){#navTabs{grid-template-columns:1fr 1.65fr 1fr}#navTabs .nav-tab,#navTabs .nav-people{font-size:17px}#navTabs .nav-people select{font-size:16px}}
 @media(max-width:760px){#navTabs{grid-template-columns:1fr 1fr}#navTabs .nav-people{grid-column:1/-1;grid-row:2}#navTabs .nav-tab{min-height:44px;font-size:17px}#navTabs .nav-people select{font-size:17px}#navTabs .nav-people option{font-size:17px}}
 
-#responsibleUseAcceptRow[hidden],#responsibleUseSave[hidden],#generatorRestartPass[hidden]{display:none!important}
+#responsibleUseAcceptRow[hidden],#responsibleUseSave[hidden],#generatorRestartPass[hidden],#generatorNextPending[hidden]{display:none!important}
 /* Persistent responsible-use reminder; reserve its measured height so it never
    overlays the page or dialog actions. */
 :root{--responsible-footer-height:64px}
@@ -409,7 +409,7 @@ body.ux-basic #generatorModal .workspace-tabs button[data-workspace=batch]{displ
 #peopleSelectedIcon{width:23px;height:23px}
 @media(max-width:1050px){#studioHeader .studio-actions{flex:1 1 100%;justify-content:flex-start}}
 @media(max-width:480px){#studioHeader{padding:7px 8px;gap:7px}#studioHeader .brandline{flex-basis:100%}#studioHeader .brand-mark{width:38px;height:38px}#studioHeader .studio-actions button{min-height:36px}#navTabs .nav-tab,#navTabs .nav-people{padding:4px 6px;gap:4px}#navTabs .tab-icon{width:25px;height:25px}}
-</style></head><body><header id="studioHeader"><div class="brandline"><img class="brand-mark" src="api/ui/icons/casting-logo" alt="Casting Studio icon"><div class="studio-brand-text"><h1>Casting Studio for WanGP <small>v1.0.10</small></h1><div class="studio-status"><span class="note" id="catalogScanStatus" role="status">Inventory status loading…</span><span class="note" id="maintenanceHeaderStatus" role="status">Maintenance idle</span></div></div></div><div class="toolbar studio-actions"><button type="button" id="appearanceActivity" hidden onclick="openQueuedAppearance()" title="Open character appearance analysis status or review"></button><button id="catalogRescanButton" onclick="rescan()">↻ Rescan RefMods</button><button onclick="openLocalSettings()" title="Configure local directories" aria-label="Local paths and settings">⚙ Settings</button><button type="button" onclick="openUXGuide()">Getting started</button><button type="button" onclick="openUXHistory()">Batch history</button><button id="uxMode" type="button" onclick="setUXMode(!uxBasic)">Advanced mode</button><button id="integrationButton" type="button" onclick="openAbout()"><svg class="about-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="7.5" r=".8" fill="currentColor" stroke="none"/></svg> About</button></div></header><nav id="navTabs" class="toolbar" aria-label="Casting Studio sections">
+</style></head><body><header id="studioHeader"><div class="brandline"><img class="brand-mark" src="api/ui/icons/casting-logo" alt="Casting Studio icon"><div class="studio-brand-text"><h1>Casting Studio for WanGP <small>v1.0.11</small></h1><div class="studio-status"><span class="note" id="catalogScanStatus" role="status">Inventory status loading…</span><span class="note" id="maintenanceHeaderStatus" role="status">Maintenance idle</span></div></div></div><div class="toolbar studio-actions"><button type="button" id="appearanceActivity" hidden onclick="openQueuedAppearance()" title="Open character appearance analysis status or review"></button><button id="catalogRescanButton" onclick="rescan()">↻ Rescan RefMods</button><button onclick="openLocalSettings()" title="Configure local directories" aria-label="Local paths and settings">⚙ Settings</button><button type="button" onclick="openUXGuide()">Getting started</button><button type="button" onclick="openUXHistory()">Batch history</button><button id="uxMode" type="button" onclick="setUXMode(!uxBasic)">Advanced mode</button><button id="integrationButton" type="button" onclick="openAbout()"><svg class="about-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="7.5" r=".8" fill="currentColor" stroke="none"/></svg> About</button></div></header><nav id="navTabs" class="toolbar" aria-label="Casting Studio sections">
 <button type="button" class="primary nav-tab" id="productionsTab" onclick="showTab('productions')"><img class="tab-icon" src="api/ui/icons/productions" alt=""> Productions</button>
 <div class="nav-people" id="peopleNavigation"><img class="tab-icon" src="api/ui/icons/personal" alt=""><span>People</span><button type="button" id="peopleMenuButton" aria-label="Browse people category" aria-expanded="false" aria-controls="peopleMenu"><img id="peopleSelectedIcon" src="api/ui/icons/performers" alt="" hidden><span id="peopleSelectedLabel">Choose category</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div id="peopleMenu" role="group" aria-label="People categories" hidden><button type="button" data-people-category="performers" aria-pressed="false"><img src="api/ui/icons/performers" alt=""><span>Performers</span></button><button type="button" data-people-category="personal" aria-pressed="false"><img src="api/ui/icons/personal" alt=""><span>Personal</span></button><button type="button" data-people-category="models" aria-pressed="false"><img src="api/ui/icons/models" alt=""><span>Models / Influencers</span></button><button type="button" data-people-category="television" aria-pressed="false"><img src="api/ui/icons/television" alt=""><span>Television Personalities</span></button></div></div>
 <button type="button" class="nav-tab" id="workshopTab" onclick="showTab('workshop')"><img class="tab-icon" src="api/ui/icons/workshop" alt=""> RefMod Workshop</button>
@@ -488,7 +488,7 @@ body.ux-basic #generatorModal .workspace-tabs button[data-workspace=batch]{displ
 <div id="settingsModal" class="modal"><section class="panel" role="dialog" aria-modal="true" aria-label="Local path settings"><div class="head"><h2 style="flex:1">⚙ Settings</h2></div><nav class="workspace-tabs" aria-label="Settings categories"><button onclick="jumpStudioSettings('pathsForm')">Libraries</button><button onclick="jumpStudioSettings('libraryConversion')">Convert RefMods</button><button onclick="jumpStudioSettings('defaultLorasSettings')">Models</button><button onclick="jumpStudioSettings('monitorPreferences')">Live monitor</button><button onclick="jumpStudioSettings('backupSettings')">Backup &amp; restore</button><button onclick="jumpStudioSettings('backgroundTools')">Maintenance</button><button onclick="jumpStudioSettings('queueTroubleshooting')">Troubleshooting</button></nav><p class="note">Preferences do not move model files. The RefMod root must match the library mounted by Refmod-Fork so WanGP can load the models. Public and personal RefMods remain separate.</p><details id="backupSettings" style="margin:12px 0"><summary>Export / import settings, prompts and production collections</summary><p class="note">Private backup: includes saved production collections, prompt text, overrides, model choices, presets and browser preferences. Keep it separate from plugin releases. No photos, RefMods, history, credentials, consent records or installation paths are transferred.</p><div class="toolbar"><button id="backupExport" onclick="exportStudioBackup()">Export settings &amp; prompts</button><button id="backupImport" onclick="$('backupFile').click()">Import settings &amp; prompts</button><input id="backupFile" type="file" accept="application/json,.json" hidden onchange="importStudioBackup(this)"></div><p class="status" id="backupStatus" role="status" aria-live="polite"></p></details><details id="monitorPreferences" style="margin:12px 0"><summary>Live generation preview</summary><div class="field"><label>Between generations <select id="monitorHandoffMode" onchange="saveMonitorPrefs()"><option value="retain">Show previous completed result until the next preview reaches the selected percentage</option><option value="static">Show waiting placeholder until the first live preview</option></select></label></div><div class="field"><label>Switch to new live preview at denoising progress (%) <input type="number" id="monitorHandoffPercent" min="0" max="100" step="1" value="0" onchange="saveMonitorPrefs()"></label></div><p class="note">0% switches at the first available live preview. Higher values use the current model’s denoising step count, not overall queue progress. The completed result is labeled separately from live inference. Preview preferences are saved in this browser. Collapsing the monitor still stops preview downloads.</p></details><details id="libraryConversion" style="margin:12px 0" ontoggle="if(this.open)restoreLibraryConversion()"><summary>Convert all RefMods to supported formats</summary><p class="note">Find missing FLUX counterparts for installed H3 still-picture RefMods. H3 and FLUX each share their format across compatible checkpoints. Video/audio stacks and reverse FLUX → H3 are not supported by the current conversion bridge. No original file or casting selection is changed. Nothing starts automatically. WanGP may download missing model weights during native execution.</p><label><input id="bulkConvertPrivate" type="checkbox" onchange="clearLibraryPlan()"> Include linked Personal RefMods with consent (new files are not automatically linked)</label><div class="toolbar"><button id="bulkConvertPreview" type="button" onclick="previewLibraryConversion()">Scan &amp; preview missing formats</button><button id="bulkConvertStart" type="button" class="primary" onclick="startLibraryConversion()" disabled>Convert all missing formats</button><button id="bulkConvertCancel" type="button" onclick="cancelLibraryConversion()" hidden>Stop conversion</button></div><p id="bulkConvertStatus" class="status" role="status" aria-live="polite">Ready · manual only.</p><progress id="bulkConvertProgress" max="100" value="0" hidden style="width:100%"></progress><pre id="bulkConvertReport" class="note" style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:260px;overflow:auto"></pre></details><details id="backgroundTools" style="margin:12px 0"><summary style="cursor:pointer;font-weight:650">Background research &amp; maintenance</summary>
 <p class="note">Manual maintenance only. None of these jobs starts when WanGP launches or you open Performers. A running job can continue while you browse or generate; use Stop to cancel it.</p>
 <div id="backgroundToolControls" style="display:flex;flex-direction:column;gap:10px;margin:12px 0;max-width:100%;overflow-wrap:anywhere"><div class="note"><button type="button" onclick="researchVisibleCards()">Find images and profile links for up to 12 visible cards</button> This runs only when you click it; opening Performers does not make internet requests.</div><div class="enrichment"><strong>Performer classification</strong> <button id="enrichStart" onclick="startEnrichment()">Research due installed performers</button> <button id="enrichUnclassified" onclick="startEnrichment('unclassified')">Research due unclassified only</button> <button id="enrichForce" onclick="startEnrichment('force')">Force classification refresh</button> <button onclick="stopEnrichment()">Stop</button> <a href="api/enrichment/review.csv">Download review CSV</a> <button id="enrichRetry" onclick="retryEnrichmentErrors()">Retry recorded errors</button> <a href="api/enrichment/errors.csv">Download errors CSV</a> <span class="status" id="enrichStatus">Ready</span></div><div class="prefetch"><strong>Photo prefetch</strong><button id="prefetchStart" onclick="startPrefetch()">Prefetch installed RefMods</button><button onclick="stopPrefetch()">Stop</button><button onclick="archivePhotos()">Archive existing photos locally</button><span class="status" id="prefetchStatus">Checking...</span></div><div class="enrichment"><strong>Screen roles</strong> <button id="creditsStart" onclick="refreshCredits('')" type="button">↻ Sync due performer roles</button> <button id="creditsForce" onclick="refreshCredits('','force')" type="button">Force role sync</button> <button id="creditsRetry" onclick="refreshCredits('','errors')" type="button">Retry role errors</button> <a href="api/credits/errors.csv">Download role errors CSV</a> <button onclick="stopCredits()" type="button">Stop</button> <span class="status" id="creditsStatus">Manual only. Use Sync roles to research credits; no scheduled jobs.</span></div><details><summary>Recent research runs</summary><div class="note" id="researchRunHistory" style="white-space:pre-wrap">No saved runs yet.</div></details><details><summary>Resolve a single-character public stage name</summary><p class="note">Review the correct human identity on Wikidata first. Enter its QID and the installed stage name. Matching one letter alone is not enough. This does not rename the profile or remove saved roles.</p><div class="toolbar"><label>Stage name <input id="stageName" maxlength="1" size="3"></label><label>Reviewed Wikidata QID <input id="stageQid" maxlength="16" placeholder="Q12345"></label><button type="button" onclick="saveStageIdentity()">Confirm identity</button></div><span id="stageIdentityStatus" class="status" role="status"></span></details></div></details><details id="defaultLorasSettings" style="margin:12px 0" ontoggle="if(this.open)loadGlobalModelOptions()"><summary>Global default LoRAs · per installed model</summary><p class="note">Choose a model and browse its installed LoRAs. Defaults are saved per installed model on this WanGP server when server storage is available; otherwise they are retained in this browser. Enabled defaults take precedence over duplicate model LoRA strengths unless overridden.</p><div class="toolbar"><label>Model family <select id="globalBoardModel" onchange="loadGlobalModelOptions()"></select></label><label>Installed model <select id="globalActualModel" onchange="loadGlobalModelDetails()"></select></label></div><div id="globalModelLoraRows" class="global-lora-rows"></div><button type="button" id="globalAddLora" title="Add an installed LoRA to this model’s default profile" onclick="addGlobalDefaultLoraRow()" disabled title="Add an installed LoRA to the selected model profile">+ Add LoRA</button><p id="globalLoraSettingsStatus" class="note"></p></details><details style="margin:12px 0"><summary>Temporary file cleanup</summary><p class="note">Inspect abandoned temporary writes older than 24 hours. Saved photographs, reference collections, databases and RefMods are never removed by this tool.</p><div class="toolbar"><button type="button" onclick="inspectTemporaryFiles()" title="Check for abandoned temporary files without deleting anything">Check temporary files</button><button type="button" onclick="cleanTemporaryFiles()" title="Remove only recognized stale temporary files after confirmation">Clean temporary files</button></div><div class="status" id="tempCleanupStatus"></div></details><details id="queueTroubleshooting" style="margin:12px 0"><summary>Troubleshooting</summary><p class="note">If a job is staged but not starting, retry the native queue handoff here. This processes existing pending work only; it does not create or resubmit jobs already handed off.</p><button type="button" id="retryNativeQueue" onclick="retryNativeQueueHandoff()" title="Trigger the hidden native WanGP queue relay for already staged jobs">Retry pending queue handoff</button><p class="status" id="nativeQueueRetryStatus" role="status" aria-live="polite"></p></details><div id="pathsForm"><label>RefMod library root<input id="path_refmod_root" spellcheck="false" autocomplete="off" placeholder="Path on the WanGP server"></label></div><p class="note">Default: WanGP/loras/refmods_plugin. Standard minimax_h3 and flux2 subfolders are detected automatically, including linked directories; missing folders are skipped.</p><details style="margin:10px 0"><summary>Detected subfolders</summary><pre class="note" id="pathReadonly" style="white-space:pre-wrap;overflow-wrap:anywhere"></pre></details><div class="footer"><button class="primary" id="saveRootButton" onclick="saveLocalSettings()">Save root</button><button onclick="resetLocalSettings()">Use detected root</button><span class="status" id="pathStatus" role="status" aria-live="polite"></span></div></section></div>
-<div id="aboutModal" class="modal"><section class="panel" role="dialog" aria-modal="true" aria-label="About Casting Studio"><div class="head"><img src="api/ui/icons/casting-logo" class="app-icon" alt=""><h2 style="flex:1">Casting Studio for WanGP</h2></div><p class="note">v1.0.10 · Native WanGP plugin · Discover. Cast. Create.</p><h3>License</h3><p>MIT License. Commercial use permitted subject to the license notices. Third-party terms remain applicable. <a href="api/legal/license" target="_blank" rel="noopener noreferrer">License</a> · <a href="api/legal/notice" target="_blank" rel="noopener noreferrer">Notices</a> · <a href="https://github.com/berrant/wan2gp-casting-studio" target="_blank" rel="noopener noreferrer">Project repository</a></p><h3>Research sources and rights</h3><p><a href="https://www.tvmaze.com/api" target="_blank" rel="noopener noreferrer">TVMaze</a> (CC BY-SA) · <a href="https://en.wikipedia.org/wiki/Wikipedia:Reusing_Wikipedia_content" target="_blank" rel="noopener noreferrer">Wikipedia reuse terms</a> · <a href="https://www.wikidata.org/wiki/Wikidata:Licensing" target="_blank" rel="noopener noreferrer">Wikidata licensing</a>. Search results and locally imported photographs are not licensed by Casting Studio. Check each source and image license before use or redistribution. <a href="https://github.com/berrant/wan2gp-casting-studio/security/policy" target="_blank" rel="noopener noreferrer">Security policy</a></p><h3>Integration</h3><pre id="aboutIntegration" style="white-space:pre-wrap;overflow:auto;background:#0c1526;padding:12px">Checking…</pre><h3>What's new</h3><ul><li>Image inspection and local uploads with quality checks</li><li>Searchable RefMod picker skips invalid files</li><li>Single RefMod library root with automatic subfolders</li><li>Hidden native relay, queue manager, live WanGP image/video inference previews, improved resolution selector</li><li>Defaults loaded from WanGP model definitions and compatible finetunes</li><li>New application branding, icon, About screen, and versioned changelog</li><li>Production-first casting: consistent selected state, select-all, show-only queue scope</li><li>Bulk queue reviewed per-character prompts, production-year captions, and editable character identity signatures</li><li>Optional Status Lite stage, speed, ETA and download telemetry beside the live generation preview</li></ul><p>Full details: <a href="api/changelog" target="_blank" rel="noopener">CHANGELOG.md</a></p></section></div>
+<div id="aboutModal" class="modal"><section class="panel" role="dialog" aria-modal="true" aria-label="About Casting Studio"><div class="head"><img src="api/ui/icons/casting-logo" class="app-icon" alt=""><h2 style="flex:1">Casting Studio for WanGP</h2></div><p class="note">v1.0.11 · Native WanGP plugin · Discover. Cast. Create.</p><h3>License</h3><p>MIT License. Commercial use permitted subject to the license notices. Third-party terms remain applicable. <a href="api/legal/license" target="_blank" rel="noopener noreferrer">License</a> · <a href="api/legal/notice" target="_blank" rel="noopener noreferrer">Notices</a> · <a href="https://github.com/berrant/wan2gp-casting-studio" target="_blank" rel="noopener noreferrer">Project repository</a></p><h3>Research sources and rights</h3><p><a href="https://www.tvmaze.com/api" target="_blank" rel="noopener noreferrer">TVMaze</a> (CC BY-SA) · <a href="https://en.wikipedia.org/wiki/Wikipedia:Reusing_Wikipedia_content" target="_blank" rel="noopener noreferrer">Wikipedia reuse terms</a> · <a href="https://www.wikidata.org/wiki/Wikidata:Licensing" target="_blank" rel="noopener noreferrer">Wikidata licensing</a>. Search results and locally imported photographs are not licensed by Casting Studio. Check each source and image license before use or redistribution. <a href="https://github.com/berrant/wan2gp-casting-studio/security/policy" target="_blank" rel="noopener noreferrer">Security policy</a></p><h3>Integration</h3><pre id="aboutIntegration" style="white-space:pre-wrap;overflow:auto;background:#0c1526;padding:12px">Checking…</pre><h3>What's new</h3><ul><li>Image inspection and local uploads with quality checks</li><li>Searchable RefMod picker skips invalid files</li><li>Single RefMod library root with automatic subfolders</li><li>Hidden native relay, queue manager, live WanGP image/video inference previews, improved resolution selector</li><li>Defaults loaded from WanGP model definitions and compatible finetunes</li><li>New application branding, icon, About screen, and versioned changelog</li><li>Production-first casting: consistent selected state, select-all, show-only queue scope</li><li>Bulk queue reviewed per-character prompts, production-year captions, and editable character identity signatures</li><li>Optional Status Lite stage, speed, ETA and download telemetry beside the live generation preview</li></ul><p>Full details: <a href="api/changelog" target="_blank" rel="noopener">CHANGELOG.md</a></p></section></div>
 <div id="categoryModal" class="modal"><section class="panel"><h2 id="categoryTitle">Performer categories</h2><p>Choose multiple categories. Casting roles are managed separately. Adult Entertainer is an optional local classification, not an age or consent determination. Select it only when supported by reliable public professional credits. It does not change generation, search or consent rules.</p><div id="categoryOptions"></div><div class="footer"><button class="primary" onclick="saveCategories()">Save categories</button><button onclick="$('categoryModal').classList.remove('open')">Cancel</button></div></section></div>
 <div id="editorModal" class="modal"><section class="panel"><div style="display:flex;justify-content:space-between;align-items:center"><h2>Prompt template editor · 1–4 videos</h2></div>
 <p>Factory wardrobe and setting resolve separately for each dated character portrayal. Global scope loads every selected role; individual scope shows only that role. Global custom text overrides the automatic values. Casting identity and RefMod filenames are unchanged.</p>
@@ -529,10 +529,11 @@ body.ux-basic #generatorModal .workspace-tabs button[data-workspace=batch]{displ
 <section id="workshopSection" style="display:none;max-width:1150px;margin:0 auto">
 <h2><img class="app-icon" src="api/ui/icons/workshop" alt=""> RefMod Workshop <small style="font-size:14px;font-weight:400;color:#9aabc2">Powered by Refmod-Fork</small></h2>
 <p class="note">Build H3 or FLUX RefMods from your approved photographs. H3 and FLUX use different VAE encodings. The selected family determines the file format and safe output directory. Existing files are never overwritten.</p>
+<div class="toolbar" role="tablist" aria-label="RefMod Workshop"><button type="button" id="workshopMakeTab" role="tab" aria-controls="workshopMakePane" aria-selected="true" class="primary" onclick="switchWorkshopPane('make')">Make RefMod</button><button type="button" id="workshopDecompileTab" role="tab" aria-controls="workshopDecompilePane" aria-selected="false" onclick="switchWorkshopPane('decompile')">Decompile RefMod</button></div>
 <div class="card" style="padding:18px;margin:12px 0"><h3>RefMod family and encoder</h3>
 <div class="toolbar"><label class="field">Target family<select id="workshopFamily" onchange="loadWorkshop()"><option value="minimax_h3">MiniMax H3 — video and stills</option><option value="flux2">FLUX.2 / FLUX.3 — stills</option></select></label></div>
 <div class="toolbar"><label class="field" style="flex:1">Select a compatible installed Ref2VA model<select id="workshopModel" style="width:100%"></select></label><button onclick="loadWorkshop()">↻ Refresh</button></div><div class="note" id="workshopModelStatus">Loading model list…</div></div>
-<div id="workshopCastReturn" class="toolbar" hidden><button onclick="returnToCast()">← Return to cast</button><span id="workshopCastReturnLabel" class="note"></span><button onclick="returnWorkshopCollection()">← Collect more photos</button></div><div class="card" style="padding:18px;margin:12px 0"><h3>1 · Create a RefMod from collected images</h3>
+<div id="workshopCastReturn" class="toolbar" hidden><button onclick="returnToCast()">← Return to cast</button><span id="workshopCastReturnLabel" class="note"></span><button onclick="returnWorkshopCollection()">← Collect more photos</button></div><div id="workshopMakePane" role="tabpanel" aria-labelledby="workshopMakeTab"><div class="card" style="padding:18px;margin:12px 0"><h3>Create a RefMod from collected images</h3>
 <p class="note">Only technically approved or manually reviewed photos are used; sources remain where they are. Photos are ranked by recorded technical quality; similar photos are grouped and only the highest-ranked one is preselected. Review identity and suitability yourself. For faces, <strong>Encode (full fidelity)</strong> is recommended.</p>
 <div class="field-grid"><label class="field">Performer / collection<input id="workshopCollectionSearch" type="search" placeholder="Type a name or production to filter…" oninput="workshopFilterCollections()" style="width:100%;margin:6px 0"><select id="workshopCollection" onchange="loadWorkshopPhotos()" style="min-width:250px;width:100%"></select></label>
 <label class="field">RefMod filename <input id="workshopName" style="width:100%" placeholder="Performer_Name_H3"></label>
@@ -542,7 +543,7 @@ body.ux-basic #generatorModal .workspace-tabs button[data-workspace=batch]{displ
 <div class="toolbar"><input id="workshopPhotoFilter" type="search" placeholder="Filter photos by collection, role, or resolution…" oninput="workshopFilterPhotos()"><button onclick="workshopSelectPhotos(true)">Select all visible</button><button onclick="workshopSelectPhotos(false)">Clear selection</button><span id="workshopPhotoCount" class="note"></span></div>
 <div id="workshopPhotos" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(115px,1fr));gap:10px;margin:10px 0"></div>
 <div class="card" style="padding:12px;margin:12px 0"><h3 style="margin:0 0 8px">Optional · Generate a test image</h3><label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:600"><input id="workshopTestPortrait" type="checkbox" onchange="refreshWorkshopPortraitModels()" style="width:20px;height:20px;flex:0 0 20px;margin:0"> Generate one test portrait after creating the RefMod</label><p class="note">Creates one neutral portrait with the new RefMod. This is separate from the encoding model above.</p><div id="workshopPortraitSettings" hidden><label class="field" style="display:block">Test image model / checkpoint<select id="workshopPortraitModel" aria-label="Test image model or checkpoint" disabled style="width:100%"></select></label><div id="workshopPortraitStatus" class="note" role="status" aria-live="polite"></div></div></div><button class="primary" onclick="startWorkshopCreate()">▶ Create RefMod</button><div class="status" id="workshopCreateStatus" role="status" aria-live="polite"></div></div>
-<div class="card" style="padding:18px;margin:12px 0"><h3>2 · Inspect or decompile an installed H3 RefMod</h3>
+</div><div id="workshopDecompilePane" role="tabpanel" aria-labelledby="workshopDecompileTab" hidden><div class="card" style="padding:18px;margin:12px 0"><h3>Inspect or decompile an installed H3 RefMod</h3>
 <div class="field-grid"><label class="field" style="flex:1">Search H3 RefMod filenames (.safetensors only)<input id="workshopModSearch" type="search" placeholder="Start typing to filter…" oninput="workshopFilterMods()"><select id="workshopMod" onchange="workshopShowMetadata()" style="width:100%;min-width:250px;margin-top:8px"></select></label></div><div id="workshopScanCard" aria-live="polite"><div class="toolbar" style="justify-content:space-between">
 <strong>RefMod library scan</strong><button type="button" id="workshopRescanButton" onclick="refreshWorkshopScan()">↻ Rescan library</button></div>
 <div class="note" id="workshopScanLast">Last scanned: checking…</div>
@@ -555,13 +556,13 @@ body.ux-basic #generatorModal .workspace-tabs button[data-workspace=batch]{displ
 <a id="workshopDownload" style="display:none;margin-left:10px" href="#">↧ Download reconstructed media ZIP</a><div id="workshopResults" class="decompiled-results" hidden>
 <h3>Reconstructed media · View here</h3><p class="note">These are reconstructed outputs from Refmod-Fork, not the original source photos.</p>
 <div id="workshopResultGallery" class="decompiled-gallery"></div></div>
-<div class="status" id="workshopDecompileStatus" role="status" aria-live="polite"></div></div>
+<div class="status" id="workshopDecompileStatus" role="status" aria-live="polite"></div></div></div>
 </section>
 <div id="generatorModal" class="modal"><section class="panel generator-panel" style="max-width:940px;max-height:94vh;overflow:auto">
 <div class="generator-title"><h2>Send to WanGP</h2><div class="ux-toolbar"><button type="button" onclick="setUXMode(!uxBasic)" id="uxModalMode">Switch to Basic</button></div></div>
 <p class="note">Choose each casting task below. Your generation settings are remembered per fine-tune across sessions until you change or reset them. Queued jobs keep their original settings.</p>
 <div class="generator-task-group"><strong>Next casting task</strong>
-<div class="generator-scope"><label for="generatorScope">Queue scope</label><select id="generatorScope" onchange="generatorScopeChanged()"><option value="all">All selected roles</option></select><span id="generatorScopeStatus" class="note" role="status"></span></div>
+<div class="generator-scope"><label for="generatorScope">Queue scope</label><select id="generatorScope" onchange="generatorScopeChanged()"><option value="all">All selected roles</option></select><span id="generatorScopeStatus" class="note" role="status"></span><button type="button" id="generatorNextPending" onclick="selectNextPending()" hidden>Next unstaged role</button><button type="button" onclick="analyzeGeneratorScenes()">Prepare wardrobe &amp; settings with AI</button></div>
 <div class="field"><label>Casting selection <select id="generatorChoice" onchange="generatorChoiceChanged()"></select></label></div>
 <div class="field" id="generatorSceneRow"><label>Video segment <select id="generatorScene" onchange="generatorSceneChanged()"><option value="1">Video 1</option><option value="2">Video 2</option><option value="3">Video 3</option><option value="4">Video 4</option></select></label></div>
 </div>
@@ -1182,30 +1183,30 @@ function sceneDisplay(field,value){return value===(field==='wardrobe'?autoWardro
 function sceneStorage(field,value){return value===autoSceneLabel[field]?(field==='wardrobe'?autoWardrobeText:autoSettingText):value;}
 const scenePanels={},sceneDrafts=Object.create(null);let sceneRequestSerial=0;
 function stashSceneDraft(id){const p=scenePanels[id];if(p?.dirty&&p.fields){sceneDrafts[p.key]={wardrobe:p.fields.wardrobe.value,setting:p.fields.setting.value};p.dirty=false;}}
-async function loadSceneContext(id,key,refresh=false){
+async function loadSceneContext(id,key,refresh=false,auto=true){
  const panel=$(id);if(!panel)return;const serial=++sceneRequestSerial;
  const previous=scenePanels[id];
  if(previous?.saving)return;
- if(previous?.dirty&&previous.key===key&&!confirm('Discard unsaved wardrobe and setting edits?'))return;
+ if(previous?.dirty&&previous.key===key&&(!refresh||!confirm('Discard unsaved wardrobe and setting edits?')))return;
  if(previous?.dirty&&previous.key===key)delete sceneDrafts[key];
  if(previous?.dirty&&previous.key!==key){sceneDrafts[previous.key]={wardrobe:previous.fields.wardrobe.value,setting:previous.fields.setting.value};}
  scenePanels[id]={serial,key,dirty:false,loading:!!key};panel.replaceChildren();panel.hidden=!key;if(!key)return;
  const msg=document.createElement('p');msg.className='note';msg.textContent='Checking saved and public portrayal scene details…';panel.append(msg);
  try{
-  const data=await uxRequest('api/characters/scene?'+new URLSearchParams({choice_key:key,auto:'true',refresh:String(refresh)}));
+  const data=await uxRequest('api/characters/scene?'+new URLSearchParams({choice_key:key,auto:String(auto),refresh:String(refresh)}));
   if(scenePanels[id]?.serial!==serial)return;
   const title=document.createElement('strong');title.textContent='Automatic wardrobe and setting · '+(data.role?.character||'Selected portrayal')+(data.role?.year?' ('+data.role.year+')':'');panel.prepend(title);
-  msg.textContent=data.research_error||(data.custom?'Reviewed local scene profile.':data.source?'Public source suggestion (Wikipedia, CC BY-SA) — review for the exact portrayal: '+data.source:'No reliable canonical description found. Missing fields use a neutral fallback; enter specific details or use local AI analysis.');
+  msg.textContent=data.research_error||(data.custom?'Reviewed local scene profile.'+(data.source?.startsWith('Reviewed local AI')?' Origin: '+data.source:''):data.source?'Public source suggestion (Wikipedia, CC BY-SA) — review for the exact portrayal: '+data.source:'No reliable canonical description found. Missing fields use a neutral fallback; enter specific details or use local AI analysis.');
   if(!data.wardrobe||!data.setting)msg.textContent+=' Missing '+[!data.wardrobe?'wardrobe':'',!data.setting?'setting':''].filter(Boolean).join(' and ')+' uses a neutral fallback until reviewed.';
   let revision=data.revision;const fields={};for(const field of ['wardrobe','setting']){
    const label=document.createElement('label');label.textContent=field==='wardrobe'?'Character wardrobe':'Canonical location and background';const area=document.createElement('textarea');area.rows=4;area.maxLength=field==='wardrobe'?5000:4000;area.value=sceneDrafts[key]?.[field]??data[field]??'';area.placeholder=field==='wardrobe'?'Colors, materials, layers, boots, equipment and costume details':'Named location, architecture, furnishings, landscape, lighting and background activity';area.style.width='100%';area.addEventListener('input',()=>{scenePanels[id].dirty=true;});label.append(area);panel.append(label);fields[field]=area;
   }
   scenePanels[id].fields=fields;scenePanels[id].dirty=!!sceneDrafts[key];scenePanels[id].custom=!!data.custom;
   const controls=document.createElement('div');controls.className='toolbar';const save=document.createElement('button');save.type='button';save.textContent='Save portrayal scene';
-  const saveScene=async()=>{if(save.disabled||scenePanels[id]?.serial!==serial)return false;const draft={wardrobe:fields.wardrobe.value,setting:fields.setting.value};save.disabled=true;scenePanels[id].saving=true;try{const saved=await uxRequest('api/characters/scene',{method:'PUT',body:JSON.stringify({choice_key:key,...draft,expected_revision:revision})});revision=saved.revision;find.disabled=true;invalidateGeneratorBatch();if(scenePanels[id]?.serial!==serial){if(sceneDrafts[key]?.wardrobe===draft.wardrobe&&sceneDrafts[key]?.setting===draft.setting)delete sceneDrafts[key];return true;}scenePanels[id].custom=true;const newer=fields.wardrobe.value!==draft.wardrobe||fields.setting.value!==draft.setting;scenePanels[id].dirty=newer;if(!newer)delete sceneDrafts[key];msg.textContent=newer?'Saved earlier edit; newer changes are not yet saved.':'Saved for automatic image and video fields. Existing custom prompts remain unchanged.';if($('generatorModal').classList.contains('open'))await previewGenerator();return !newer;}catch(e){msg.textContent='Not saved: '+e.message;return false;}finally{save.disabled=false;if(scenePanels[id]?.serial===serial)scenePanels[id].saving=false;}};
+  const saveScene=async()=>{if(save.disabled||scenePanels[id]?.serial!==serial)return false;const draft={wardrobe:fields.wardrobe.value,setting:fields.setting.value};save.disabled=true;scenePanels[id].saving=true;try{const saved=await uxRequest('api/characters/scene',{method:'PUT',body:JSON.stringify({choice_key:key,...draft,expected_revision:revision})});revision=saved.revision;find.disabled=true;invalidateGeneratorBatch();if(scenePanels[id]?.serial!==serial){if(sceneDrafts[key]?.wardrobe===draft.wardrobe&&sceneDrafts[key]?.setting===draft.setting)delete sceneDrafts[key];return true;}scenePanels[id].custom=true;const newer=fields.wardrobe.value!==draft.wardrobe||fields.setting.value!==draft.setting;scenePanels[id].dirty=newer;if(!newer)delete sceneDrafts[key];msg.textContent=newer?'Saved earlier edit; newer changes are not yet saved.':'Saved for automatic image and video fields. Existing custom prompts remain unchanged.';await refreshSceneConsumers(key);await refreshScenePromptPreview([key]);return !newer;}catch(e){msg.textContent='Not saved: '+e.message;return false;}finally{save.disabled=false;if(scenePanels[id]?.serial===serial)scenePanels[id].saving=false;}};
   scenePanels[id].save=saveScene;save.addEventListener('click',saveScene);
-  const find=document.createElement('button');find.type='button';find.textContent='Refresh public details';find.disabled=!!data.custom;find.title=data.custom?'Reviewed descriptions are protected from automatic refresh.':'Look up the exact production and year again.';find.addEventListener('click',()=>loadSceneContext(id,key,true));
-  const analyze=document.createElement('button');analyze.type='button';analyze.textContent='Analyze wardrobe & setting with AI';analyze.addEventListener('click',()=>{if(scenePanels[id]?.dirty&&!confirm('Discard unsaved edits before analysis?'))return;scenePanels[id].dirty=false;delete sceneDrafts[key];const role=choices.find(c=>c.key===key);if(role)openAppearance({...appearanceRequestFor('generator'),scope:'scene',key,role:{...role},label:role.character+' · '+role.production,sceneContext:true});else msg.textContent='This casting selection is no longer available.';});
+  const find=document.createElement('button');find.type='button';find.textContent='Refresh public details';find.disabled=!!data.custom;find.title=data.custom?'Reviewed descriptions are protected from automatic refresh.':'Look up the exact production and year again.';find.addEventListener('click',async()=>{await loadSceneContext(id,key,true);invalidateGeneratorBatch();await refreshScenePromptPreview([key]);});
+  const analyze=document.createElement('button');analyze.type='button';analyze.textContent='Analyze wardrobe & setting with AI';analyze.addEventListener('click',()=>{if(hasUnsavedScene(key)){msg.textContent='Save your scene edits before opening AI analysis.';return;}const role=choices.find(c=>c.key===key);if(role)openAppearance({...appearanceRequestFor('generator'),scope:'scene',key,role:{...role},label:role.character+' · '+role.production,sceneContext:true});else msg.textContent='This casting selection is no longer available.';});
   const reset=document.createElement('button');reset.type='button';reset.textContent='Reset portrayal scene';reset.addEventListener('click',async()=>{if(!confirm('Delete the saved wardrobe and setting for this portrayal and look up public details again?'))return;reset.disabled=true;try{await uxRequest('api/characters/scene?'+new URLSearchParams({choice_key:key}),{method:'DELETE'});if(scenePanels[id]?.serial!==serial)return;scenePanels[id].dirty=false;delete sceneDrafts[key];await loadSceneContext(id,key,true);invalidateGeneratorBatch();if($('generatorModal').classList.contains('open'))await previewGenerator();}catch(e){msg.textContent='Not reset: '+e.message;}finally{reset.disabled=false;}});
   controls.append(save,find,analyze,reset);panel.append(controls);
  }catch(e){if(scenePanels[id]?.serial===serial){scenePanels[id].failed=true;msg.textContent='Scene details unavailable: '+e.message;}}finally{if(scenePanels[id]?.serial===serial)scenePanels[id].loading=false;}
@@ -1230,20 +1231,22 @@ async function loadVideoScenes(scope=$('editScope').value){
  clearVideoScenes();const serial=videoSceneSerial,root=$('videoSceneContext');const roles=choices.filter(c=>c.character&&c.production&&!c.personal_id&&(scope==='global'||c.key===scope));if(!roles.length)return;
  root.hidden=false;
  if(scope!=='global'){// Unique IDs also prevent late responses from a prior scope overwriting this role.
-  const panel=document.createElement('div');panel.id='videoPortrayalScene'+(++videoScenePanelCounter);root.append(panel);videoSceneIds.push(panel.id);await loadSceneContext(panel.id,roles[0].key);return;
+  const panel=document.createElement('div');panel.id='videoPortrayalScene'+(++videoScenePanelCounter);panel.dataset.sceneKey=roles[0].key;root.append(panel);videoSceneIds.push(panel.id);await loadSceneContext(panel.id,roles[0].key);return;
  }
  const heading=document.createElement('strong');heading.textContent='Automatic wardrobe and setting · '+roles.length+' selected portrayals';
  const status=document.createElement('p');status.className='note';status.setAttribute('role','status');root.append(heading,status);
  const controls=document.createElement('div');controls.className='toolbar';root.append(controls);
  const refresh=document.createElement('button'),saveAll=document.createElement('button'),analyze=document.createElement('button');for(const b of [refresh,saveAll,analyze])b.type='button';
  refresh.textContent='Refresh public details for all';saveAll.textContent='Save edited portrayal scenes';analyze.textContent='Analyze all portrayals with AI';controls.append(refresh,saveAll,analyze);
- const rows=roles.map(role=>{const panel=document.createElement('div');panel.id='videoPortrayalScene'+(++videoScenePanelCounter);panel.className='generator-preview-panel';panel.style.marginTop='8px';const label=document.createElement('p');label.className='note';label.textContent=[role.character,role.production,role.year].filter(Boolean).join(' · ')+' — waiting for scene details';panel.append(label);root.append(panel);videoSceneIds.push(panel.id);return {id:panel.id,role};});
- let busy=false;const live=()=>serial===videoSceneSerial;const toggle=v=>{busy=v;for(const b of [refresh,saveAll,analyze])b.disabled=v;};
- async function populate(force){if(busy||!live())return;toggle(true);let finished=0,skipped=0,failed=0;try{for(const {id,role} of rows){if(!live())return;const p=scenePanels[id];if(force&&(p?.dirty||p?.saving||p?.custom||sceneDrafts[role.key])){skipped++;continue;}status.textContent=`${force?'Refreshing':'Loading'} portrayal ${finished+skipped+1}/${rows.length}…`;await loadSceneContext(id,role.key,force);if(!live())return;finished++;if(scenePanels[id]?.failed)failed++;}status.textContent=`${finished} portrayal${finished===1?'':'s'} checked · ${skipped} protected or edited · ${failed} request errors. Each role keeps its own scene. No generation submitted by this editor.`;invalidateGeneratorBatch();}finally{if(live())toggle(false);}}
- refresh.addEventListener('click',()=>populate(true));
- saveAll.addEventListener('click',async()=>{if(busy||!live())return;toggle(true);let saved=0,failed=0;try{for(const {id} of rows){if(!live())return;const p=scenePanels[id];if(p?.dirty&&p.save){if(await p.save())saved++;else failed++;}}if(live())status.textContent=`${saved} edited portrayal${saved===1?'':'s'} saved · ${failed} not saved. Global template edits use the template Save button.`;}finally{if(live())toggle(false);}});
- analyze.addEventListener('click',()=>{if(busy||!live())return;if(rows.some(({id})=>scenePanels[id]?.dirty||scenePanels[id]?.saving)){status.textContent='Save edited scenes before opening batch AI analysis.';return;}openAppearance({scope:'batch',key:'',label:'Selected portrayal scenes',sceneContext:true,choiceKeys:rows.map(({role})=>role.key)});});
- await populate(false);
+ const rows=roles.map(role=>{const panel=document.createElement('div');panel.id='videoPortrayalScene'+(++videoScenePanelCounter);panel.dataset.sceneKey=role.key;panel.className='generator-preview-panel';panel.style.marginTop='8px';const label=document.createElement('p');label.className='note';label.textContent=[role.character,role.production,role.year].filter(Boolean).join(' · ')+' — waiting for scene details';panel.append(label);root.append(panel);videoSceneIds.push(panel.id);return {id:panel.id,role};});
+ let busy=false,operation='',pauseLookup=false,openingAnalysis=false,publicDone=Promise.resolve();const live=()=>serial===videoSceneSerial;
+ const toggle=(v,kind='')=>{busy=v;operation=v?kind:'';refresh.disabled=v;saveAll.disabled=v;analyze.disabled=openingAnalysis||(v&&kind!=='public');};
+ async function populate(force){if(busy||!live())return;pauseLookup=false;toggle(true,'public');let finished=0,skipped=0,failed=0;try{for(const {id,role} of rows){if(!live())return;if(pauseLookup)break;const p=scenePanels[id];if(force&&(p?.dirty||p?.saving||p?.custom||sceneDrafts[role.key])){skipped++;continue;}status.textContent=`${force?'Refreshing':'Loading'} portrayal ${finished+skipped+1}/${rows.length}…`;await loadSceneContext(id,role.key,force);if(!live())return;finished++;if(scenePanels[id]?.failed)failed++;}if(pauseLookup)for(const {id,role} of rows){if(!scenePanels[id]&&$(id))$(id).firstChild.textContent=[role.character,role.production,role.year].filter(Boolean).join(' · ')+' — public lookup paused for AI. Refresh public details or approve an AI draft to populate this panel.';}status.textContent=`${finished} portrayal${finished===1?'':'s'} checked · ${skipped} protected or edited · ${failed} request errors.${pauseLookup?' Remaining public lookups paused for AI.':''} Each role keeps its own scene. No generation submitted by this editor.`;invalidateGeneratorBatch();if(force&&!pauseLookup)await refreshScenePromptPreview(rows.map(({role})=>role.key));}finally{if(live())toggle(false);}}
+ function launchPublic(force){if(busy)return publicDone;publicDone=populate(force);return publicDone;}
+ refresh.addEventListener('click',()=>launchPublic(true));
+ saveAll.addEventListener('click',async()=>{if(busy||!live())return;toggle(true,'save');let saved=0,failed=0;try{for(const {id} of rows){if(!live())return;const p=scenePanels[id];if(p?.dirty&&p.save){if(await p.save())saved++;else failed++;}}if(live())status.textContent=`${saved} edited portrayal${saved===1?'':'s'} saved · ${failed} not saved. Global template edits use the template Save button.`;}finally{if(live())toggle(false);}});
+ analyze.addEventListener('click',async()=>{if(openingAnalysis||!live()||(busy&&operation!=='public'))return;if(rows.some(({role})=>hasUnsavedScene(role.key))){status.textContent='Save edited scenes before opening batch AI analysis.';return;}openingAnalysis=true;analyze.disabled=true;try{if(busy){pauseLookup=true;status.textContent='Finishing the current public lookup, then opening AI scene preparation…';await publicDone;}if(!live())return;if(rows.some(({role})=>hasUnsavedScene(role.key))){status.textContent='Save edited scenes before opening batch AI analysis.';return;}await openAppearance({scope:'batch',key:'',label:'Selected portrayal scenes',sceneContext:true,choiceKeys:rows.map(({role})=>role.key)});}finally{openingAnalysis=false;if(live())analyze.disabled=busy&&operation!=='public';}});
+ await launchPublic(false);
 }
 async function openEditor(){if(videoEditorBusy)return;videoEditorReady=false;videoEditorBusy=true;clearVideoScenes();$('editorModal').classList.add('open');$('editorStatus').textContent='Loading prompt settings…';videoEditorControls();try{const [a,b]=await Promise.all([fetch('api/prompts/template'),fetch('api/prompts/overrides')]);if(!a.ok||!b.ok)throw Error('HTTP '+(!a.ok?a.status:b.status));promptDefault=await a.json();promptOverrides=await b.json();templateRecoveryWarning=a.headers?.get('X-Casting-Template-Warning')||'';syncQuickMusic();let select=$('editScope');select.innerHTML='<option value="global">Default template for all selections</option>'+choices.map(c=>`<option value="${esc(c.key)}">${esc(c.person)} · ${esc(c.character||'As themselves')} · ${esc(c.production)}${c.year?' ('+esc(c.year)+')':''}</option>`).join('');select.value='global';fillEditor(promptDefault);$('editorStatus').textContent=[a.headers?.get('X-Casting-Template-Warning'),b.headers?.get('X-Casting-Template-Warning')].filter(Boolean).join(' ');videoEditorReady=true;loadVideoScenes('global')}catch(e){$('editorStatus').textContent='Unable to load prompt settings: '+e.message+' — close and reopen to retry.'}finally{videoEditorBusy=false;videoEditorControls()}}
 function loadEditor(){const scope=$('editScope').value;fillEditor(scope==='global'?promptDefault:{...promptDefault,...promptOverrides[scope]});loadVideoScenes(scope);$('editorStatus').textContent=''}
@@ -1414,6 +1417,7 @@ document.addEventListener('pointerdown',event=>{if(!$('peopleNavigation').contai
 function showTab(which,skipWorkshopLoad=false,keepFocused=false){
  ++peopleAddContext;
  if(!keepFocused)focusedPerformer=null;
+ if(activeTab==='workshop'&&which!=='workshop')leaveWorkshop();
  updateCatalogRecoveryWarning();
  activeTab=(which===true?'productions':which===false?'performers':which);
  // Old internal adult navigation resolves to a normal local classification filter.
@@ -1435,7 +1439,7 @@ function showTab(which,skipWorkshopLoad=false,keepFocused=false){
  syncPeopleNavigation(activeTab);
  visibleCount=20;
  if(!production){clearTimeout(productionSearchTimer);++productionRequestId;clearProductionMatches();}
- if(production)searchLocalProductions();else if(personal)loadPersonal();else if(workshop){if(!skipWorkshopLoad)loadWorkshop();}else if(television)scheduleTelevisionSearch();else {if(activeTab!=='performers'&&['library','missing'].includes($('filter').value))$('filter').value='all';render();if(peopleLibraryMode())loadPeopleLibrary();}if(activeTab!=='performers'){$('addPublicPersonForm').hidden=true;}
+ if(production)searchLocalProductions();else if(personal)loadPersonal();else if(workshop){if(!skipWorkshopLoad){resetWorkshopEntry();void loadWorkshop();}}else if(television)scheduleTelevisionSearch();else {if(activeTab!=='performers'&&['library','missing'].includes($('filter').value))$('filter').value='all';render();if(peopleLibraryMode())loadPeopleLibrary();}if(activeTab!=='performers'){$('addPublicPersonForm').hidden=true;}
  $('navTabs').scrollIntoView({block:'start',behavior:'instant'});
 }
 let televisionTimer=null,televisionRequest=0,televisionCreditRequest=0;
@@ -1617,7 +1621,7 @@ function openCastCollect(person,role){castCollectContext={person,production:role
 function closeCastCollect(){$('castCollectModal').classList.remove('open');castCollectContext=null}
 function switchCastCollection(mode){const ctx=activeImage?.castContext||castCollectContext;if(!ctx||ctx.appearance)return;closeLightbox();closeCastCollect();const role=mode==='character';if(role&&!ctx.character)return;openPhoto(ctx.person,role?{production:ctx.production,character:ctx.character}:null,role?'role':'actress',true,ctx)}
 async function openRoleWorkshop(person,production,character=null,returnContext=null){
- workshopReturnContext=returnContext;$('workshopCastReturn').hidden=!returnContext;$('workshopCastReturnLabel').textContent=returnContext?returnContext.production:'';
+ resetWorkshopEntry();workshopReturnContext=returnContext;$('workshopCastReturn').hidden=!returnContext;$('workshopCastReturnLabel').textContent=returnContext?returnContext.production:'';
  $('workshopFamily').value=familyForModel()==='flux2'?'flux2':'minimax_h3';
  $('workshopCollectionSearch').value=(person+' '+production).trim();$('workshopPhotoFilter').value='';$('workshopName').dataset.suggested='1';
  showTab('workshop',true);await loadWorkshop({person,production,character});
@@ -1988,7 +1992,8 @@ async function refreshWorkshopScan(){
  workshopStartScanPolling();
  try{
   const mods=await workshopJson('api/workshop/mods?force=true');
-  const prior=workshopMods[Number($('workshopMod').value)]?.name;
+  if(activeTab!=='workshop'||workshopPane!=='decompile')return;
+  const prior=$('workshopMod').value!==''?workshopMods[Number($('workshopMod').value)]?.name:'';
   workshopMods=mods.mods;
   $('workshopInvalidStatus').textContent=`${mods.mods.length} valid H3 .safetensors files · ${(mods.skipped||[]).length} invalid/incomplete files excluded`;
   workshopFilterMods(prior);
@@ -1996,11 +2001,11 @@ async function refreshWorkshopScan(){
  finally{await workshopUpdateScanStatus()}
 }
 async function workshopShowResults(name){
- const panel=$('workshopResults'), gallery=$('workshopResultGallery');
+ const serial=++workshopResultsSerial,panel=$('workshopResults'), gallery=$('workshopResultGallery');
  gallery.textContent='Loading reconstructed output…';panel.hidden=false;
  try{
   const results=await workshopJson('api/workshop/decompiled?name='+encodeURIComponent(name));
-  gallery.replaceChildren();
+  if(serial!==workshopResultsSerial)return;gallery.replaceChildren();
   if(!results.files.length){gallery.textContent='No viewable reconstructed media files were found.';return}
   for(const file of results.files){
    const card=document.createElement('div');card.className='decompiled-card';
@@ -2020,7 +2025,7 @@ async function workshopShowResults(name){
    link.textContent=`↧ ${file.filename} (${Math.max(1,Math.round(file.size/1024))} KB)`;
    card.appendChild(link);gallery.appendChild(card);
   }
- }catch(e){gallery.textContent='Unable to display decompiled results: '+e.message}
+ }catch(e){if(serial===workshopResultsSerial)gallery.textContent='Unable to display decompiled results: '+e.message}
 }
 let workshopPortraitSerial=0,workshopPortraitFamily='',workshopPortraitModels=[];
 async function refreshWorkshopPortraitModels(){
@@ -2040,21 +2045,39 @@ async function refreshWorkshopPortraitModels(){
   $('workshopPortraitStatus').textContent=workshopPortraitModels.length?'Choose the exact checkpoint to generate the test image.':'No compatible image checkpoint found. Refresh or turn off the test portrait to create the RefMod only.';
  }catch(e){if(serial===workshopPortraitSerial)$('workshopPortraitStatus').textContent='Image model discovery failed: '+e.message;}
 }
-let workshopLoadSerial=0,workshopPhotoSerial=0;
-async function loadWorkshop(prefer=null){
+let workshopLoadSerial=0,workshopPhotoSerial=0,workshopPane='make',workshopMakeFamily='minimax_h3',workshopResultsSerial=0,workshopEncoderByPane={};
+function leaveWorkshop(){++workshopLoadSerial;++workshopPhotoSerial;++workshopPortraitSerial;++workshopResultsSerial;if(workshopScanTimer){clearInterval(workshopScanTimer);workshopScanTimer=null;}}
+function displayWorkshopPane(pane){workshopPane=pane;for(const [key,tab,panel] of [['make','workshopMakeTab','workshopMakePane'],['decompile','workshopDecompileTab','workshopDecompilePane']]){const selected=key===pane;$(tab).classList.toggle('primary',selected);$(tab).setAttribute('aria-selected',String(selected));$(panel).hidden=!selected;}$('workshopFamily').disabled=pane==='decompile';}
+function resetWorkshopEntry(){
+ leaveWorkshop();workshopReturnContext=null;$('workshopCastReturn').hidden=true;
+ displayWorkshopPane('make');$('workshopFamily').value=workshopMakeFamily;
+ for(const id of ['workshopCollectionSearch','workshopModSearch','workshopPhotoFilter','workshopName'])$(id).value='';
+ $('workshopTestPortrait').checked=false;$('workshopPortraitSettings').hidden=true;$('workshopName').dataset.suggested='1';$('workshopCollection').replaceChildren();$('workshopMod').replaceChildren();workshopSources=[];workshopMods=[];workshopPhotos=[];$('workshopPhotos').replaceChildren();workshopPhotoCounter();workshopShowMetadata();
+}
+async function switchWorkshopPane(pane){
+ if(pane===workshopPane||!['make','decompile'].includes(pane))return;
+ if(workshopPane==='make')workshopMakeFamily=$('workshopFamily').value;
+ if(!$('workshopModel').disabled)workshopEncoderByPane[workshopPane+':'+$('workshopFamily').value]=$('workshopModel').value;
+ leaveWorkshop();displayWorkshopPane(pane);$('workshopFamily').value=pane==='decompile'?'minimax_h3':workshopMakeFamily;
+ await loadWorkshop(null,true);
+}
+async function loadWorkshop(prefer=null,keepCollection=false){
  const serial=++workshopLoadSerial;
- const family=$('workshopFamily').value,encoder=$('workshopModel'),remember=encoder.dataset.family===family?encoder.value:'';
+ const family=$('workshopFamily').value,encoder=$('workshopModel'),remember=workshopEncoderByPane[workshopPane+':'+family]||(encoder.dataset.family===family?encoder.value:'');
  encoder.replaceChildren();encoder.disabled=true;encoder.dataset.family=family;
  $('workshopModelStatus').textContent='Checking compatible encoders…';
- void refreshWorkshopPortraitModels();
+ if(workshopPane==='make'){workshopMakeFamily=family;void refreshWorkshopPortraitModels();}
  const flux=$('workshopFamily').value==='flux2';
  $('workshopH3Mode').style.display=flux?'none':'';
  $('workshopFluxLayout').style.display=flux?'':'none';
  $('workshopFluxBudget').style.display=flux?'':'none';
- workshopStartScanPolling();
+ if(workshopPane==='decompile'&&activeTab==='workshop')workshopStartScanPolling();
+ const make=workshopPane==='make';
+ const previousCollection=prefer||($('workshopCollection').value!==''?workshopSources[Number($('workshopCollection').value)]:null);
+ const previousMod=$('workshopMod').value!==''?workshopMods[Number($('workshopMod').value)]?.name:'';
  try{
   const result=await Promise.allSettled([
-   workshopJson('api/workshop/sources?role_aware=true'),workshopJson('api/workshop/models?family='+encodeURIComponent(family)),workshopJson('api/workshop/mods')]);
+   make&&!keepCollection?workshopJson('api/workshop/sources?role_aware=true'):Promise.resolve(null),workshopJson('api/workshop/models?family='+encodeURIComponent(family)),!make?workshopJson('api/workshop/mods'):Promise.resolve(null)]);
   if(serial!==workshopLoadSerial)return;
   const [sources,models,mods]=result;
   if(models.status==='fulfilled'){
@@ -2064,23 +2087,22 @@ async function loadWorkshop(prefer=null){
    sel.disabled=!sel.options.length;
    $('workshopModelStatus').textContent=sel.options.length?`${sel.options.length} compatible model(s)`:'No compatible model with this RefMod family detected';
   }else $('workshopModelStatus').textContent='Model discovery unavailable: '+models.reason.message;
-  if(sources.status==='fulfilled'){
-   const previous=prefer||($('workshopCollection').value!==''?workshopSources[Number($('workshopCollection').value)]:null);
-   workshopSources=sources.value.sources;workshopFilterCollections(previous);
+  if(make&&sources.status==='fulfilled'&&sources.value){
+   workshopSources=sources.value.sources;workshopFilterCollections(previousCollection);
    await loadWorkshopPhotos();
-  }else{workshopSources=[];$('workshopCollection').replaceChildren();await loadWorkshopPhotos();$('workshopCreateStatus').textContent='Cannot load reference collections: '+sources.reason.message}
+  }else if(make&&sources.status==='rejected'){workshopSources=[];$('workshopCollection').replaceChildren();await loadWorkshopPhotos();$('workshopCreateStatus').textContent='Cannot load reference collections: '+sources.reason.message}
+  else if(make&&keepCollection&&!workshopSources.length){await loadWorkshop();return;}else if(make&&keepCollection&&$('workshopCollection').value!==''&&!workshopPhotos.length){await loadWorkshopPhotos();}
   if(serial!==workshopLoadSerial)return;
-  if(mods.status==='fulfilled'){
-   const previous=workshopMods[Number($('workshopMod').value)]?.name;
+  if(!make&&mods.status==='fulfilled'&&mods.value){
    workshopMods=mods.value.mods;
    $('workshopInvalidStatus').textContent=`${workshopMods.length} valid H3 .safetensors files · ${(mods.value.skipped||[]).length} invalid/incomplete files excluded`;
-   workshopFilterMods(previous);
-  }
+   workshopFilterMods(previousMod);
+  }else if(!make&&mods.status==='rejected'){workshopMods=[];workshopFilterMods('');$('workshopInvalidStatus').textContent='Cannot load installed RefMods: '+mods.reason.message;}
  }catch(e){$('workshopModelStatus').textContent='Workshop failed to load: '+e.message}
 }
 async function loadWorkshopPhotos(){
  const serial=++workshopPhotoSerial;workshopPhotos=[];$('workshopPhotos').replaceChildren();workshopPhotoCounter();
- const item=$('workshopCollection').value!==''?workshopSources[Number($('workshopCollection').value)]:null;if(!item){$('workshopPhotos').innerHTML='<p>No approved photos for this collection. Return to the cast, collect or approve photos, then open Workshop again.</p>';return}
+ const item=$('workshopCollection').value!==''?workshopSources[Number($('workshopCollection').value)]:null;if(!item){if($('workshopName').dataset.suggested==='1')$('workshopName').value='';$('workshopPhotos').textContent='Choose an approved photo collection to begin.';return}
  const slug=x=>String(x||'').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_|_$/g,'');const base=slug(item.person).slice(0,55);const role=item.character?'__role__'+slug(item.character+'_'+item.production).slice(0,45):'';const name=base+role+($('workshopFamily').value==='flux2'?'_FLUX':'_H3');
  if(!$('workshopName').value||$('workshopName').dataset.suggested==='1'){$('workshopName').value=name;$('workshopName').dataset.suggested='1'}
  try{const v=await workshopJson('api/workshop/photos?person='+encodeURIComponent(item.person)+'&production='+encodeURIComponent(item.production)+(item.character!=null?'&character='+encodeURIComponent(item.character):''));
@@ -2092,7 +2114,7 @@ async function loadWorkshopPhotos(){
 }
 function workshopPhotoCounter(){$('workshopPhotoCount').textContent=document.querySelectorAll('.workshopPhotoCheck:checked').length+' selected (maximum 20)' + (workshopPhotos.length>20?' · '+workshopPhotos.length+' photos available':'')}
 function workshopSelectPhotos(checked){let count=document.querySelectorAll('.workshopPhotoCheck:checked').length;document.querySelectorAll('#workshopPhotos .photo-card:not([hidden]) .workshopPhotoCheck').forEach(el=>{if(!checked){el.checked=false;return}if(!el.checked&&count<20){el.checked=true;count++}});workshopPhotoCounter()}
-function workshopShowMetadata(){$('workshopResults').hidden=true;const mod=$('workshopMod').value!==''?workshopMods[Number($('workshopMod').value)]:null;$('workshopMetadata').textContent=mod?JSON.stringify(mod.metadata,null,2):'No RefMods found';$('workshopDownload').style.display='none'}
+function workshopShowMetadata(){++workshopResultsSerial;$('workshopResults').hidden=true;$('workshopResultGallery').replaceChildren();const mod=$('workshopMod').value!==''?workshopMods[Number($('workshopMod').value)]:null;$('workshopMetadata').textContent=mod?JSON.stringify(mod.metadata,null,2):'Select a RefMod.';$('workshopDownload').style.display='none'}
 async function workshopTriggerNative(){
  let handedOff=false;
  try{if(window.parent!==window&&window.parent.location.origin===window.location.origin){const b=window.parent.document.querySelector('#casting_native_queue_button');if(b){b.click();handedOff=true}}}catch(e){}
@@ -2135,7 +2157,7 @@ async function startWorkshopCreate(){
 async function viewWorkshopExistingResults(){
  const chosen=$('workshopMod').value!==''?workshopMods[Number($('workshopMod').value)]:null;
  if(!chosen){$('workshopDecompileStatus').textContent='Select a valid H3 RefMod first.';return}
- await workshopShowResults(chosen.name);
+ const a=$('workshopDownload');a.href='api/workshop/decompiled.zip?name='+encodeURIComponent(chosen.name);a.style.display='inline';await workshopShowResults(chosen.name);
 }
 async function startWorkshopDecompile(){
  if($('workshopFamily').value!=='minimax_h3'||$('workshopModel').disabled||!$('workshopModel').value){$('workshopDecompileStatus').textContent='Choose a compatible H3 encoder first.';return}
@@ -2150,9 +2172,8 @@ async function workshopPollJob(id,op,name){
   else if(st.state==='completed'){
    setWorkshopBusy(false);
    if(op==='decompile'){
-    const a=$('workshopDownload');a.href='api/workshop/decompiled.zip?name='+encodeURIComponent(name);a.style.display='inline';
-    await workshopShowResults(name);
-   }else {await rescan();loadWorkshop();if(activeTab==='productions')await refreshProductionCast();if(st.test_portrait_state==='completed'){$(dest).textContent+=' · View the test portrait in Completed results.'}}
+    if(activeTab==='workshop'&&workshopPane==='decompile'&&$('workshopMod').value!==''&&workshopMods[Number($('workshopMod').value)]?.name===name){const a=$('workshopDownload');a.href='api/workshop/decompiled.zip?name='+encodeURIComponent(name);a.style.display='inline';await workshopShowResults(name);}
+   }else {await rescan();if(activeTab==='workshop'&&workshopPane==='make')loadWorkshop(null,true);if(activeTab==='productions')await refreshProductionCast();if(st.test_portrait_state==='completed'){$(dest).textContent+=' · View the test portrait in Completed results.'}}
   }
  else setWorkshopBusy(false);
  }catch(e){$(dest).textContent='Job '+id.slice(0,8)+' · status unavailable; retrying. Do not submit again. '+e.message;workshopPoll=setTimeout(()=>workshopPollJob(id,op,name),5000)}
@@ -2210,18 +2231,18 @@ function workshopFilterPhotos(){
  const term=$('workshopPhotoFilter').value.trim().toLowerCase();
  document.querySelectorAll('#workshopPhotos .photo-card').forEach(card=>card.hidden=!!term&&!card.dataset.filter.includes(term));
 }
-function workshopFilterCollections(prefer=null){
- const sel=$('workshopCollection'),term=$('workshopCollectionSearch').value.trim().toLowerCase();sel.replaceChildren();
+function workshopFilterCollections(prefer=undefined){
+ const sel=$('workshopCollection'),term=$('workshopCollectionSearch').value.trim().toLowerCase(),prior=prefer===undefined?(sel.value!==''?workshopSources[Number(sel.value)]:null):prefer;sel.replaceChildren();workshopOption(sel,'','Choose a photo collection…');
  workshopSources.forEach((v,i)=>{if(!term||`${v.person} ${v.production} ${v.character||''}`.toLowerCase().includes(term))
   workshopOption(sel,String(i),`${v.person} — ${v.character?v.character+' · ':''}${v.production||'performer photos'} (${v.count})`)});
- const previous=prefer||null;
- if(previous){const index=workshopSources.findIndex(v=>canon(v.person)===canon(previous.person)&&canon(v.production)===canon(previous.production)&&(previous.character==null||canon(v.character||'')===canon(previous.character)));
-  if(index>=0&&[...sel.options].some(x=>x.value===String(index)))sel.value=String(index);else sel.selectedIndex=-1}
- if(!previous)loadWorkshopPhotos();
+ const previous=prior||null;
+ if(previous){const matches=workshopSources.map((v,i)=>({v,i})).filter(({v})=>canon(v.person)===canon(previous.person)&&canon(v.production)===canon(previous.production)&&(previous.character==null||canon(v.character||'')===canon(previous.character)));const exact=matches.filter(({v})=>canon(v.character||'')===canon(previous.character||''));const index=exact.length===1?exact[0].i:matches.length===1?matches[0].i:-1;
+  if(index>=0&&[...sel.options].some(x=>x.value===String(index)))sel.value=String(index);else sel.value=''}
+ if(prefer===undefined&&(!previous||sel.value===''))loadWorkshopPhotos();
 }
-function workshopFilterMods(prefer=''){
- const sel=$('workshopMod'),old=prefer||workshopMods[Number(sel.value)]?.name||'';
- const term=$('workshopModSearch').value.trim().toLowerCase();sel.replaceChildren();
+function workshopFilterMods(prefer=undefined){
+ const sel=$('workshopMod'),old=prefer===undefined?(sel.value!==''?workshopMods[Number(sel.value)]?.name:''):prefer;
+ const term=$('workshopModSearch').value.trim().toLowerCase();sel.replaceChildren();workshopOption(sel,'','Choose an installed H3 RefMod…');
  workshopMods.forEach((m,i)=>{if(!term||[m.name,m.filename].join(' ').toLowerCase().includes(term))workshopOption(sel,String(i),`${m.name} · ${(m.bytes/1024/1024).toFixed(2)} MB`)});
  const same=workshopMods.findIndex(m=>m.name===old);
  if(same>=0&&[...sel.options].some(x=>x.value===String(same)))sel.value=String(same);
@@ -2283,7 +2304,7 @@ async function saveLocalSettings(){
   const r=await fetch('api/settings/paths',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   const d=await r.json();if(!r.ok)throw Error(typeof d.detail==='string'?d.detail:'Enter a valid RefMod root folder');
   showRootSettings(d);$('pathStatus').textContent='Root saved. Refreshing installed RefMods…';
-  try{await rescan();await loadWorkshop();$('pathStatus').textContent='Root saved. Standard folders are detected automatically.';}catch(e){$('pathStatus').textContent='Root saved; refresh failed: '+e.message}
+  try{await rescan();if(activeTab==='workshop')await loadWorkshop();$('pathStatus').textContent='Root saved. Standard folders are detected automatically.';}catch(e){$('pathStatus').textContent='Root saved; refresh failed: '+e.message}
  }catch(e){$('pathStatus').textContent='Root not changed: '+e.message}finally{button.disabled=false}
 }
 async function openAbout(){
@@ -2567,6 +2588,9 @@ function generatorUpdateSubmitEnabled(){
  $('generatorQueueAll').disabled=!canSubmit||!setReady||!remaining.length;
  $('generatorRestartPass').hidden=!generatorScopeChoices($('generatorScope').value).some(c=>generatorPassSet().has(c.key));
  $('generatorRestartPass').disabled=generatorSubmitBusy||generatorRequestInProgress||conversionInProgress;
+ const scopeCount=generatorScopeChoices($('generatorScope').value).length,staged=scopeCount-remaining.length;
+ $('generatorScopeStatus').textContent=`${scopeCount} casting task${scopeCount===1?'':'s'} in scope · ${remaining.length} remaining in this browser pass`+(staged?` · ${staged} previously staged (not live queue count). Start a new queue pass to repeat.`:'');
+ if($('generatorNextPending')){$('generatorNextPending').hidden=!remaining.length||currentPending;$('generatorNextPending').disabled=generatorSubmitBusy||generatorRequestInProgress||conversionInProgress;}
  if((!canSubmit||!remaining.length) && $('generatorSubmitBatch'))$('generatorSubmitBatch').disabled=true;
  generatorUpdateImageButtons();
  if(missing)$('generatorLoraStatus').textContent='A saved LoRA is no longer installed. Remove or replace it before queuing.';
@@ -2752,7 +2776,7 @@ function generatorUpdateImageButtons(){
  const isImage=$('promptModel').value!=='h3_video',count=imageCountForModel();
  const seconds=Number($('generatorVideoSeconds').value);
  const left=generatorRemainingKeys().length;
- $('generatorSubmit').textContent=left?(isImage?`▶ Queue ${count} image${count===1?'':'s'} & next (${left} left)`:(seconds>15?`▶ Queue ${seconds}s & next (${left} left)`:`▶ Queue & next (${left} left)`)):'All selections queued';
+ $('generatorSubmit').textContent=left?(isImage?`▶ Queue ${count} image${count===1?'':'s'} & next (${left} left)`:(seconds>15?`▶ Queue ${seconds}s & next (${left} left)`:`▶ Queue & next (${left} left)`)):'All selections staged in this pass';
  $('generatorQueueAll').textContent=isImage?`▶ Queue all (${left*count} image${left*count===1?'':'s'})`:`▶ Queue all (${left} left)`;
 }
 // Queue-pass progress is local to this browser tab and model/checkpoint.
@@ -2761,6 +2785,10 @@ function generatorPassSet(model=$('promptModel').value,checkpoint=$('generatorMo
  const key=JSON.stringify([model,checkpoint]);if(!generatorQueuePasses.has(key)){let saved=[];try{const value=JSON.parse(sessionStorage.getItem('casting-studio:queue-pass:'+key)||'[]');if(Array.isArray(value))saved=value.filter(x=>typeof x==='string');}catch(e){}generatorQueuePasses.set(key,new Set(saved));}return generatorQueuePasses.get(key);
 }
 function generatorRemainingKeys(){const done=generatorPassSet();return generatorScopeChoices($('generatorScope').value).map(c=>c.key).filter(k=>!done.has(k));}
+function selectNextPending(){if(generatorSubmitBusy||generatorRequestInProgress||conversionInProgress)return;const next=generatorRemainingKeys()[0];if(next){$('generatorChoice').value=next;generatorChoiceChanged();}}
+function analyzeGeneratorScenes(){const roles=generatorScopeChoices($('generatorScope').value).filter(c=>c.character&&c.production&&!c.personal_id);if(!roles.length){$('generatorStatus').textContent='No public character portrayals in this scope.';return;}if(roles.some(c=>hasUnsavedScene(c.key))){$('generatorStatus').textContent='Save or reset unsaved scene edits before opening AI scene analysis.';return;}openAppearance({scope:'batch',key:'',label:'Generation-scope portrayal scenes',sceneContext:true,choiceKeys:roles.map(c=>c.key)});}
+function hasUnsavedScene(key){return !!sceneDrafts[key]||Object.values(scenePanels).some(p=>p.key===key&&(p.dirty||p.saving));}
+function confirmSavedScenes(keys){return !keys.some(hasUnsavedScene)||confirm('Some selected portrayal scenes have unsaved edits. Queue using only saved scene descriptions? Choose Cancel to return and save your edits first.');}
 function storeQueuePass(model,checkpoint,done){try{sessionStorage.setItem('casting-studio:queue-pass:'+JSON.stringify([model,checkpoint]),JSON.stringify([...done]));}catch(e){}}
 function markGeneratorQueued(task,keys){const done=generatorPassSet(task.model,task.model_type);keys.forEach(k=>done.add(k));storeQueuePass(task.model,task.model_type,done);invalidateGeneratorBatch();}
 function restartGeneratorPass(){if(generatorSubmitBusy||generatorRequestInProgress||!confirm('Start a new queue pass for this scope? Previously staged jobs are not cancelled.'))return;const done=generatorPassSet();generatorScopeChoices($('generatorScope').value).forEach(c=>done.delete(c.key));storeQueuePass($('promptModel').value,$('generatorModelType').value,done);invalidateGeneratorBatch();generatorUpdateSubmitEnabled();}
@@ -3069,6 +3097,7 @@ async function submitGeneratorBatch(){
   await flushPromptEdits();
   if(!reviewedCastingBatch||reviewedCastingSignature!==JSON.stringify(generatorBatchRequest()))throw Error('Generation settings changed; review the batch again');
   const request=generatorBatchRequest();
+  if(!confirmSavedScenes(request.choice_keys))return;
   if(!confirm(`Queue ${reviewedCastingBatch.count} individually prompted generation tasks for ${reviewedCastingBatch.selections} selections in WanGP?`))return;
   generatorRequestInProgress=true;generatorUpdateSubmitEnabled();$('generatorSubmitBatch').disabled=true;
   $('generatorBatchStatus').textContent='Validating live consent, installed RefMods and every prompt…';
@@ -3099,6 +3128,7 @@ async function queueRemainingSelections(){
   const gate=await uxRequest('api/generator/batch/preflight',{method:'POST',body:JSON.stringify(request)});
   if(current()!==signature)throw Error('Settings or selections changed during preflight; retry.');
   if(!Number.isInteger(gate.count)||gate.count<1||gate.ready!==gate.count||gate.blocked||!gate.relay_ready)throw Error('Preflight blocked: '+(gate.issues||[]).map(x=>[x.person,x.character,x.issue].filter(Boolean).join(' / ')).join('; ')+' — review Bulk queue for details.');
+  if(!confirmSavedScenes(request.choice_keys))return;
   if(!confirm(`Queue ${gate.count} generation tasks for ${request.choice_keys.length} remaining selections? ${request.scene_mode==='first'?'Video 1 per selection.':'All configured images per selection.'}`)){$('generatorStatus').textContent='Queue all cancelled; no jobs staged.';return;}
   if(current()!==signature)throw Error('Settings changed; retry.');
   generatorRequestInProgress=true;
@@ -3137,6 +3167,7 @@ async function submitGenerator(advance=false,oneOnly=false){
  generatorSubmitBusy=true;generatorUpdateSubmitEnabled();
  try{
   if(characterIdentityPending)await characterIdentityPending;
+  if(!confirmSavedScenes([$('generatorChoice').value]))return;
   if($('promptModel').value!=='h3_video'&&!oneOnly)return await submitOneImageSet(advance);
   const requested=JSON.stringify(generatorBody());
   await flushPromptEdits();
@@ -3502,22 +3533,24 @@ function openRequestedAppearance(){
  if(appearanceHasDrafts()&&!confirm('Discard unapproved drafts from the previous analysis and open '+request.label+'?'))return;
  clearAppearanceReview();openAppearance(request);
 }
-function closeAppearance(){if(appearanceBusy&&!appearanceJob)return;$('appearanceModal').classList.remove('open');}
+function closeAppearance(){if((appearanceBusy&&!appearanceJob)||appearanceApprovalPending)return;$('appearanceModal').classList.remove('open');}
 function appearanceSetStatus(message){$('appearanceStatus').textContent=message;}
 function appearanceControls(){
  const active=appearanceBusy||!!appearanceApprovalPending||!!appearanceCollection||['staged','waiting','running'].includes(appearanceCurrentState);
  $('appearanceRequest').hidden=!appearanceNextScope;
  $('appearanceRequestedLabel').textContent=appearanceNextScope?'Requested: '+appearanceNextScope.label:'';
  $('appearanceOpenRequested').disabled=active||!!appearanceApprovalPending;
- const selected=appearanceLoaded.filter(r=>r.enabled.checked&&r.selections.length);
+ const scene=!!appearanceOriginRequest?.sceneContext;
+ const selected=appearanceLoaded.filter(r=>r.enabled.checked&&(scene||r.selections.length));
  const count=selected.reduce((n,r)=>n+r.selections.filter(x=>x.check.checked).length,0);
- const valid=selected.length>0&&selected.length<=20&&selected.every(r=>{const n=r.selections.filter(x=>x.check.checked).length;return n>=1&&n<=4;});
- $('appearanceStart').textContent=`Analyze ${count} character image${count===1?'':'s'} with AI`;
+ const valid=selected.length>0&&selected.length<=20&&selected.every(r=>{const n=r.selections.filter(x=>x.check.checked).length;return (scene||n>=1)&&n<=4;});
+ $('appearanceStart').textContent=scene?`Draft ${selected.length} portrayal scene${selected.length===1?'':'s'} with AI (${count} reference photos)`:`Analyze ${count} character image${count===1?'':'s'} with AI`;
  $('appearanceStart').disabled=active||!!appearanceNextScope||selected.some(r=>r.refreshFailed)||!$('appearanceEngine').value||!valid;
  $('appearanceEngine').disabled=active||!$('appearanceEngine').options.length;
  $('appearanceCancel').hidden=!appearanceJob||!['staged','waiting','running'].includes(appearanceCurrentState);
  for(const r of appearanceLoaded){
-  r.enabled.disabled=active||!r.selections.length;
+  r.enabled.disabled=active||(!scene&&!r.selections.length);
+  if(r.sceneHint){r.sceneHint.hidden=!r.enabled.checked||r.selections.some(x=>x.check.checked);}
   for(const x of r.selections)x.check.disabled=active;
   r.collect.disabled=active||!!appearanceNextScope||!r.role?.person||!r.role?.character||!r.role?.production||!r.role?.year;
   const chosen=r.selections.filter(x=>x.check.checked);
@@ -3540,7 +3573,8 @@ function renderAppearancePhotos(r,data,preserve=false){
  const enabled=r.enabled.checked;
  r.refreshFailed=false;r.role=data.role;r.summary.textContent=data.role.label+' · '+data.photos.length+' available'+(data.saved?' · approved profile exists':'');
  r.pics.replaceChildren();r.selections=[];
- r.enabled.checked=data.photos.length>0&&(preserve&&hadPhotos?enabled:r.defaultEnabled);
+ const scene=!!appearanceOriginRequest?.sceneContext;
+ r.enabled.checked=(scene||data.photos.length>0)&&(preserve&&(hadPhotos||scene)?enabled:r.defaultEnabled&&!(scene&&data.scene?.custom&&data.scene?.wardrobe&&data.scene?.setting&&appearanceOrigin==='batch'));
  r.empty.hidden=!!data.photos.length;
  for(const [i,photo] of data.photos.entries()){
   const tile=document.createElement('div');tile.style.cssText='display:flex;flex-direction:column;align-items:center;width:156px;gap:4px;overflow-wrap:anywhere';
@@ -3566,7 +3600,7 @@ async function returnToAppearanceCollection(context){
  if(appearanceCollection!==context)return;
  appearanceCollection=null;appearanceBusy=true;$('appearanceModal').classList.add('open');appearanceControls();appearanceSetStatus('Refreshing local character images…');
  try{
-  const data=await uxRequest('api/appearance/references?'+new URLSearchParams({choice_key:context.row.key}));
+  const data=await uxRequest('api/appearance/references?'+new URLSearchParams({choice_key:context.row.key,...(appearanceOriginRequest?.sceneContext?{mode:'scene'}:{})}));
   if(context.serial!==appearanceOpening)return;
   if(data.role.profile_key!==context.row.role.profile_key)throw Error('Portrayal changed; reopen the character editor before analyzing.');
   appearanceSetStatus(renderAppearancePhotos(context.row,data,true));
@@ -3598,27 +3632,30 @@ async function openAppearance(scope){
    const group=document.createElement('details');group.className='generator-preview-panel';group.open=roles.length===1;
    const summary=document.createElement('summary');summary.textContent=c.person+' — '+c.character+' — '+c.production+(c.year?' ('+c.year+')':'');group.append(summary);$('appearanceRoles').append(group);
    try{
-    const data=await uxRequest('api/appearance/references?'+new URLSearchParams({choice_key:c.key}));if(serial!==appearanceOpening)return;
+    const data=await uxRequest('api/appearance/references?'+new URLSearchParams({choice_key:c.key,...(request.sceneContext?{mode:'scene'}:{})}));if(serial!==appearanceOpening)return;
     if((data.role.choice_key&&data.role.choice_key!==c.key)||!appearanceMatches(c,data.role)||(scope!=='batch'&&!appearanceMatches(request.role,data.role)))throw Error('Requested portrayal changed; reopen its character editor before analyzing.');
     const row=document.createElement('label'),enabled=document.createElement('input');enabled.type='checkbox';row.append(enabled,document.createTextNode(' Include this portrayal'));group.append(row);
     const collect=document.createElement('button');collect.type='button';collect.textContent='Collect more character images';group.append(collect);
     const warning=document.createElement('p');warning.className='note';warning.setAttribute('role','status');warning.textContent='Warning: analysis relies solely on a low-resolution character thumbnail. Collect clearer character images for reliable details.';warning.hidden=true;group.append(warning);
-    const empty=document.createElement('p');empty.className='note';empty.textContent='No local character images. Collect approved character references or save character artwork locally first.';group.append(empty);
+    const empty=document.createElement('p');empty.className='note';empty.textContent=request.sceneContext?'No local character images; scene drafting can use production knowledge alone.':'No local character images. Collect approved character references or save character artwork locally first.';group.append(empty);
+    const sceneHint=document.createElement('p');sceneHint.className='note';sceneHint.textContent='Production knowledge only — no visual evidence; check the costume and location carefully.';sceneHint.hidden=true;if(request.sceneContext)group.append(sceneHint);
     const pics=document.createElement('div');pics.style.cssText='display:flex;flex-wrap:wrap;gap:8px;margin:8px 0';group.append(pics);
-    const r={key:c.key,enabled,selections:[],summary,collect,warning,empty,pics,defaultEnabled:scope!=='batch'||appearanceLoaded.filter(x=>x.enabled.checked).length<20};
+    const r={key:c.key,enabled,selections:[],summary,collect,warning,empty,pics,sceneHint:request.sceneContext?sceneHint:null,defaultEnabled:scope!=='batch'||appearanceLoaded.filter(x=>x.enabled.checked).length<20};
     renderAppearancePhotos(r,data);appearanceLoaded.push(r);collect.addEventListener('click',()=>collectAppearanceImages(r));
    }catch(e){const p=document.createElement('p');p.className='note';p.textContent=e.message;group.append(p);}
   }
-  appearanceSetStatus(appearanceLoaded.some(r=>r.selections.length)?($('appearanceEngine').value?'Review the pictured portrayal(s), choose references and analyze.':'Preferred vision engine unavailable. Choose an available engine explicitly, then review the references.'):'No selected roles have usable local pictures.');
+  appearanceSetStatus(request.sceneContext?(appearanceLoaded.length?'Review the selected portrayals. Photos are optional for scene drafts. Already reviewed complete scenes are excluded by default in batch mode.'+(roles.length>appearanceLoaded.length?` ${roles.length-appearanceLoaded.length} ineligible or unavailable; see their role panels.`:''):'No eligible dated public portrayals for scene drafting; inspect the role panels for details.'):appearanceLoaded.some(r=>r.selections.length)?($('appearanceEngine').value?'Review the pictured portrayal(s), choose references and analyze.':'Preferred vision engine unavailable. Choose an available engine explicitly, then review the references.'):'No selected roles have usable local pictures.');
  }catch(e){appearanceSetStatus('Appearance analysis unavailable: '+e.message);}
  finally{if(serial===appearanceOpening){appearanceBusy=false;appearanceControls();}}
 }
 async function startAppearance(){
  if(appearanceBusy||appearanceApprovalPending||appearanceCollection||appearanceNextScope||['staged','waiting','running'].includes(appearanceCurrentState)||!$('appearanceEngine').value||appearanceLoaded.some(r=>r.enabled.checked&&r.refreshFailed))return;
  if(appearanceJob&&$('appearanceResults').children.length&&!confirm('Discard the previous unsaved review drafts and start another analysis?'))return;
- const selections=appearanceLoaded.filter(r=>r.enabled.checked&&r.selections.length).map(r=>({choice_key:r.key,image_ids:r.selections.filter(x=>x.check.checked).map(x=>x.id)}));
- if(!selections.length||selections.length>20||selections.some(x=>!x.image_ids.length||x.image_ids.length>4)){appearanceSetStatus('Select 1–20 portrayals, each with 1–4 pictures.');return;}
- if(!confirm('Confirm that the selected pictures show the named character in the specified production/year. Queue local vision analysis? It will wait for generation to finish if needed.'))return;
+ const scene=!!appearanceOriginRequest?.sceneContext;
+ const selections=appearanceLoaded.filter(r=>r.enabled.checked&&(scene||r.selections.length)).map(r=>({choice_key:r.key,image_ids:r.selections.filter(x=>x.check.checked).map(x=>x.id)}));
+ if(!selections.length||selections.length>20||selections.some(x=>(!scene&&!x.image_ids.length)||x.image_ids.length>4)){appearanceSetStatus(scene?'Select 1–20 portrayals with up to four optional photos each.':'Select 1–20 portrayals, each with 1–4 pictures.');return;}
+ const knowledgeOnly=selections.filter(x=>!x.image_ids.length).length;
+ if(!confirm(scene?`Draft wardrobe and canonical settings for ${selections.length} portrayals? ${knowledgeOnly} use production knowledge only. Confirm any selected photos match the named portrayal. Local analysis waits for existing generation, and drafts require review before saving.`:'Confirm that the selected pictures show the named character in the specified production/year. Queue local vision analysis? It will wait for generation to finish if needed.'))return;
  let button=null;try{if(window.parent!==window&&window.parent.location.origin===window.location.origin)button=window.parent.document.querySelector('#casting_vision_button');}catch(e){}
  if(!button){appearanceSetStatus('Native relay unavailable. Open this tab inside WanGP.');return;}
  appearanceBusy=true;appearanceControls();appearanceSetStatus('Staging appearance analysis…');
@@ -3631,16 +3668,31 @@ async function pollAppearance(){
  clearTimeout(appearancePollTimer);const id=appearanceJob;if(!id)return;
  try{const d=await uxRequest('api/appearance/batch/'+encodeURIComponent(id));if(id!==appearanceJob)return;appearanceCurrentState=d.state;appearanceSetStatus(d.state+' · '+d.message);appearanceControls();
   if(['staged','waiting','running'].includes(d.state)){appearancePollTimer=setTimeout(pollAppearance,1500);return;}
-  renderAppearanceResults(d);if(appearanceNextScope)appearanceSetStatus(d.state+' · Previous analysis review retained. Review its drafts, or use Open requested character(s).');
+  if(!appearanceReviewRendered)renderAppearanceResults(d);if(appearanceNextScope)appearanceSetStatus(d.state+' · Previous analysis review retained. Review its drafts, or use Open requested character(s).');
  }catch(e){if(id!==appearanceJob)return;if(e.status===404){appearanceCurrentState='failed';appearanceSetStatus('Analysis expired or host restarted. '+(appearanceNextScope?'Open the requested character(s) to continue.':'Choose another batch.'));appearanceJob='';appearanceControls();return;}appearanceSetStatus('Status unavailable; retrying without resubmitting · '+e.message);appearancePollTimer=setTimeout(pollAppearance,3000);}
 }
 function renderAppearanceResults(job){
- const root=$('appearanceResults');root.replaceChildren();appearanceReviewRendered=true;
+ const root=$('appearanceResults');root.replaceChildren();appearanceReviewRendered=true;const sceneReviews=[];
  for(const result of job.results){const box=document.createElement('section');box.className='generator-preview-panel';box.style.padding='10px';const heading=document.createElement('strong');heading.textContent=result.label+' · '+result.state;box.append(heading);
   if(result.state==='failed'){const p=document.createElement('p');p.textContent=result.error;box.append(p);}
   else if(result.mode==='scene'){
    const fields={};for(const f of ['wardrobe','setting']){const label=document.createElement('label');label.textContent=f==='wardrobe'?'Wardrobe (review for accuracy)':'Canonical location and visual background (review for accuracy)';const area=document.createElement('textarea');area.rows=4;area.maxLength=f==='wardrobe'?5000:4000;area.style.width='100%';area.value=result[f]||'';area.disabled=result.state!=='review';area.dataset.appearanceDraft='true';label.append(area);box.append(label);fields[f]=area;}
-   if(result.state==='review'){const note=document.createElement('p');note.className='note';note.textContent='AI suggestion based on selected references and production knowledge; confirm the specific location, costume and visible details before saving.';const approve=document.createElement('button');approve.type='button';approve.className='primary';approve.textContent='Approve & save scene';approve.addEventListener('click',async()=>{if(!confirm('Save these reviewed wardrobe and setting details for this exact portrayal?'))return;approve.disabled=true;appearanceApprovalPending++;appearanceControls();try{await uxRequest('api/appearance/batch/'+encodeURIComponent(job.id)+'/approve-scene',{method:'POST',body:JSON.stringify({index:result.index,wardrobe:fields.wardrobe.value,setting:fields.setting.value})});heading.textContent=result.label+' · approved';fields.wardrobe.disabled=fields.setting.disabled=true;approve.hidden=true;note.textContent='Saved for automatic image and video templates.';invalidateGeneratorBatch();for(const [id,panel] of Object.entries(scenePanels))if(panel.key===result.choice_key&&!panel.dirty)loadSceneContext(id,panel.key); }catch(e){approve.disabled=false;note.textContent='Not saved: '+e.message;}finally{appearanceApprovalPending--;appearanceControls();}});box.append(note,approve);}
+   if(result.state==='review'){
+    const note=document.createElement('p');note.className='note';note.textContent=result.image_ids?.length?'Reference-assisted AI suggestion; verify the costume and specific fictional location.':'Production-knowledge-only AI suggestion; verify the costume and fictional location. No visual evidence was used.';
+    const approve=document.createElement('button');approve.type='button';approve.className='primary';approve.textContent='Approve & save scene';
+    const entry={result,fields,approve,checked:false,async save(){
+     if(entry.checked)return true;
+     if(hasUnsavedScene(result.choice_key)){note.textContent='Not saved: finish unsaved manual scene edits before approving this draft.';return false;}
+     const payload={index:result.index,wardrobe:fields.wardrobe.value,setting:fields.setting.value};
+     approve.disabled=true;fields.wardrobe.disabled=fields.setting.disabled=true;
+     try{await uxRequest('api/appearance/batch/'+encodeURIComponent(job.id)+'/approve-scene',{method:'POST',body:JSON.stringify(payload)});
+      entry.checked=true;heading.textContent=result.label+' · approved';approve.hidden=true;note.textContent='Saved for automatic image and video templates. Custom prompts remain unchanged.';invalidateGeneratorBatch();
+      await refreshSceneConsumers(result.choice_key);return true;
+     }catch(e){approve.disabled=false;fields.wardrobe.disabled=fields.setting.disabled=false;note.textContent='Not saved: '+e.message;return false;}
+    }};
+    sceneReviews.push(entry);
+    approve.addEventListener('click',async()=>{if(appearanceApprovalPending||!confirm('Save these reviewed wardrobe and setting details for this exact portrayal?'))return;appearanceApprovalPending++;appearanceControls();try{if(await entry.save())await refreshScenePromptPreview([result.choice_key]);}finally{appearanceApprovalPending--;appearanceControls();}});box.append(note,approve);
+   }
   }else{const area=document.createElement('textarea');area.rows=5;area.maxLength=2200;area.style.width='100%';area.value=result.traits;area.disabled=result.state!=='review';area.dataset.appearanceDraft='true';area.setAttribute('aria-label','Appearance draft for '+result.character);box.append(area);
    if(result.state==='review'){const approve=document.createElement('button');approve.type='button';approve.className='primary';approve.textContent='Approve & save appearance';const note=document.createElement('span');note.className='note';note.setAttribute('role','status');note.textContent=result.wardrobe_flags?.length?'Possible wardrobe or equipment: '+result.wardrobe_flags.join(', ')+'. Remove these details before approving.':'Review physical traits only; keep wardrobe and removable equipment in their own fields.';approve.addEventListener('click',async()=>{if(!area.value.trim()||!confirm('Save this reviewed physical identity description for this performer, character and portrayal year?'))return;approve.disabled=true;appearanceApprovalPending++;appearanceControls();try{await uxRequest('api/appearance/batch/'+encodeURIComponent(job.id)+'/approve',{method:'POST',body:JSON.stringify({index:result.index,traits:area.value})});heading.textContent=result.label+' · approved';area.disabled=true;approve.hidden=true;note.textContent='Saved for image and video templates.';invalidateGeneratorBatch();
 if($('generatorChoice').value===result.choice_key&&$('generatorCharacterTraits').value===generatorIdentityOriginal){generatorIdentityOriginal=area.value;$('generatorCharacterTraits').value=area.value;$('generatorCharacterStatus').textContent='Approved AI appearance saved. Refresh the prompt preview.';}
@@ -3648,9 +3700,12 @@ if(cardIdentityRole&&cardIdentityRole.profile_key===result.profile_key&&!cardIde
 if(imageIdentityLoaded===result.choice_key&&$('imageIdentityTraits').value===imageIdentityOriginal){imageIdentityOriginal=area.value;$('imageIdentityTraits').value=area.value;$('imageIdentityStatus').textContent='Approved AI appearance saved.';}}catch(e){approve.disabled=false;note.textContent='Not saved: '+e.message;}finally{appearanceApprovalPending--;appearanceControls();}});box.append(approve,note);}
   }root.append(box);
  }
+ if(sceneReviews.length>1){const bulk=document.createElement('button');bulk.type='button';bulk.className='primary';bulk.textContent='Approve & save all reviewed scenes';bulk.addEventListener('click',async()=>{if(appearanceApprovalPending)return;const pending=sceneReviews.filter(x=>!x.checked);if(!pending.length||!confirm('Save all '+pending.length+' reviewed scene drafts? Confirm each costume and setting is correct. Existing manual edits and stale profiles will be protected.'))return;appearanceApprovalPending++;appearanceControls();bulk.disabled=true;for(const x of pending){x.fields.wardrobe.disabled=x.fields.setting.disabled=true;x.approve.disabled=true;}const saved=[];try{for(const x of pending)if(await x.save())saved.push(x.result.choice_key);await refreshScenePromptPreview(saved);appearanceSetStatus(`${saved.length}/${pending.length} scenes saved. ${pending.length-saved.length} need attention; unsuccessful drafts retained.`);}finally{for(const x of pending)if(!x.checked){x.fields.wardrobe.disabled=x.fields.setting.disabled=false;x.approve.disabled=false;}bulk.disabled=sceneReviews.every(x=>x.checked);appearanceApprovalPending--;appearanceControls();}});root.append(bulk);}
  const refresh=document.createElement('button');refresh.type='button';refresh.textContent='Return to character editor';refresh.addEventListener('click',()=>{closeAppearance();});root.append(refresh);
  const another=document.createElement('button');another.type='button';another.textContent='Choose another batch';another.addEventListener('click',()=>{if(appearanceApprovalPending)return;if(appearanceNextScope){openRequestedAppearance();return;}if(appearanceHasDrafts()&&!confirm('Close this review and discard any unapproved drafts?'))return;clearAppearanceReview();openAppearance(appearanceOriginRequest||appearanceOrigin);});root.append(another);
 }
+async function refreshSceneConsumers(key){if(sceneDrafts[key])return;const ids=new Set(Object.entries(scenePanels).filter(([id,p])=>$(id)&&p.key===key&&!p.dirty&&!p.saving).map(([id])=>id));for(const id of videoSceneIds)if($(id)?.dataset.sceneKey===key&&!scenePanels[id])ids.add(id);await Promise.all([...ids].map(id=>loadSceneContext(id,key,false,false)));}
+async function refreshScenePromptPreview(keys){if(keys.includes($('generatorChoice').value)&&$('generatorModal').classList.contains('open'))await previewGenerator();}
 async function cancelAppearance(){if(!appearanceJob)return;try{await uxRequest('api/appearance/batch/'+encodeURIComponent(appearanceJob)+'/cancel',{method:'POST'});appearanceSetStatus('Cancelling at next safe point…');}catch(e){appearanceSetStatus(e.message);}}
 
 /* Close any long modal without scrolling; use existing cleanup functions. */
@@ -3712,7 +3767,7 @@ function renderAppearanceQueue(job){
  $('appearanceActivity').hidden=!visible;$('appearanceQueueRow').hidden=!visible;$('appearanceQueueCount').hidden=!visible;
  if(!visible)return;
  const text=`${job.cancelling?'Cancelling':label} · ${job.done||0}/${job.total||0}`;
- setText('appearanceActivity','AI appearance · '+text);setText('appearanceQueueCount','· AI appearance: '+text);
+ const kind=job.mode==='scene'?'AI wardrobe & setting':'AI appearance';setText('appearanceActivity',kind+' · '+text);setText('appearanceQueueCount','· '+kind+': '+text);
  setText('appearanceQueueStatus',text+' · '+job.message);
  $('appearanceQueueCancel').hidden=!active;$('appearanceQueueCancel').disabled=!!job.cancelling||appearanceQueueCancelPending;
 }
@@ -3722,7 +3777,7 @@ async function openQueuedAppearance(){
  if(appearanceHasDrafts()){appearanceSetStatus('Review the previous local drafts before switching jobs.');$('appearanceModal').classList.add('open');return;}
  for(const editor of Object.keys(identityAutosave)){if(identityUnsettled(editor)&&!await flushIdentity(editor))return;}
  if(appearanceQueueSummary?.id!==job.id)return;
- clearAppearanceReview();appearanceNextScope=null;appearanceOrigin='batch';appearanceOriginRequest=null;appearanceLoaded=[];$('appearanceRoles').replaceChildren();$('appearanceEngine').replaceChildren();
+ clearAppearanceReview();appearanceNextScope=null;appearanceOrigin='batch';appearanceOriginRequest=job.mode==='scene'?{scope:'batch',key:'',label:'Selected portrayal scenes',sceneContext:true}:null;$('appearanceModeTitle').textContent=job.mode==='scene'?'AI wardrobe and canonical setting drafts':'AI character appearance profiles';appearanceLoaded=[];$('appearanceRoles').replaceChildren();$('appearanceEngine').replaceChildren();
  appearanceJob=job.id;appearanceCurrentState=job.state;$('appearanceModal').classList.add('open');appearanceSetStatus(job.message);appearanceControls();pollAppearance();
 }
 async function cancelQueuedAppearance(){

@@ -838,7 +838,7 @@ def get_profile_link(name:str=Query(min_length=1,max_length=180)):
         return {'provider':'imdb','url':row[0],'verified':True} if row[0] else default
     imdb=''
     try:
-        with httpx.Client(timeout=5,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.10 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
+        with httpx.Client(timeout=5,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.11 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
             resp=client.get('https://www.wikidata.org/w/api.php',params={'action':'wbsearchentities','search':name,'language':'en','format':'json','limit':6,'type':'item'})
             resp.raise_for_status()
             candidates=[v for v in resp.json().get('search',[]) if token(v.get('label'))==token(name)]
@@ -950,7 +950,7 @@ def short_stage_profile(name, *, qid=None):
         qid=row[0] if row else ''
     if not re.fullmatch(r'Q[1-9][0-9]{0,14}',qid):
         raise ValueError('Short stage name requires a reviewed Wikidata QID in Settings')
-    with httpx.Client(timeout=20,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.10'}) as client:
+    with httpx.Client(timeout=20,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.11'}) as client:
         response=client.get('https://www.wikidata.org/w/api.php',params={'action':'wbgetentities','ids':qid,'props':'claims|labels|aliases|sitelinks','languages':'en','sitefilter':'enwiki','format':'json'})
         response.raise_for_status()
         entity=response.json().get('entities',{}).get(qid,{})
@@ -991,7 +991,7 @@ def researched_credits(name):
     if len(name.strip())!=1:return fetch_credits(name)
     _,title=short_stage_profile(name)
     if not title:raise ValueError('Reviewed identity has no English Wikipedia article')
-    with httpx.Client(timeout=20,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.10'}) as client:
+    with httpx.Client(timeout=20,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.11'}) as client:
         response=client.get('https://en.wikipedia.org/w/api.php',params={'action':'parse','page':title,'prop':'text','format':'json','formatversion':'2'})
         response.raise_for_status()
         article=response.json().get('parse') or {}
@@ -1002,7 +1002,7 @@ def researched_credits(name):
 
 def wikidata_profile(name):
     if len(name.strip())==1:return short_stage_profile(name)[0]
-    with httpx.Client(timeout=20, trust_env=False, headers={'User-Agent':'CastingStudio/1.0.10 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
+    with httpx.Client(timeout=20, trust_env=False, headers={'User-Agent':'CastingStudio/1.0.11 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
         search=wikidata_get(client,{
             'action':'wbsearchentities','search':name,'language':'en','format':'json','type':'item','limit':8})
         candidates=[c for c in search.get('search',[]) if token(c.get('label',''))==token(name) or
@@ -2358,7 +2358,7 @@ def download_image(url):
         if cached and safe_media_file(PHOTO_DIR,cached[0],r'[0-9a-f]{64}\.jpg'):return 'api/photos/'+cached[0]
         address=validate_public_url(url)
         # Disable proxies and redirects; redirects must not reach private network addresses.
-        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.10)'}) as client:
+        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.11)'}) as client:
             with pinned_image_request(client,url,address) as res:
                 if res.status_code!=200 or not res.headers.get('content-type','').lower().startswith('image/'):
                     return ''
@@ -4214,7 +4214,7 @@ def search_production_online(q:str=Query(min_length=2,max_length=120)):
 # Key-free film credit source. Search is discovery only: accept a verified
 # film article with a matching title, documented alias or explicit redirect.
 WIKIPEDIA_API='https://en.wikipedia.org/w/api.php'
-WIKI_AGENT='CastingStudio/1.0.10 (+https://github.com/berrant/wan2gp-casting-studio)'
+WIKI_AGENT='CastingStudio/1.0.11 (+https://github.com/berrant/wan2gp-casting-studio)'
 def wiki_api(client,params):
     r=client.get(WIKIPEDIA_API,params={**params,'format':'json','formatversion':2},headers={'User-Agent':WIKI_AGENT})
     r.raise_for_status();return r.json()
@@ -4735,7 +4735,7 @@ def save_reference_image(item:ReferenceImageRequest):
             return {**result,'reused_local':True}
         try:address=validate_public_url(item.image_url)
         except Exception as e:raise HTTPException(400,str(e))
-        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.10'}) as client:
+        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.11'}) as client:
             with pinned_image_request(client,item.image_url,address) as r:
                 if r.status_code!=200 or not r.headers.get('content-type','').lower().startswith('image/'):
                     raise HTTPException(422,'Image host did not return an image')
@@ -5135,16 +5135,16 @@ def appearance_options():
     return bridge.options() if bridge else {'ready':False,'models':[],'reason':'Native WanGP vision bridge unavailable.'}
 
 @app.get('/api/appearance/references')
-def appearance_references(choice_key:str=Query(min_length=1,max_length=1200)):
-    role=appearance_role(choice_key)
+def appearance_references(choice_key:str=Query(min_length=1,max_length=1200),mode:Literal['identity','scene']='identity'):
+    role=scene_role(choice_key) if mode=='scene' else appearance_role(choice_key)
     rows=appearance_photo_rows(role)
     with connect() as db:
         saved=db.execute('SELECT payload FROM appearance_analysis WHERE key=?',(role['profile_key'],)).fetchone()
-    return {'role':role,'photos':[{k:v for k,v in r.items() if k!='path'} for r in rows], 'saved':json.loads(saved[0]) if saved else None}
+    return {'role':role,'photos':[{k:v for k,v in r.items() if k!='path'} for r in rows], 'saved':json.loads(saved[0]) if saved else None,'scene':scene_profile(role)}
 
 class AppearanceSelection(BaseModel):
     choice_key:str=Field(min_length=1,max_length=1200)
-    image_ids:list[str]=Field(min_length=1,max_length=4)
+    image_ids:list[str]=Field(max_length=4)
 class AppearanceBatch(BaseModel):
     mode:Literal['identity','scene']='identity'
     engine:str=Field(min_length=1,max_length=20)
@@ -5156,6 +5156,9 @@ class AppearanceApproval(BaseModel):
 def appearance_source_bytes(task):
     current=appearance_role(task['choice_key'])
     if current['profile_key']!=task['profile_key']:raise HTTPException(409,'Casting portrayal changed; start a new analysis.')
+    if not task['image_ids']:
+        if task.get('mode')!='scene':raise HTTPException(422,'Physical identity analysis requires approved character images.')
+        return [],[]
     available={r['id']:r for r in appearance_photo_rows(current)}
     if any(i not in available for i in task['image_ids']):raise HTTPException(409,'A selected reference is no longer available or approved.')
     data=[]; fingerprints=[]
@@ -5189,7 +5192,8 @@ def appearance_batch(req:AppearanceBatch):
         role=(scene_role(selection.choice_key) if req.mode=='scene' else appearance_role(selection.choice_key))
         if role['profile_key'] in seen:raise HTTPException(400,'Duplicate portrayal in batch')
         seen.add(role['profile_key'])
-        available={r['id'] for r in appearance_photo_rows(role)}
+        if not selection.image_ids and req.mode!='scene':raise HTTPException(422,'Physical identity analysis requires 1–4 approved character images.')
+        available={r['id'] for r in appearance_photo_rows(role)} if selection.image_ids else set()
         if len(set(selection.image_ids))!=len(selection.image_ids) or not set(selection.image_ids)<=available:raise HTTPException(400,'Select 1–4 available, readable character-specific references per role; refresh if a reference was changed or damaged')
         task={**role,'image_ids':selection.image_ids,'baseline':exact_identity_snapshot(role['profile_key'])}
         if req.mode=='scene':task.update(mode='scene',scene_baseline=scene_profile(role))
@@ -5277,6 +5281,9 @@ def appearance_approve_scene(job_id:str,req:SceneApproval):
             old=json.loads(row[0]) if row else {}
             if old!=result['scene_baseline']:raise HTTPException(409,'Scene profile changed since analysis; existing edits retained.')
             value={**old,'wardrobe':wardrobe or old.get('wardrobe',''),'setting':setting or old.get('setting',''),'custom':True,'checked':int(time.time())}
+            provenance='Reviewed local AI ('+('reference-assisted' if result['image_ids'] else 'production knowledge, no photos')+')'
+            if old.get('source','').startswith('https://'):provenance+='; earlier public source: '+old['source']
+            value['source']=provenance[:900]
             db.execute('INSERT OR REPLACE INTO portrayal_scenes VALUES (?,?)',(result['profile_key'],json.dumps(value)))
         result.update(state='approved',wardrobe=value['wardrobe'],setting=value['setting'])
     return {'saved':True,**value}

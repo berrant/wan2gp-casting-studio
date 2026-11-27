@@ -127,6 +127,10 @@ def test_native_adapter_load_and_release_once_and_fail_closed(app,monkeypatch):
     def acquire(st,process,label):assert st is state;events.append('acquire');return not busy[0]
     def release(st,process):assert st is state;events.append('release')
     def generate(a,b,c,d,prompts,images=None,**kwargs):
+        if images is None:
+            assert kwargs['image_contexts'] is None and 'vision' not in kwargs
+            assert kwargs['max_new_tokens']==768 and 'wardrobe' in kwargs['prompt_enhancer_instructions']
+            events.append('text-infer');return ['{"wardrobe":"Blue coat","setting":"Starship bridge"}']
         assert len(kwargs['image_contexts'][0][0])==len(images);assert kwargs['vision']['max_tokens']==384;events.append('infer');return ['Stable physical traits.']
     modules={'shared.prompt_enhancer.qwen35_vl':qwen,'shared.utils.process_locks':NS(try_acquire_GPU_ressources=acquire,release_GPU_ressources=release),'shared.prompt_enhancer.loader':NS(load_prompt_enhancer_runtime=load,ensure_prompt_enhancer_assets=ensure,unload_prompt_enhancer_models=lambda *x:events.append('unload')),'shared.utils.download':NS(download_def_missing_files=lambda d:['missing'] if missing[0] else []),'shared.prompt_enhancer.prompt_enhance_utils':NS(generate_cinematic_prompt=generate),'shared.prompt_enhancer.images':NS(ImageContext=lambda images,labels:(images,labels)),'mmgp':NS(offload=NS(profile=lambda *a,**k:NS(release=lambda:events.append('offload-release')))),'shared.utils.model_unload':NS(wait_for_model_unload=lambda:None,model_unload_guard=nullcontext),'shared.utils.offload_registry':NS(unload_vram=lambda:events.append('registry-unload'))}
     for name,stub in modules.items():monkeypatch.setitem(sys.modules,name,stub)
@@ -145,6 +149,10 @@ def test_native_adapter_load_and_release_once_and_fail_closed(app,monkeypatch):
             assert analyze('Example 2',[img,img])=='Stable physical traits.'
     assert events==['acquire','main-unload','registry-unload',('load',3),'infer','infer','unload','offload-release','release']
     assert host.server_config=={'prompt_enhancer_quantization':'gguf_q3'}
+    events.clear()
+    with native.text_session(state,'3',lambda:False) as analyze:
+        assert mod.parse_scene_draft(analyze(mod.SCENE_REQUEST_PREFIX+'Exact dated portrayal',[]))['setting']=='Starship bridge'
+    assert events==['acquire','main-unload','registry-unload',('load',3),'text-infer','unload','offload-release','release']
     events.clear()
     # A queued generation takes priority, even if it arrives during lock acquisition.
     host.global_queue_ref.append('synthetic queued generation')

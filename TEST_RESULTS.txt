@@ -1,3 +1,16 @@
+Casting Studio v1.0.11 — Integrated scene preparation and RefMod Workshop tabs
+Measured verification (2026-11-27)
+
+FINAL COMPLETE CUMULATIVE REGRESSION GATE
+511 collected; 509 passed; 2 approved retired standalone Docker skips; zero failures.
+Group 1: 169 passed, 2 skipped, 237 warnings in 154.48s (0:02:34).
+Group 2: 156 passed, 0 skipped, 178 warnings in 209.17s (0:03:29).
+Group 3: 184 passed, 0 skipped, 270 warnings in 171.36s (0:02:51).
+109 test modules covered exactly once; all exits zero; 685 non-failing warnings. Final 125 application/test fingerprints verified; Python, JSON and inline JavaScript syntax validated.
+Prior gate caught a legacy gallery test assuming immediate visibility of Decompile. Corrected test explicitly opens the new tab and retains image, video and audio viewer checks. Focused gallery and Workshop tests: 3 passed; complete gate rerun after correction. Earlier focused workflow checks: 10 passed; Workshop checks: 6 passed. Synthetic exact v1.0.10 upgrade preserved all 31 existing SQLite tables, eight stored rows, model/photo bytes and integrity; separate fresh startup passed. No schema changes. Live local GPU inference, canonical accuracy, provider availability, WanGP/Safari host behavior, actual user data and publication remain unverified.
+
+--- Earlier release evidence ---
+
 Casting Studio v1.0.10 — Global scene scope before queueing
 Measured verification (2026-11-27)
 

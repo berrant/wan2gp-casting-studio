@@ -32,14 +32,16 @@ def test_image_inspector_refmod_filter_and_split_resolution_picker():
         assert not page.locator('#lightboxUse').is_visible()
         page.locator('#photoLightbox button').first.click()
         assert not page.locator('#photoLightbox').is_visible()
-        page.evaluate("showTab('workshop')")
+        page.evaluate("showTab('workshop');switchWorkshopPane('decompile')")
+        page.wait_for_timeout(100)
         page.evaluate('''() => {workshopMods=[
           {name:'celebs/Grace_H3',filename:'Grace_H3.safetensors',bytes:5500,metadata:{kind:'identity'}},
           {name:'celebs/Leia_H3',filename:'Leia_H3.safetensors',bytes:15000,metadata:{kind:'identity'}}
         ];workshopFilterMods();}''')
         page.locator('#workshopModSearch').fill('Leia')
-        assert page.locator('#workshopMod option').count()==1
-        assert page.locator('#workshopMod option').first.text_content().startswith('celebs/Leia_H3')
+        assert page.locator('#workshopMod option').count()==2
+        assert page.locator('#workshopMod').input_value()==''
+        assert page.locator('#workshopMod option').nth(1).text_content().startswith('celebs/Leia_H3')
         page.evaluate('openGenerator()')
         page.wait_for_function('document.querySelector("#generatorLoraStatus").textContent.includes("installed for this model")')
         assert '480p' in page.locator('#generatorResolutionCategory option').all_text_contents()

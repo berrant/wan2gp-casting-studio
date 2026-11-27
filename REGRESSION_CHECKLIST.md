@@ -1,3 +1,11 @@
+# v1.0.11 — Integrated scene preparation and RefMod Workshop
+
+- [x] Final complete cumulative gate: 509 passed, 2 approved skips, zero failures; 109 modules, 685 non-failing warnings. Legacy gallery test updated for explicit Decompile navigation; full gate repeated. See TEST_RESULTS.txt.
+- [x] Exact v1.0.10 synthetic startup upgrade: 31 tables, eight stored rows, model/photo bytes and SQLite integrity preserved; separate fresh startup passed.
+- [ ] Live: select multiple dated roles before queueing; prepare wardrobe and settings with AI, with and without approved photos; verify analysis waits behind generation. Review and approve drafts, verify concrete FLUX/H3 prompts update and custom edits survive. Confirm prior staging is distinct from current native queue.
+- [ ] Live: open Workshop directly; confirm neither collection nor RefMod selected. Switch Make/Decompile, verify draft preservation and explicit role link opens matching collection only. Verify actual make/decompile and status reporting with native models.
+- [ ] Live canonical accuracy, prior unresolved acceptance and publisher approval remain outstanding.
+
 # v1.0.10 — Global scene preparation
 
 - [x] Complete final cumulative gate: 500 passed, 2 approved skips, zero failures; 107 modules. Two new permanent browser cases; six focused tests passed.
