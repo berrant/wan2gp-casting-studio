@@ -1,3 +1,9 @@
+## v1.0.6 — Selection stability and research reporting
+
+- Preserve performer role DOM on choice-only changes, retaining scroll anchors, focus, open menus and model variant pickers.
+- Display last-run role sync counts and persistent research history from the existing database; make lookup cooldowns explicit.
+- No classification inference, automatic research, data migration or model changes.
+
 ## v1.0.5 — Compact application header
 - Group branding, release version, inventory scan status and maintenance state alongside a smaller logo. Keep Rescan RefMods, Settings, Getting started, Batch history, mode toggle and About in a single desktop toolbar, with responsive wrapping when necessary.
 - Reduce primary navigation height without removing labels, keyboard access, the People category menu, or the established 16px minimum navigation text size. Preserve visible appearance-analysis activity and sticky navigation/maintenance/selection bands.

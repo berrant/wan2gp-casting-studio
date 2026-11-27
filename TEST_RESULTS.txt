@@ -1,3 +1,17 @@
+Casting Studio v1.0.6 — Selection stability and research reporting
+Measured verification (2026-11-27)
+
+FINAL COMPLETE CUMULATIVE REGRESSION GATE
+489 collected; 487 passed; 2 approved retired standalone Docker skips; zero failures.
+Group 1: 163 passed, 2 skipped, 231 warnings in 141.89s.
+Group 2: 149 passed, 170 warnings in 166.31s.
+Group 3: 175 passed, 262 warnings in 149.62s.
+All 103 test modules covered exactly once in three disjoint groups; all exits zero. 663 non-failing warnings. Python, JSON and inline JavaScript syntax checks passed; application/test fingerprints verified.
+
+Reproduced original destructive performer-card replacement before correction. Four new permanent tests cover scroll/focus/disclosure preservation after choosing and removing a deep filmography role, RefMod variant selection and removal, browser presentation of saved research history, and backend aggregation of existing research records. Existing compact-header version assertion updated. No tests removed. Full gate completed after final application/test changes. No database migration, classification inference, automatic lookup, or queue changes. Actual live Safari/WanGP verification remains outstanding. The earlier suggested retry/force research controls, single-character identity handling and classification inference are outside this focused release.
+
+--- Earlier release evidence ---
+
 Casting Studio v1.0.5 — Compact application header
 Measured verification (2026-11-26)
 

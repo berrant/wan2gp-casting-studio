@@ -1,12 +1,16 @@
 # Casting Studio for WanGP
 
-Version: v1.0.5
-Date: 2026-11-26
+Version: v1.0.6
+Date: 2026-11-27
 
 
 ## License
 
 Casting Studio uses the [MIT License](LICENSE) for independently licensable project material. Use, modification, distribution and commercial use are permitted subject to the license notices. See [notices](NOTICE.md) and [contribution policy](CONTRIBUTING.md). WanGP, Refmod-Fork and other third-party material retain their applicable terms; no upstream rights or ownership of user outputs are granted or claimed. The project uses generic attribution without a personal name or email. The version number does not itself authorize publication.
+
+## v1.0.6 maintenance update
+
+Selecting or removing a role no longer rebuilds unchanged performer cards. Scroll position, focus, open role actions and model variant controls are retained during selection-only updates. Research status now separates the last run from saved lookup history and explains the seven-day successful-credit, twelve-hour failed-credit and thirty-day classification cooldowns. No automatic identity classification, new research or database migration is performed by this update.
 
 ## v1.0.5 interface update
 

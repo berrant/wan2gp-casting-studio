@@ -1,3 +1,9 @@
+## v1.0.6 focused live acceptance
+
+- [ ] Select and deselect consecutive roles deep in a long filmography without jumping to the top.
+- [ ] Verify expanded menus, selection counts and model variant choices remain intact.
+- [ ] Verify Settings research history and cooldown explanations survive restart.
+
 # v1.0.5 — Compact application header
 - [x] Five focused header/navigation tests after restoring 16px minimum text, including one new permanent test across ten viewport widths with conditional AI activity and mode/navigation actions. Seven related tests after synchronizing the older classification test with visible card layout. Supplemental long-status, failure/retry and modal/keyboard audit passed.
 - [x] Final complete cumulative gate: 483 passed, 2 approved skips, 0 failures, 485 collected across 101 modules. Final syntax and application/test fingerprints passed. Exact synthetic v1.0.4 upgrade preserved all 28 database tables, 8 seeded rows, reference and model bytes, and SQLite integrity.

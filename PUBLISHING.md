@@ -15,3 +15,5 @@
 - Wardrobe separation passed live on RC12.25; review existing saved profiles manually where needed.
 
 - Before promoting v1.0.5, confirm private vulnerability reporting is enabled, review public-facing examples and screenshots for rights/consent clearance, and complete the outstanding v1.0.4 production-integrity checks and v1.0.5 compact-header live acceptance checks. Do not claim legal immunity or verified consent.
+
+- v1.0.6 is a maintenance release. Complete its focused live acceptance in REGRESSION_CHECKLIST.md before promoting; do not imply that public launch or post-release verification has occurred merely because the source is packaged.
