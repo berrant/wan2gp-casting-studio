@@ -12,6 +12,12 @@ from fastapi.testclient import TestClient
 
 PACKAGE=Path(__file__).resolve().parents[1]
 
+def reviewed_submit(client,url,*,json):
+    preview=client.post(url.rsplit('/',1)[0]+'/preview',json=json)
+    assert preview.status_code==200,preview.text
+    return client.post(url,json={**json,'review_token':preview.json()['review_token']})
+
+
 
 @pytest.fixture()
 def installation(tmp_path,monkeypatch,request):
@@ -268,7 +274,7 @@ def test_end_to_end_h3_queue_and_model_setting_guard(installation):
     r=client.post('/casting-studio/api/generator/preview',json=body)
     assert r.status_code==200,r.text
     assert 'Ada Test' in r.json()['prompt']
-    r=client.post('/casting-studio/api/generator/submit',json=body)
+    r=reviewed_submit(client,'/casting-studio/api/generator/submit',json=body)
     assert r.status_code==200,r.text
     job=_await_job(client,r.json()['id'])
     assert job['state']=='completed',job
@@ -308,7 +314,7 @@ def test_private_queue_consent_and_notes(installation):
     body={'choice_key':key,'model':'h3_video','model_type':'h3_ref2va_pruned_checkpoint'}
     template=client.get(api+'/prompts/template').json()
     assert client.put(api+'/prompts/template',json={**template,'include_caption':True}).status_code==200
-    r=client.post(api+'/generator/submit',json=body)
+    r=reviewed_submit(client,api+'/generator/submit',json=body)
     assert r.status_code==200,r.text
     state=_await_job(client,r.json()['id'])
     assert state['state']=='completed',state
@@ -332,7 +338,7 @@ def test_flux_queue_and_image_chaining_guard(installation):
     session=FakeWanSession();plugin.queue_bridge.api_session=session
     key=_create_public_selection(client)
     body={'choice_key':key,'model':'flux2_dev','model_type':'flux2_dev','scene':1}
-    r=client.post(api+'/generator/submit',json=body)
+    r=reviewed_submit(client,api+'/generator/submit',json=body)
     assert r.status_code==200,r.text
     state=_await_job(client,r.json()['id'])
     assert state['state']=='completed',state
@@ -340,7 +346,7 @@ def test_flux_queue_and_image_chaining_guard(installation):
     assert 'flux_refmod_state' in payload['custom_settings']
     assert json.loads(payload['custom_settings']['flux_refmod_state'])['rows'][0]['mod']=='celebs/Ada_Test_FLUX'
     assert 'h3_refmod_state' not in payload['custom_settings']
-    r=client.post(api+'/generator/submit',json={**body,'scene':2})
+    r=reviewed_submit(client,api+'/generator/submit',json={**body,'scene':2})
     assert r.status_code==200,r.text
     assert _await_job(client,r.json()['id'])['state']=='completed'
     assert 'Image 2/5' not in session.submitted[-1]['prompt']
@@ -406,7 +412,7 @@ def test_multiple_lora_strengths_validation_and_submission(installation):
     choices=[{'name':'MMH3-RealismSlider-V1.safetensors','multiplier':1.5},
              {'name':'shared/Second_Style.sft','multiplier':0.65}]
     body={'choice_key':key,'model':'h3_video','model_type':modeltype,'loras':choices}
-    r=client.post(api+'/generator/submit',json=body)
+    r=reviewed_submit(client,api+'/generator/submit',json=body)
     assert r.status_code==200,r.text
     state=_await_job(client,r.json()['id'])
     assert state['state']=='completed',state
@@ -438,7 +444,7 @@ def test_native_gradio_handoff_never_submits_from_fastapi(installation):
     body={'choice_key':key,'model':'h3_video','model_type':'h3_ref2va_pruned_checkpoint',
           'scene':1,'steps':8,'resolution':'1280x720'}
     api='/casting-studio/api'
-    res=client.post(api+'/generator/submit',json=body)
+    res=reviewed_submit(client,api+'/generator/submit',json=body)
     assert res.status_code==200,res.text
     jid=res.json()['id']
     assert not session.submitted, 'FastAPI must never submit to the Gradio queue'
@@ -475,7 +481,7 @@ def test_native_gradio_revalidates_revoked_consent(installation):
     assert res.status_code==200,res.text
     key=next(x for x in client.get(api+'/choices').json() if x.get('personal_id')==pid)['key']
     body={'choice_key':key,'model':'h3_video','model_type':'h3_ref2va_pruned_checkpoint'}
-    res=client.post(api+'/generator/submit',json=body)
+    res=reviewed_submit(client,api+'/generator/submit',json=body)
     assert res.status_code==200,res.text
     jid=res.json()['id']
     person['consent']=False
@@ -497,7 +503,7 @@ def test_native_gradio_queue_cancel_before_trigger(installation):
                                   'get_lora_dir': lambda _: str(root/'loras'/'h3')}
     key=_create_public_selection(client)
     api='/casting-studio/api'
-    res=client.post(api+'/generator/submit',json={
+    res=reviewed_submit(client,api+'/generator/submit',json={
         'choice_key':key,'model':'h3_video','model_type':'h3_ref2va_pruned_checkpoint'})
     jid=res.json()['id']
     assert client.post(api+'/generator/jobs/'+jid+'/cancel').status_code==200

@@ -10,7 +10,7 @@ def batch_mock(tab, delayed=False):
         if(String(u)==='api/generator/batch/preflight')return ok({count:1,ready:1,blocked:0,relay_ready:true,issues:[],loras:[]});
         if(String(u)==='api/generator/batch/preview'){
           if(delayed){window.batchPreviewWaiting=true;await new Promise(r=>window.releaseBatchPreview=r)}
-          return ok({count:1,selections:1,tasks:[{person:'Example',character:'Example Role',scene:1,kind:'image',prompt:'Old reviewed prompt'}]});
+          return ok({review_token:'test-review',count:1,selections:1,tasks:[{person:'Example',character:'Example Role',scene:1,kind:'image',prompt:'Old reviewed prompt'}]});
         }
         return orig(u,o);
       };

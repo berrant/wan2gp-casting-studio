@@ -1,4 +1,5 @@
 """Preview identity follows native media, not editable generator selection."""
+from test_native_plugin import reviewed_submit
 from pathlib import Path
 import shutil
 import pytest
@@ -26,7 +27,7 @@ def test_native_batch_metadata_tracks_exact_output(installation):
             return NS(success=True,generated_files=paths,errors=[],cancelled=False)
         return NS(result=result,cancel=lambda:None,webui_client_ids=['c1','c2'])
     session.submit_manifest=submit
-    response=c.post(API+'/generator/batch/submit',json={'task':{'choice_key':key,'model':'h3_image_pruned','model_type':'h3_image_pruned_checkpoint'},'scope':'selection:'+key,'scene_mode':'all'})
+    response=reviewed_submit(c,API+'/generator/batch/submit',json={'task':{'choice_key':key,'model':'h3_image_pruned','model_type':'h3_image_pruned_checkpoint'},'scope':'selection:'+key,'scene_mode':'all'})
     assert response.status_code==200,response.text;jid=response.json()['id'];b.process_pending_in_gradio(session)
     state=b.status(jid);assert state['state']=='completed',state
     assert state['last_result']['task_details']['scene']==2

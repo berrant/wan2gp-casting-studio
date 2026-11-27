@@ -1,3 +1,9 @@
+# v1.0.12 review and duplicate-protection requirements
+
+Authoritative input baseline: v1.0.11 (MIT). Every generation entry point must display complete effective native prompts before staging. Reuse existing Prompts/Bulk queue, portrait, Workshop and history interfaces. Review must bind exact settings, scope, prompt, reference and identity; stale or incomplete reviews block all staging. Native transformations must match reviewed text. No automatic staging from review.
+
+Persist local receipt/task claims to prevent same-pass duplicate jobs, including overlapping independent reviews and lost responses; distinguish explicit new pass from retry of confirmed failed tasks. Force one native generation per reviewed task, preserve sliding-window semantics, and block unsafe legacy retry. Preserve all existing tables and artifacts; only additive receipt/claim tables. Do not publish before the complete cumulative regression gate and version-specific authorization. Live behavior remains a separate acceptance gate.
+
 # v1.0.11 integrated AI scene and queue workflow requirements
 
 - Allow explicit AI scene preparation directly for the selected generator scope, before any queue receipt. Exact public portrayal and year; zero to four optional approved photos for scene mode only, one to four required for identity mode. Use local native scheduling, safe capability checks, saved scene clues as untrusted data, no automatic downloads or hidden inference. Clearly mark production-knowledge-only suggestions as unverified and exclude complete reviewed scenes by default in batch mode.

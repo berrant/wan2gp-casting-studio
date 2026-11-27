@@ -1,4 +1,5 @@
 """v5.12: image-set templates must drive every actual WanGP task."""
+from test_native_plugin import reviewed_submit
 import json
 from importlib import import_module
 from test_native_plugin import installation, _mock_fork, FakeWanSession, FakeTaskHandle, _create_public_selection
@@ -55,7 +56,7 @@ def test_saved_three_image_prompts_are_distinct_and_end_to_end(installation):
         assert 'Framing UNIQUE '+str(i) in x['prompt']
         assert 'Setting UNIQUE '+str(i) in x['prompt']
         assert 'previous still' not in x['prompt'].lower()
-    queue=client.post(API+'/generator/batch/submit',json=body)
+    queue=reviewed_submit(client,API+'/generator/batch/submit',json=body)
     assert queue.status_code==200,queue.text
     assert queue.json()['task_count']==3 and not session.manifests
     plugin.queue_bridge.process_pending_in_gradio(session)
@@ -84,7 +85,7 @@ def test_multi_role_image_sets_queue_exact_math_and_source_prompts(installation)
     d=review.json();assert d['count']==8 and d['selections']==2
     assert len(set(x['prompt'] for x in d['tasks']))==8
     assert set(x['scene'] for x in d['tasks'])=={1,2,3,4}
-    result=client.post(API+'/generator/batch/submit',json=req)
+    result=reviewed_submit(client,API+'/generator/batch/submit',json=req)
     assert result.status_code==200,result.text
     plugin.queue_bridge.process_pending_in_gradio(session)
     assert len(session.manifests[0])==8
@@ -111,7 +112,7 @@ def test_128_roles_times_five_images_automatically_chunked(installation):
     assert r.status_code==200,r.text
     assert r.json()['count']==640
     assert {x['scene'] for x in r.json()['tasks']}=={1,2,3,4,5}
-    queued=client.post(API+'/generator/batch/submit',json=body)
+    queued=reviewed_submit(client,API+'/generator/batch/submit',json=body)
     assert queued.status_code==200,queued.text
     plugin.queue_bridge.process_pending_in_gradio(session)
     assert [len(x) for x in session.manifests]==[250,250,140]

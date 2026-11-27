@@ -53,7 +53,7 @@ MOCK=r'''(() => {
   if(path==='personal/refmods')return json([]);
   if(path==='generator/models')return json({models:[{model_type:'h3_ref2va_pruned_checkpoint',name:'H3',ready:true}]});
   if(path==='generator/model-details')return json({model_type:'h3_ref2va_pruned_checkpoint',resolution_default:'832x480',resolutions:[{label:'832x480 (16:9)',value:'832x480'}],loras:[],lora_supported:true,default_loras:[]});
-  if(path==='generator/preview')return json({refmod_filename:'H3.safetensors',prompt:'Prompt'});
+  if(path==='generator/preview')return json({review_token:'test-preview',refmod_filename:'H3.safetensors',prompt:'Prompt'});
   if(path==='generator/submit'){
     window.responses.push(JSON.parse(opts.body));
     return json({id:'123456789abc'});

@@ -1,4 +1,5 @@
 """RC12.3 workflow tests using synthetic data and browser mocks."""
+from test_native_plugin import reviewed_submit
 from types import SimpleNamespace as NS
 import json
 from test_native_plugin import installation, _mock_fork, _create_public_selection
@@ -30,9 +31,12 @@ def test_history_and_exact_retry(installation):
         res=NS(success=False,generated_files=['synthetic-output.png'],errors=[NS(task_index=2,message='test failure',cancelled=False)],failed_tasks=1,cancelled=False) if len(manifests)==1 else NS(success=True,generated_files=['synthetic-retry.png'],errors=[],cancelled=False)
         return NS(result=lambda:res,cancel=lambda:None,webui_client_ids=[])
     session.submit_manifest=submit
-    r=c.post(API+'/generator/batch/submit',json=req);assert r.status_code==200,r.text;jid=r.json()['id'];b.process_pending_in_gradio(session)
+    r=reviewed_submit(c,API+'/generator/batch/submit',json=req);assert r.status_code==200,r.text;jid=r.json()['id'];b.process_pending_in_gradio(session)
     d=c.get(API+'/generator/history').json()['jobs'][0];assert d['id']==jid and d['state']=='failed' and d['retry_count']==1 and 'choice_key' not in d['settings']
-    r=c.post(API+'/generator/jobs/'+jid+'/retry-failed');assert r.status_code==200,r.text;assert r.json()['task_count']==1
+    preview=c.get(API+'/generator/jobs/'+jid+'/retry-preview');assert preview.status_code==200,preview.text
+    assert preview.json()['tasks'][0]['prompt']==manifests[0][1]['prompt']
+    assert c.post(API+'/generator/jobs/'+jid+'/retry-failed').status_code==409
+    r=c.post(API+'/generator/jobs/'+jid+'/retry-failed',params={'review_token':preview.json()['review_token']});assert r.status_code==200,r.text;assert r.json()['task_count']==1
     assert c.post(API+'/generator/jobs/'+jid+'/retry-failed').status_code==400
     b.process_pending_in_gradio(session);assert len(manifests[1])==1 and manifests[1][0]['prompt']==manifests[0][1]['prompt']
     assert len(c.get(API+'/generator/history').json()['jobs'])==2

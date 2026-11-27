@@ -1,3 +1,4 @@
+from test_native_plugin import reviewed_submit
 from pathlib import Path
 import shutil
 import pytest
@@ -14,15 +15,15 @@ def test_exact_two_window_queue_with_window_only_lora(installation):
     assert parts[0].startswith('[/duration=354] [/loras_mult=1.5 0]')
     assert parts[1].startswith('[/duration=336] [/loras_mult=1.5 0.8]')
     assert '[/duration=' not in r.json()['editable_prompt']
-    r=c.post(API+'/generator/submit',json=task);assert r.status_code==200,r.text
+    r=reviewed_submit(c,API+'/generator/submit',json=task);assert r.status_code==200,r.text
     assert _await_job(c,r.json()['id'])['state']=='completed'
     assert len(session.submitted)==1
     assert session.submitted[0]['video_length']==690
     assert session.submitted[0]['prompt']==expected
     assert session.submitted[0]['multi_prompts_gen_type']=='PW'
     assert session.submitted[0]['activated_loras']==['base.safetensors','action.safetensors']
-    default_task={**task,'sliding':{}}
-    r=c.post(API+'/generator/submit',json=default_task);assert r.status_code==200,r.text
+    default_task={**task,'sliding':{},'queue_pass':'intentional-repeat'}
+    r=reviewed_submit(c,API+'/generator/submit',json=default_task);assert r.status_code==200,r.text
     assert _await_job(c,r.json()['id'])['state']=='completed'
     assert session.submitted[-1]['video_length']==690
     assert session.submitted[-1]['sliding_window_discard_last_frames']==8

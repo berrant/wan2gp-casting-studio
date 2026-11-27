@@ -1,4 +1,5 @@
 """Native 60-second sliding-window generation and Productions-first navigation."""
+from test_native_plugin import reviewed_submit
 import json
 from test_native_plugin import installation, _mock_fork, FakeWanSession, _create_public_selection, _await_job
 from test_dev55_browser import page
@@ -27,7 +28,7 @@ def test_60_second_native_one_movie_with_four_window_prompts(installation):
     assert preview.status_code==200,preview.text
     for n in range(1,5):assert f'VISIBLE ACTION FOR WINDOW {n}' in preview.json()['prompt']
     assert preview.json()['prompt'].count('subject_definitions:')==4
-    submitted=client.post(API+'/generator/submit',json=body)
+    submitted=reviewed_submit(client,API+'/generator/submit',json=body)
     assert submitted.status_code==200,submitted.text
     result=_await_job(client,submitted.json()['id'])
     assert result['state']=='completed',result
@@ -46,7 +47,7 @@ def test_repeat_prompt_30s_and_invalid_unsupported(installation):
     key=_create_public_selection(client)
     task={'choice_key':key,'model':'h3_video','model_type':'h3_ref2va_pruned_checkpoint','video_seconds':30,
           'video_script_mode':'single','sliding':{'sliding_window_size':362,'sliding_window_overlap':18}}
-    first=client.post(API+'/generator/submit',json=task)
+    first=reviewed_submit(client,API+'/generator/submit',json=task)
     assert first.status_code==200
     assert _await_job(client,first.json()['id'])['state']=='completed'
     assert session.submitted[-1]['multi_prompts_gen_type']=='FG'

@@ -125,6 +125,7 @@ class Submission:
     sliding: dict | None = None
     window_loras: dict | None = None
     fixed_windows: bool = False
+    queue_pass: str = "initial"
     portrait_completion: Callable | None = None
     monitor_details: dict | None = None
 
@@ -490,6 +491,8 @@ class QueueBridge:
         lora_settings=self._validate_loras(submission, self._model_record(submission.model_type))
         prompt=self._apply_window_lora_multipliers(prompt, submission, lora_settings)
         prompt=self.apply_fixed_window_plan(prompt,submission)
+        if hasattr(submission,'_reviewed_native_prompt') and prompt!=submission._reviewed_native_prompt:
+            raise ValueError('Native prompt transformation changed after review; review the task again')
         if lora_settings is not None:
             data.update(lora_settings)
         disallowed = {'model_type','prompt','custom_settings','image_refs','video_guide','image_start','image_end',
@@ -516,8 +519,8 @@ class QueueBridge:
         merged['model_type'] = submission.model_type
         merged['prompt'] = prompt
         if submission.portrait_completion is not None and submission.model == 'h3_video':raise ValueError('Portrait requires an image model')
-        if submission.model != 'h3_video':
-            merged.update(batch_size=1, repeat_generation=1)
+        # Each reviewed casting task maps to one native generation.
+        merged.update(batch_size=1, repeat_generation=1)
         # Defaults/previous synced data may include stale RefMod settings; replace,
         # never merge a prior identity into this casting selection.
         merged['custom_settings'] = {k:v for k,v in (merged.get('custom_settings') or {}).items()
@@ -553,7 +556,7 @@ class QueueBridge:
                     'activated_loras','loras_multipliers','video_length','multi_prompts_gen_type','sliding_window_size','sliding_window_overlap',
                     'sliding_window_overlap_noise','sliding_window_color_correction_strength','sliding_window_discard_last_frames','sliding_window_trim_first_frames'}
         if not isinstance(extra,dict) or (disallowed & set(extra)):
-            raise ValueError('Advanced settings contain reserved keys')
+            raise ValueError('Advanced settings contain reserved keys and may not override generation identity or model settings')
         settings=self._validate_loras(submission, self._model_record(submission.model_type))
         self.apply_fixed_window_plan(self._apply_window_lora_multipliers(prompt,submission,settings),submission)
         self._video_settings(submission,{})

@@ -1,3 +1,4 @@
+from test_native_plugin import reviewed_submit
 from pathlib import Path
 import shutil
 import pytest
@@ -19,7 +20,7 @@ def test_persistent_scene_edit_review_native_manifest_and_reset(installation):
     body={'task':task,'scope':'selection:'+key,'scene_mode':'all'}
     result=c.post(API+'/generator/batch/preview',json=body);assert result.status_code==200,result.text
     assert [x['prompt']==CUSTOM for x in result.json()['tasks']]==[False,True,False]
-    r=c.post(API+'/generator/batch/submit',json=body);assert r.status_code==200,r.text
+    r=reviewed_submit(c,API+'/generator/batch/submit',json=body);assert r.status_code==200,r.text
     r=c.put(API+'/generator/prompt-edit',json={'task':task,'prompt':CUSTOM+' Revised.'});assert r.status_code==200
     p.queue_bridge.process_pending_in_gradio(session)
     assert len(session.manifests[0])==3 and session.manifests[0][1]['prompt']==CUSTOM
@@ -59,7 +60,7 @@ def test_browser_autosaves_and_refreshes_without_discarding():
         page=browser.new_page(viewport={'width':1440,'height':950});page.set_default_timeout(6000)
         errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
         page.evaluate(setup_js)
-        page.evaluate('''() => {const original=window.fetch;const edits=new Map();const key=t=>JSON.stringify([t.choice_key,t.model,t.model_type,t.scene]);window.fetch=async(url,opts={})=>{const path=String(url);let data;if(path==='api/generator/prompt-edit'){const {task,prompt}=JSON.parse(opts.body);if(prompt===null)edits.delete(key(task));else edits.set(key(task),prompt);data={saved:prompt!==null}}else if(path==='api/generator/preview'){const t=JSON.parse(opts.body);data={refmod_filename:'Ada.safetensors',prompt:edits.get(key(t))||'Original generated prompt for scene '+t.scene,edited:edits.has(key(t))}}else return original(url,opts);return {ok:true,status:200,json:async()=>data,text:async()=>JSON.stringify(data)}};}''')
+        page.evaluate('''() => {const original=window.fetch;const edits=new Map();const key=t=>JSON.stringify([t.choice_key,t.model,t.model_type,t.scene]);window.fetch=async(url,opts={})=>{const path=String(url);let data;if(path==='api/generator/prompt-edit'){const {task,prompt}=JSON.parse(opts.body);if(prompt===null)edits.delete(key(task));else edits.set(key(task),prompt);data={saved:prompt!==null}}else if(path==='api/generator/preview'){const t=JSON.parse(opts.body);data={review_token:'test-preview',refmod_filename:'Ada.safetensors',prompt:edits.get(key(t))||'Original generated prompt for scene '+t.scene,edited:edits.has(key(t))}}else return original(url,opts);return {ok:true,status:200,json:async()=>data,text:async()=>JSON.stringify(data)}};}''')
         page.set_content(html,wait_until='domcontentloaded');page.wait_for_function('choices.length===2');page.evaluate('openGenerator()')
         page.wait_for_function("!$('generatorPreview').disabled")
         page.locator('#generatorPreviewPanel').evaluate('(e)=>e.open=true')

@@ -11,7 +11,7 @@ def setup(tab):
             const p=String(u).split('?')[0];
             if(p==='api/generator/preview'){
                 const t=JSON.parse(o.body);if(t.scene===window.failScene)return answer('preview unavailable',false);
-                return answer({refmod_filename:'Test.safetensors',editable_prompt:window.edits[key(t)]||'Default image prompt '+t.scene,edited:!!window.edits[key(t)]});
+                return answer({review_token:'test-preview-'+t.scene,refmod_filename:'Test.safetensors',prompt:window.edits[key(t)]||'Default image prompt '+t.scene,editable_prompt:window.edits[key(t)]||'Default image prompt '+t.scene,edited:!!window.edits[key(t)]});
             }
             if(p==='api/generator/prompt-edit'){
                 const {task,prompt}=JSON.parse(o.body);if(window.failSaveScene===task.scene)return answer('save failed',false);

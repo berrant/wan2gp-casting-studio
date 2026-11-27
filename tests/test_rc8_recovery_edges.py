@@ -1,4 +1,5 @@
 """Exercise recovery UI and the native handoff after a privacy transition."""
+from test_native_plugin import reviewed_submit
 from test_native_plugin import installation, _create_public_selection, _mock_fork, FakeWanSession
 from test_rc2_jackhammer import server, API, seed_reference
 from PIL import Image
@@ -12,7 +13,7 @@ def test_native_handoff_rejects_public_to_personal_transition(installation):
     b.api_session=fake;b.dispatch_mode='gradio'
     b.providers={'list_model_defs':fake.list_model_defs,'get_factory_settings':lambda _: {},'get_lora_dir':lambda _:str(root/'loras'/'h3')}
     key=_create_public_selection(c)
-    response=c.post(API+'/generator/submit',json={'choice_key':key,'model':'h3_video','model_type':'h3_ref2va_pruned_checkpoint'})
+    response=reviewed_submit(c,API+'/generator/submit',json={'choice_key':key,'model':'h3_video','model_type':'h3_ref2va_pruned_checkpoint'})
     assert response.status_code==200,response.text
     jid=response.json()['id']
     assert c.post(API+'/personal',json={'name':'Ada Test','consent':True,'h3_refmod':'personal/Private_Test_H3.safetensors'}).status_code==200

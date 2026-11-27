@@ -22,7 +22,7 @@ def test_review_bulk_queuing_and_character_identity(page):
         if(path==='generator/batch/preflight')return response({count:2,ready:2,blocked:0,relay_ready:true,model_type:'H3',resolution:'832x480',steps:8,loras:[],issues:[]});
         if(path==='generator/batch/preview'){
           const req=JSON.parse(opt.body);window.reviewedRequests.push(req);
-          return response({count:2,selections:2,model_type:req.task.model_type,tasks:[
+          return response({review_token:"test-review",count:2,selections:2,model_type:req.task.model_type,tasks:[
            {person:'Zoie Palmer',character:'The Android',production:'Dark Matter (2015)',scene:1,prompt:'Zoie Palmer appears in Dark Matter (2015) as The Android'},
            {person:'Alice Braga',character:'Amanda Lucas',production:'Dark Matter (2015)',scene:1,prompt:'Alice Braga appears in Dark Matter (2015) as Amanda Lucas'}
           ]});
@@ -43,7 +43,8 @@ def test_review_bulk_queuing_and_character_identity(page):
     assert tab.locator('#generatorSubmitBatch').is_enabled()
     assert tab.evaluate('window.reviewedRequests[0].scope')=='production:darkmatter'
     assert tab.locator('#generatorBatchManifest summary').filter(has_text='Zoie Palmer').count()==1
-    tab.once('dialog',lambda dialog:dialog.accept())
+    assert tab.locator('#generatorBatchManifest pre').count()==2
+    assert tab.locator('#generatorBatchManifest details[open]').count()==2
     tab.locator('#generatorSubmitBatch').click()
     tab.wait_for_function('window.batchSubmissions.length===1')
     assert tab.evaluate('window.batchSubmissions[0].scene_mode')=='first'

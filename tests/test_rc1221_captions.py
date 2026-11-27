@@ -1,4 +1,5 @@
 """Caption ownership for generated prompts; stored drafts remain verbatim."""
+from test_native_plugin import reviewed_submit
 import importlib
 import pytest
 from test_native_plugin import installation, _create_public_selection, _mock_fork, FakeWanSession, _await_job
@@ -67,7 +68,7 @@ def test_saved_template_preview_export_queue_and_manual_override(installation):
         for text in (preview.json()['prompt'],c.get(API+'/prompts/export?model=h3_video').text):
             assert text.lower().count('bottom caption')==int(enabled)
             assert '[Performer Name]' not in text
-    r=c.post(API+'/generator/submit',json=task);assert r.status_code==200,r.text
+    r=reviewed_submit(c,API+'/generator/submit',json=task);assert r.status_code==200,r.text
     assert _await_job(c,r.json()['id'])['state']=='completed'
     assert p.queue_bridge.api_session.submitted[-1]['prompt'].lower().count('bottom caption')==1
     custom='My deliberate final edit.\n'+PLACEHOLDER+'\n'+DUPLICATE

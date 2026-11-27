@@ -1,3 +1,10 @@
+## v1.0.12 — Reviewed native prompts and queue safety
+
+- Route Queue All through existing full Bulk queue review; show each exact native prompt, checkpoint, scene and window count, with expanded text and explicit staging confirmation. Single videos and image sets require current visible native previews and bind them to their submission settings.
+- Validate exact reviewed prompt/reference fingerprints before staging all tasks; preserve the reviewed snapshot through native relay and reject changed native transformations. Persist request receipts and logical task claims across overlapping requests and process restart. Deliberate queue passes remain possible; force one native generation per reviewed task.
+- Expose exact original failed-task prompts in History before retry; block unsafe legacy window retries. Show complete personal and Workshop test portrait prompts and require them in generation requests. Bind personal portrait reviews to the linked reference revision and persistent receipt; refresh missing previews after removing an unavailable LoRA.
+- Add two local-only receipt/claim tables without altering the 31 prior tables. Preserve external data, consent and existing settings. No upstream code changes.
+
 ## v1.0.11 — Integrated scene preparation and queue workflow
 
 - Add generation-scope AI scene preparation before any generation is staged. Support reference-assisted and explicitly reviewed production-knowledge-only wardrobe/location drafts using the native local model. Pass saved scene clues as untrusted input; retain exact portrayal/year and the physical-identity image requirement. Label AI provenance, exclude unsupported scene-analysis roles before staging, and protect complete reviewed scenes by default in bulk preparation.

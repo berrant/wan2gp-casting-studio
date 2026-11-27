@@ -13,13 +13,14 @@ def test_portrait_model_listing_family_and_readiness(installation,monkeypatch):
     assert c.get(API+'/workshop/portrait-models?family=invalid').status_code==400
 
 def test_explicit_portrait_picker_submission(tab):
-    tab.evaluate('''() => {window.sent=null;workshopSources=[{person:'Ada Test',production:'Show',character:'Captain'}];$('workshopCollection').innerHTML='<option value="0">Ada</option>';$('workshopModel').innerHTML='<option value="encoder">Encoder</option>';$('workshopName').value='Ada_H3';$('workshopPhotos').innerHTML='<input class="workshopPhotoCheck" type="checkbox" checked value="ref">';const old=fetch;window.fetch=async(u,o)=>String(u).startsWith('api/workshop/portrait-models')?{ok:true,json:async()=>({models:[{model:'h3_image',model_type:'first',name:'First'},{model:'h3_image_pruned',model_type:'chosen',name:'Second'}]})}:old(u,o);workshopRun=async(op,payload)=>{window.sent=payload};$('workshopTestPortrait').checked=true;refreshWorkshopPortraitModels()}''')
+    tab.evaluate('''() => {window.sent=null;workshopSources=[{person:'Ada Test',production:'Show',character:'Captain'}];$('workshopCollection').innerHTML='<option value="0">Ada</option>';$('workshopModel').innerHTML='<option value="encoder">Encoder</option>';$('workshopName').value='Ada_H3';$('workshopPhotos').innerHTML='<input class="workshopPhotoCheck" type="checkbox" checked value="ref">';const old=fetch;window.fetch=async(u,o)=>String(u).startsWith('api/workshop/portrait-models')?{ok:true,json:async()=>({models:[{model:'h3_image',model_type:'first',name:'First',prompt:'First full portrait prompt'},{model:'h3_image_pruned',model_type:'chosen',name:'Second',prompt:'Second full portrait prompt'}]})}:old(u,o);workshopRun=async(op,payload)=>{window.sent=payload};$('workshopTestPortrait').checked=true;refreshWorkshopPortraitModels()}''')
     tab.wait_for_function("!$('workshopPortraitModel').disabled")
     tab.evaluate('startWorkshopCreate()');assert tab.evaluate('window.sent') is None
     assert 'Choose a compatible' in tab.locator('#workshopCreateStatus').text_content()
-    tab.locator('#workshopPortraitModel').evaluate("e=>e.value=JSON.stringify(['h3_image_pruned','chosen'])")
+    tab.locator('#workshopPortraitModel').evaluate("e=>{e.value=JSON.stringify(['h3_image_pruned','chosen']);e.dispatchEvent(new Event('change'))}")
     tab.evaluate('startWorkshopCreate()')
     assert tab.evaluate('window.sent.test_portrait_model_type')=='chosen'
+    assert tab.evaluate('window.sent.test_portrait_prompt')==tab.locator('#workshopPortraitPrompt').text_content()=='Second full portrait prompt'
     assert tab.evaluate('window.sent.test_portrait_model')=='h3_image_pruned'
     assert tab.evaluate('window.sent.model_type')=='encoder'
     tab.evaluate("$('workshopTestPortrait').checked=false;refreshWorkshopPortraitModels();startWorkshopCreate()")

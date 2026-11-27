@@ -1,4 +1,5 @@
 """Native relay remains mounted; fallback retries staged work without creating a job."""
+from test_native_plugin import reviewed_submit
 import shutil
 from pathlib import Path
 import pytest
@@ -20,7 +21,7 @@ def test_hidden_relay_native_callback(installation):
     dependency=next(x for x in config['dependencies'] if [relay['id'],'click'] in [list(y) for y in x['targets']])
     assert dependency['outputs'] and dependency['backend_fn']
     key=_create_public_selection(c)
-    result=c.post(API+'/generator/submit',json={'choice_key':key,'model':'h3_video','model_type':'h3_ref2va_pruned_checkpoint','steps':8,'resolution':'1280x720'})
+    result=reviewed_submit(c,API+'/generator/submit',json={'choice_key':key,'model':'h3_video','model_type':'h3_ref2va_pruned_checkpoint','steps':8,'resolution':'1280x720'})
     assert result.status_code==200,result.text
     assert len(p.queue_bridge._pending)==1 and not session.submitted
     assert 'completed' in p.queue_bridge.process_pending_in_gradio(session)

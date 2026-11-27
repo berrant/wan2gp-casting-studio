@@ -409,7 +409,7 @@ body.ux-basic #generatorModal .workspace-tabs button[data-workspace=batch]{displ
 #peopleSelectedIcon{width:23px;height:23px}
 @media(max-width:1050px){#studioHeader .studio-actions{flex:1 1 100%;justify-content:flex-start}}
 @media(max-width:480px){#studioHeader{padding:7px 8px;gap:7px}#studioHeader .brandline{flex-basis:100%}#studioHeader .brand-mark{width:38px;height:38px}#studioHeader .studio-actions button{min-height:36px}#navTabs .nav-tab,#navTabs .nav-people{padding:4px 6px;gap:4px}#navTabs .tab-icon{width:25px;height:25px}}
-</style></head><body><header id="studioHeader"><div class="brandline"><img class="brand-mark" src="api/ui/icons/casting-logo" alt="Casting Studio icon"><div class="studio-brand-text"><h1>Casting Studio for WanGP <small>v1.0.11</small></h1><div class="studio-status"><span class="note" id="catalogScanStatus" role="status">Inventory status loading…</span><span class="note" id="maintenanceHeaderStatus" role="status">Maintenance idle</span></div></div></div><div class="toolbar studio-actions"><button type="button" id="appearanceActivity" hidden onclick="openQueuedAppearance()" title="Open character appearance analysis status or review"></button><button id="catalogRescanButton" onclick="rescan()">↻ Rescan RefMods</button><button onclick="openLocalSettings()" title="Configure local directories" aria-label="Local paths and settings">⚙ Settings</button><button type="button" onclick="openUXGuide()">Getting started</button><button type="button" onclick="openUXHistory()">Batch history</button><button id="uxMode" type="button" onclick="setUXMode(!uxBasic)">Advanced mode</button><button id="integrationButton" type="button" onclick="openAbout()"><svg class="about-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="7.5" r=".8" fill="currentColor" stroke="none"/></svg> About</button></div></header><nav id="navTabs" class="toolbar" aria-label="Casting Studio sections">
+</style></head><body><header id="studioHeader"><div class="brandline"><img class="brand-mark" src="api/ui/icons/casting-logo" alt="Casting Studio icon"><div class="studio-brand-text"><h1>Casting Studio for WanGP <small>v1.0.12</small></h1><div class="studio-status"><span class="note" id="catalogScanStatus" role="status">Inventory status loading…</span><span class="note" id="maintenanceHeaderStatus" role="status">Maintenance idle</span></div></div></div><div class="toolbar studio-actions"><button type="button" id="appearanceActivity" hidden onclick="openQueuedAppearance()" title="Open character appearance analysis status or review"></button><button id="catalogRescanButton" onclick="rescan()">↻ Rescan RefMods</button><button onclick="openLocalSettings()" title="Configure local directories" aria-label="Local paths and settings">⚙ Settings</button><button type="button" onclick="openUXGuide()">Getting started</button><button type="button" onclick="openUXHistory()">Batch history</button><button id="uxMode" type="button" onclick="setUXMode(!uxBasic)">Advanced mode</button><button id="integrationButton" type="button" onclick="openAbout()"><svg class="about-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="7.5" r=".8" fill="currentColor" stroke="none"/></svg> About</button></div></header><nav id="navTabs" class="toolbar" aria-label="Casting Studio sections">
 <button type="button" class="primary nav-tab" id="productionsTab" onclick="showTab('productions')"><img class="tab-icon" src="api/ui/icons/productions" alt=""> Productions</button>
 <div class="nav-people" id="peopleNavigation"><img class="tab-icon" src="api/ui/icons/personal" alt=""><span>People</span><button type="button" id="peopleMenuButton" aria-label="Browse people category" aria-expanded="false" aria-controls="peopleMenu"><img id="peopleSelectedIcon" src="api/ui/icons/performers" alt="" hidden><span id="peopleSelectedLabel">Choose category</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div id="peopleMenu" role="group" aria-label="People categories" hidden><button type="button" data-people-category="performers" aria-pressed="false"><img src="api/ui/icons/performers" alt=""><span>Performers</span></button><button type="button" data-people-category="personal" aria-pressed="false"><img src="api/ui/icons/personal" alt=""><span>Personal</span></button><button type="button" data-people-category="models" aria-pressed="false"><img src="api/ui/icons/models" alt=""><span>Models / Influencers</span></button><button type="button" data-people-category="television" aria-pressed="false"><img src="api/ui/icons/television" alt=""><span>Television Personalities</span></button></div></div>
 <button type="button" class="nav-tab" id="workshopTab" onclick="showTab('workshop')"><img class="tab-icon" src="api/ui/icons/workshop" alt=""> RefMod Workshop</button>
@@ -488,7 +488,7 @@ body.ux-basic #generatorModal .workspace-tabs button[data-workspace=batch]{displ
 <div id="settingsModal" class="modal"><section class="panel" role="dialog" aria-modal="true" aria-label="Local path settings"><div class="head"><h2 style="flex:1">⚙ Settings</h2></div><nav class="workspace-tabs" aria-label="Settings categories"><button onclick="jumpStudioSettings('pathsForm')">Libraries</button><button onclick="jumpStudioSettings('libraryConversion')">Convert RefMods</button><button onclick="jumpStudioSettings('defaultLorasSettings')">Models</button><button onclick="jumpStudioSettings('monitorPreferences')">Live monitor</button><button onclick="jumpStudioSettings('backupSettings')">Backup &amp; restore</button><button onclick="jumpStudioSettings('backgroundTools')">Maintenance</button><button onclick="jumpStudioSettings('queueTroubleshooting')">Troubleshooting</button></nav><p class="note">Preferences do not move model files. The RefMod root must match the library mounted by Refmod-Fork so WanGP can load the models. Public and personal RefMods remain separate.</p><details id="backupSettings" style="margin:12px 0"><summary>Export / import settings, prompts and production collections</summary><p class="note">Private backup: includes saved production collections, prompt text, overrides, model choices, presets and browser preferences. Keep it separate from plugin releases. No photos, RefMods, history, credentials, consent records or installation paths are transferred.</p><div class="toolbar"><button id="backupExport" onclick="exportStudioBackup()">Export settings &amp; prompts</button><button id="backupImport" onclick="$('backupFile').click()">Import settings &amp; prompts</button><input id="backupFile" type="file" accept="application/json,.json" hidden onchange="importStudioBackup(this)"></div><p class="status" id="backupStatus" role="status" aria-live="polite"></p></details><details id="monitorPreferences" style="margin:12px 0"><summary>Live generation preview</summary><div class="field"><label>Between generations <select id="monitorHandoffMode" onchange="saveMonitorPrefs()"><option value="retain">Show previous completed result until the next preview reaches the selected percentage</option><option value="static">Show waiting placeholder until the first live preview</option></select></label></div><div class="field"><label>Switch to new live preview at denoising progress (%) <input type="number" id="monitorHandoffPercent" min="0" max="100" step="1" value="0" onchange="saveMonitorPrefs()"></label></div><p class="note">0% switches at the first available live preview. Higher values use the current model’s denoising step count, not overall queue progress. The completed result is labeled separately from live inference. Preview preferences are saved in this browser. Collapsing the monitor still stops preview downloads.</p></details><details id="libraryConversion" style="margin:12px 0" ontoggle="if(this.open)restoreLibraryConversion()"><summary>Convert all RefMods to supported formats</summary><p class="note">Find missing FLUX counterparts for installed H3 still-picture RefMods. H3 and FLUX each share their format across compatible checkpoints. Video/audio stacks and reverse FLUX → H3 are not supported by the current conversion bridge. No original file or casting selection is changed. Nothing starts automatically. WanGP may download missing model weights during native execution.</p><label><input id="bulkConvertPrivate" type="checkbox" onchange="clearLibraryPlan()"> Include linked Personal RefMods with consent (new files are not automatically linked)</label><div class="toolbar"><button id="bulkConvertPreview" type="button" onclick="previewLibraryConversion()">Scan &amp; preview missing formats</button><button id="bulkConvertStart" type="button" class="primary" onclick="startLibraryConversion()" disabled>Convert all missing formats</button><button id="bulkConvertCancel" type="button" onclick="cancelLibraryConversion()" hidden>Stop conversion</button></div><p id="bulkConvertStatus" class="status" role="status" aria-live="polite">Ready · manual only.</p><progress id="bulkConvertProgress" max="100" value="0" hidden style="width:100%"></progress><pre id="bulkConvertReport" class="note" style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:260px;overflow:auto"></pre></details><details id="backgroundTools" style="margin:12px 0"><summary style="cursor:pointer;font-weight:650">Background research &amp; maintenance</summary>
 <p class="note">Manual maintenance only. None of these jobs starts when WanGP launches or you open Performers. A running job can continue while you browse or generate; use Stop to cancel it.</p>
 <div id="backgroundToolControls" style="display:flex;flex-direction:column;gap:10px;margin:12px 0;max-width:100%;overflow-wrap:anywhere"><div class="note"><button type="button" onclick="researchVisibleCards()">Find images and profile links for up to 12 visible cards</button> This runs only when you click it; opening Performers does not make internet requests.</div><div class="enrichment"><strong>Performer classification</strong> <button id="enrichStart" onclick="startEnrichment()">Research due installed performers</button> <button id="enrichUnclassified" onclick="startEnrichment('unclassified')">Research due unclassified only</button> <button id="enrichForce" onclick="startEnrichment('force')">Force classification refresh</button> <button onclick="stopEnrichment()">Stop</button> <a href="api/enrichment/review.csv">Download review CSV</a> <button id="enrichRetry" onclick="retryEnrichmentErrors()">Retry recorded errors</button> <a href="api/enrichment/errors.csv">Download errors CSV</a> <span class="status" id="enrichStatus">Ready</span></div><div class="prefetch"><strong>Photo prefetch</strong><button id="prefetchStart" onclick="startPrefetch()">Prefetch installed RefMods</button><button onclick="stopPrefetch()">Stop</button><button onclick="archivePhotos()">Archive existing photos locally</button><span class="status" id="prefetchStatus">Checking...</span></div><div class="enrichment"><strong>Screen roles</strong> <button id="creditsStart" onclick="refreshCredits('')" type="button">↻ Sync due performer roles</button> <button id="creditsForce" onclick="refreshCredits('','force')" type="button">Force role sync</button> <button id="creditsRetry" onclick="refreshCredits('','errors')" type="button">Retry role errors</button> <a href="api/credits/errors.csv">Download role errors CSV</a> <button onclick="stopCredits()" type="button">Stop</button> <span class="status" id="creditsStatus">Manual only. Use Sync roles to research credits; no scheduled jobs.</span></div><details><summary>Recent research runs</summary><div class="note" id="researchRunHistory" style="white-space:pre-wrap">No saved runs yet.</div></details><details><summary>Resolve a single-character public stage name</summary><p class="note">Review the correct human identity on Wikidata first. Enter its QID and the installed stage name. Matching one letter alone is not enough. This does not rename the profile or remove saved roles.</p><div class="toolbar"><label>Stage name <input id="stageName" maxlength="1" size="3"></label><label>Reviewed Wikidata QID <input id="stageQid" maxlength="16" placeholder="Q12345"></label><button type="button" onclick="saveStageIdentity()">Confirm identity</button></div><span id="stageIdentityStatus" class="status" role="status"></span></details></div></details><details id="defaultLorasSettings" style="margin:12px 0" ontoggle="if(this.open)loadGlobalModelOptions()"><summary>Global default LoRAs · per installed model</summary><p class="note">Choose a model and browse its installed LoRAs. Defaults are saved per installed model on this WanGP server when server storage is available; otherwise they are retained in this browser. Enabled defaults take precedence over duplicate model LoRA strengths unless overridden.</p><div class="toolbar"><label>Model family <select id="globalBoardModel" onchange="loadGlobalModelOptions()"></select></label><label>Installed model <select id="globalActualModel" onchange="loadGlobalModelDetails()"></select></label></div><div id="globalModelLoraRows" class="global-lora-rows"></div><button type="button" id="globalAddLora" title="Add an installed LoRA to this model’s default profile" onclick="addGlobalDefaultLoraRow()" disabled title="Add an installed LoRA to the selected model profile">+ Add LoRA</button><p id="globalLoraSettingsStatus" class="note"></p></details><details style="margin:12px 0"><summary>Temporary file cleanup</summary><p class="note">Inspect abandoned temporary writes older than 24 hours. Saved photographs, reference collections, databases and RefMods are never removed by this tool.</p><div class="toolbar"><button type="button" onclick="inspectTemporaryFiles()" title="Check for abandoned temporary files without deleting anything">Check temporary files</button><button type="button" onclick="cleanTemporaryFiles()" title="Remove only recognized stale temporary files after confirmation">Clean temporary files</button></div><div class="status" id="tempCleanupStatus"></div></details><details id="queueTroubleshooting" style="margin:12px 0"><summary>Troubleshooting</summary><p class="note">If a job is staged but not starting, retry the native queue handoff here. This processes existing pending work only; it does not create or resubmit jobs already handed off.</p><button type="button" id="retryNativeQueue" onclick="retryNativeQueueHandoff()" title="Trigger the hidden native WanGP queue relay for already staged jobs">Retry pending queue handoff</button><p class="status" id="nativeQueueRetryStatus" role="status" aria-live="polite"></p></details><div id="pathsForm"><label>RefMod library root<input id="path_refmod_root" spellcheck="false" autocomplete="off" placeholder="Path on the WanGP server"></label></div><p class="note">Default: WanGP/loras/refmods_plugin. Standard minimax_h3 and flux2 subfolders are detected automatically, including linked directories; missing folders are skipped.</p><details style="margin:10px 0"><summary>Detected subfolders</summary><pre class="note" id="pathReadonly" style="white-space:pre-wrap;overflow-wrap:anywhere"></pre></details><div class="footer"><button class="primary" id="saveRootButton" onclick="saveLocalSettings()">Save root</button><button onclick="resetLocalSettings()">Use detected root</button><span class="status" id="pathStatus" role="status" aria-live="polite"></span></div></section></div>
-<div id="aboutModal" class="modal"><section class="panel" role="dialog" aria-modal="true" aria-label="About Casting Studio"><div class="head"><img src="api/ui/icons/casting-logo" class="app-icon" alt=""><h2 style="flex:1">Casting Studio for WanGP</h2></div><p class="note">v1.0.11 · Native WanGP plugin · Discover. Cast. Create.</p><h3>License</h3><p>MIT License. Commercial use permitted subject to the license notices. Third-party terms remain applicable. <a href="api/legal/license" target="_blank" rel="noopener noreferrer">License</a> · <a href="api/legal/notice" target="_blank" rel="noopener noreferrer">Notices</a> · <a href="https://github.com/berrant/wan2gp-casting-studio" target="_blank" rel="noopener noreferrer">Project repository</a></p><h3>Research sources and rights</h3><p><a href="https://www.tvmaze.com/api" target="_blank" rel="noopener noreferrer">TVMaze</a> (CC BY-SA) · <a href="https://en.wikipedia.org/wiki/Wikipedia:Reusing_Wikipedia_content" target="_blank" rel="noopener noreferrer">Wikipedia reuse terms</a> · <a href="https://www.wikidata.org/wiki/Wikidata:Licensing" target="_blank" rel="noopener noreferrer">Wikidata licensing</a>. Search results and locally imported photographs are not licensed by Casting Studio. Check each source and image license before use or redistribution. <a href="https://github.com/berrant/wan2gp-casting-studio/security/policy" target="_blank" rel="noopener noreferrer">Security policy</a></p><h3>Integration</h3><pre id="aboutIntegration" style="white-space:pre-wrap;overflow:auto;background:#0c1526;padding:12px">Checking…</pre><h3>What's new</h3><ul><li>Image inspection and local uploads with quality checks</li><li>Searchable RefMod picker skips invalid files</li><li>Single RefMod library root with automatic subfolders</li><li>Hidden native relay, queue manager, live WanGP image/video inference previews, improved resolution selector</li><li>Defaults loaded from WanGP model definitions and compatible finetunes</li><li>New application branding, icon, About screen, and versioned changelog</li><li>Production-first casting: consistent selected state, select-all, show-only queue scope</li><li>Bulk queue reviewed per-character prompts, production-year captions, and editable character identity signatures</li><li>Optional Status Lite stage, speed, ETA and download telemetry beside the live generation preview</li></ul><p>Full details: <a href="api/changelog" target="_blank" rel="noopener">CHANGELOG.md</a></p></section></div>
+<div id="aboutModal" class="modal"><section class="panel" role="dialog" aria-modal="true" aria-label="About Casting Studio"><div class="head"><img src="api/ui/icons/casting-logo" class="app-icon" alt=""><h2 style="flex:1">Casting Studio for WanGP</h2></div><p class="note">v1.0.12 · Native WanGP plugin · Discover. Cast. Create.</p><h3>License</h3><p>MIT License. Commercial use permitted subject to the license notices. Third-party terms remain applicable. <a href="api/legal/license" target="_blank" rel="noopener noreferrer">License</a> · <a href="api/legal/notice" target="_blank" rel="noopener noreferrer">Notices</a> · <a href="https://github.com/berrant/wan2gp-casting-studio" target="_blank" rel="noopener noreferrer">Project repository</a></p><h3>Research sources and rights</h3><p><a href="https://www.tvmaze.com/api" target="_blank" rel="noopener noreferrer">TVMaze</a> (CC BY-SA) · <a href="https://en.wikipedia.org/wiki/Wikipedia:Reusing_Wikipedia_content" target="_blank" rel="noopener noreferrer">Wikipedia reuse terms</a> · <a href="https://www.wikidata.org/wiki/Wikidata:Licensing" target="_blank" rel="noopener noreferrer">Wikidata licensing</a>. Search results and locally imported photographs are not licensed by Casting Studio. Check each source and image license before use or redistribution. <a href="https://github.com/berrant/wan2gp-casting-studio/security/policy" target="_blank" rel="noopener noreferrer">Security policy</a></p><h3>Integration</h3><pre id="aboutIntegration" style="white-space:pre-wrap;overflow:auto;background:#0c1526;padding:12px">Checking…</pre><h3>What's new</h3><ul><li>Image inspection and local uploads with quality checks</li><li>Searchable RefMod picker skips invalid files</li><li>Single RefMod library root with automatic subfolders</li><li>Hidden native relay, queue manager, live WanGP image/video inference previews, improved resolution selector</li><li>Defaults loaded from WanGP model definitions and compatible finetunes</li><li>New application branding, icon, About screen, and versioned changelog</li><li>Production-first casting: consistent selected state, select-all, show-only queue scope</li><li>Bulk queue reviewed per-character prompts, production-year captions, and editable character identity signatures</li><li>Optional Status Lite stage, speed, ETA and download telemetry beside the live generation preview</li></ul><p>Full details: <a href="api/changelog" target="_blank" rel="noopener">CHANGELOG.md</a></p></section></div>
 <div id="categoryModal" class="modal"><section class="panel"><h2 id="categoryTitle">Performer categories</h2><p>Choose multiple categories. Casting roles are managed separately. Adult Entertainer is an optional local classification, not an age or consent determination. Select it only when supported by reliable public professional credits. It does not change generation, search or consent rules.</p><div id="categoryOptions"></div><div class="footer"><button class="primary" onclick="saveCategories()">Save categories</button><button onclick="$('categoryModal').classList.remove('open')">Cancel</button></div></section></div>
 <div id="editorModal" class="modal"><section class="panel"><div style="display:flex;justify-content:space-between;align-items:center"><h2>Prompt template editor · 1–4 videos</h2></div>
 <p>Factory wardrobe and setting resolve separately for each dated character portrayal. Global scope loads every selected role; individual scope shows only that role. Global custom text overrides the automatic values. Casting identity and RefMod filenames are unchanged.</p>
@@ -514,7 +514,7 @@ body.ux-basic #generatorModal .workspace-tabs button[data-workspace=batch]{displ
 <div class="footer"><button class="primary" id="addPickedCast" onclick="saveCastPicker()">Add selected cast members</button><span class="status" id="castPickerStatus"></span></div>
 <div class="cast-manual"><strong>Not in the list? Add a cast member manually</strong><div class="field-grid"><div class="field"><label>Performer name<input id="manualCastPerson" placeholder="Performer name"></label></div><div class="field"><label>Character name<input id="manualCastRole" placeholder="Character / role"></label></div><button onclick="saveManualCast()">Add person</button></div></div>
 </section></div>
-<div id="portraitModal" class="modal"><section class="panel" style="max-width:600px"><h2 id="portraitTitle">Generate portrait</h2><p class="note">One neutral studio headshot. Uses your linked Personal RefMod and automatically sets the finished image as the profile portrait.</p><div class="field"><label>Installed image model<select id="portraitModel" onchange="portraitModelChanged()"></select></label></div><div class="note" id="portraitLoraInfo"></div><label><input type="checkbox" id="portraitSkipLoras" onchange="portraitLoraChanged()"> Override global LoRA defaults</label><p id="portraitStatus" class="status" role="status"></p><div class="toolbar"><button class="primary" id="portraitQueue" onclick="queuePersonalPortrait()" disabled>Generate one portrait</button></div></section></div>
+<div id="portraitModal" class="modal"><section class="panel" style="max-width:600px"><h2 id="portraitTitle">Generate portrait</h2><p class="note">One neutral studio headshot. Uses your linked Personal RefMod and automatically sets the finished image as the profile portrait.</p><div class="field"><label>Installed image model<select id="portraitModel" onchange="portraitModelChanged()"></select></label></div><div class="note" id="portraitLoraInfo"></div><label><input type="checkbox" id="portraitSkipLoras" onchange="portraitLoraChanged()"> Override global LoRA defaults</label><label>Complete final prompt</label><pre id="portraitPrompt" style="white-space:pre-wrap;overflow-wrap:anywhere;user-select:text"></pre><p id="portraitStatus" class="status" role="status"></p><div class="toolbar"><button class="primary" id="portraitQueue" onclick="queuePersonalPortrait()" disabled>Generate one portrait</button></div></section></div>
 <div id="personalModal" class="modal"><section class="panel" style="max-width:800px">
 <div class="head"><h2 id="personalEditorTitle" style="flex:1">Add personal entry</h2></div>
 <div class="field"><label>Person's name<input id="personalName" maxlength="160" placeholder="Name"></label></div>
@@ -542,7 +542,7 @@ body.ux-basic #generatorModal .workspace-tabs button[data-workspace=batch]{displ
 <label class="field" id="workshopFluxBudget" style="display:none">FLUX size per picture<select id="workshopBudget"><option value="4096">4096 tokens — best detail</option><option value="2048">2048 tokens</option><option value="1024">1024 tokens</option><option value="512">512 tokens</option></select></label></div>
 <div class="toolbar"><input id="workshopPhotoFilter" type="search" placeholder="Filter photos by collection, role, or resolution…" oninput="workshopFilterPhotos()"><button onclick="workshopSelectPhotos(true)">Select all visible</button><button onclick="workshopSelectPhotos(false)">Clear selection</button><span id="workshopPhotoCount" class="note"></span></div>
 <div id="workshopPhotos" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(115px,1fr));gap:10px;margin:10px 0"></div>
-<div class="card" style="padding:12px;margin:12px 0"><h3 style="margin:0 0 8px">Optional · Generate a test image</h3><label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:600"><input id="workshopTestPortrait" type="checkbox" onchange="refreshWorkshopPortraitModels()" style="width:20px;height:20px;flex:0 0 20px;margin:0"> Generate one test portrait after creating the RefMod</label><p class="note">Creates one neutral portrait with the new RefMod. This is separate from the encoding model above.</p><div id="workshopPortraitSettings" hidden><label class="field" style="display:block">Test image model / checkpoint<select id="workshopPortraitModel" aria-label="Test image model or checkpoint" disabled style="width:100%"></select></label><div id="workshopPortraitStatus" class="note" role="status" aria-live="polite"></div></div></div><button class="primary" onclick="startWorkshopCreate()">▶ Create RefMod</button><div class="status" id="workshopCreateStatus" role="status" aria-live="polite"></div></div>
+<div class="card" style="padding:12px;margin:12px 0"><h3 style="margin:0 0 8px">Optional · Generate a test image</h3><label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:600"><input id="workshopTestPortrait" type="checkbox" onchange="refreshWorkshopPortraitModels()" style="width:20px;height:20px;flex:0 0 20px;margin:0"> Generate one test portrait after creating the RefMod</label><p class="note">Creates one neutral portrait with the new RefMod. This is separate from the encoding model above.</p><div id="workshopPortraitSettings" hidden><label class="field" style="display:block">Test image model / checkpoint<select id="workshopPortraitModel" onchange="renderWorkshopPortraitPrompt()" aria-label="Test image model or checkpoint" disabled style="width:100%"></select></label><pre id="workshopPortraitPrompt" style="white-space:pre-wrap;overflow-wrap:anywhere;user-select:text"></pre><div id="workshopPortraitStatus" class="note" role="status" aria-live="polite"></div></div></div><button class="primary" onclick="startWorkshopCreate()">▶ Create RefMod</button><div class="status" id="workshopCreateStatus" role="status" aria-live="polite"></div></div>
 </div><div id="workshopDecompilePane" role="tabpanel" aria-labelledby="workshopDecompileTab" hidden><div class="card" style="padding:18px;margin:12px 0"><h3>Inspect or decompile an installed H3 RefMod</h3>
 <div class="field-grid"><label class="field" style="flex:1">Search H3 RefMod filenames (.safetensors only)<input id="workshopModSearch" type="search" placeholder="Start typing to filter…" oninput="workshopFilterMods()"><select id="workshopMod" onchange="workshopShowMetadata()" style="width:100%;min-width:250px;margin-top:8px"></select></label></div><div id="workshopScanCard" aria-live="polite"><div class="toolbar" style="justify-content:space-between">
 <strong>RefMod library scan</strong><button type="button" id="workshopRescanButton" onclick="refreshWorkshopScan()">↻ Rescan library</button></div>
@@ -603,8 +603,8 @@ body.ux-basic #generatorModal .workspace-tabs button[data-workspace=batch]{displ
 <label>What to queue <select id="generatorBatchMode" onchange="invalidateGeneratorBatch()"><option value="first">First video / image for each selected role</option><option value="all">All configured videos / images for each selected role</option></select></label>
 <div class="toolbar"><button type="button" onclick="reviewGeneratorBatch()" id="generatorReviewBatch">Review all prompts</button><button class="primary" type="button" onclick="submitGeneratorBatch()" id="generatorSubmitBatch" disabled>▶ Queue reviewed batch</button><button type="button" onclick="downloadGeneratorBatchManifest()" id="generatorDownloadBatch" disabled>Download manifest JSON</button></div>
 <div id="uxPreflight" class="note ux-report" role="status"></div><div id="generatorBatchStatus" class="status" role="status">Review before queuing. No jobs are staged yet.</div>
-<details id="generatorBatchManifestPanel"><summary>Individual prompts <span id="generatorBatchCount"></span></summary><div id="generatorBatchManifest" style="max-height:260px;overflow:auto"></div></details></details>
-<p class="note ux-help">Preview the prompt, then queue. Queue & next stages the current selection and advances; Queue all stages all remaining selections in scope with their saved prompts and the current model settings. For a first test, use the button below to submit just the selected image or video job (with its configured duration). Open Batch history to check the outcome.</p><p class="ux-help"><button type="button" onclick="submitGenerator(false,true)" id="uxSingleJob">Queue one task</button></p><div class="generator-action-bar"><button class="primary" onclick="submitGenerator(true)" id="generatorSubmit">▶ Queue &amp; next selection</button><button onclick="queueRemainingSelections()" id="generatorQueueAll">▶ Queue all remaining</button><button type="button" id="generatorRestartPass" onclick="restartGeneratorPass()" hidden>Start new queue pass</button><button onclick="previewGenerator()" title="Reload the saved final prompt; if no custom edit exists, rebuild from the current templates">Refresh prompt</button><div id="generatorStatus" class="status sticky-feedback" role="status" aria-live="polite">Ready.</div><div id="generatorReceipt" class="status sticky-feedback" role="status" aria-live="polite" hidden></div></div>
+<details id="generatorBatchManifestPanel"><summary>Complete native prompts <span id="generatorBatchCount"></span></summary><div class="toolbar"><button type="button" onclick="setBatchPromptExpansion(true)">Expand all</button><button type="button" onclick="setBatchPromptExpansion(false)">Collapse all</button></div><div id="generatorBatchManifest"></div></details></details>
+<p class="note ux-help">Preview the prompt, then queue. Queue & next stages the current selection and advances; Queue all opens the complete prompt review for all remaining selections. Nothing is staged until you confirm the reviewed batch. For a first test, use the button below to submit just the selected image or video job (with its configured duration). Open Batch history to check the outcome.</p><p class="ux-help"><button type="button" onclick="submitGenerator(false,true)" id="uxSingleJob">Queue one task</button></p><div class="generator-action-bar"><button class="primary" onclick="submitGenerator(true)" id="generatorSubmit">▶ Queue &amp; next selection</button><button onclick="queueRemainingSelections()" id="generatorQueueAll">▶ Queue all remaining</button><button type="button" id="generatorRestartPass" onclick="restartGeneratorPass()" hidden>Start new queue pass</button><button onclick="previewGenerator()" title="Reload the saved final prompt; if no custom edit exists, rebuild from the current templates">Refresh prompt</button><div id="generatorStatus" class="status sticky-feedback" role="status" aria-live="polite">Ready.</div><div id="generatorReceipt" class="status sticky-feedback" role="status" aria-live="polite" hidden></div></div>
 </section></div>
 <footer id="responsibleUseFooter" aria-label="Responsible use disclaimer">Responsible use: You are responsible for all content you create. To the extent permitted by law, neither the project creator nor contributors, including providers of AI assistance, are liable for misuse or user-generated content. Use lawfully, ethically and with appropriate consent. <button type="button" id="responsibleUseOpen" onclick="openResponsibleUse()">Responsible use</button></footer>
 <div id="responsibleUseModal" class="modal"><section class="panel" role="dialog" aria-label="Responsible use"><h2>Responsible use</h2><p>Review before creating, analyzing or collecting reference content. This is a local acknowledgment, not a license change or verification of permission.</p><ul id="responsibleUseRules"></ul><label id="responsibleUseAcceptRow"><input type="checkbox" id="responsibleUseAccept" disabled onchange="syncResponsibleUse()"> I have read and acknowledge these responsibilities.</label><p id="responsibleUseStatus" role="status"></p><button type="button" id="responsibleUseSave" disabled onclick="saveResponsibleUse()">Acknowledge</button> <button type="button" id="responsibleUseDismiss" onclick="$('responsibleUseModal').classList.remove('open')">Not now</button></section></div>
@@ -1054,7 +1054,7 @@ async function generatePersonalPortrait(pid){
  }catch(e){if(ticket===portraitRequest)$('portraitStatus').textContent=e.message}
 }
 async function portraitModelChanged(){
- const ctx=portraitContext;if(!ctx||ctx.busy)return;const ticket=++portraitRequest;const m=ctx.models[Number($('portraitModel').value)];$('portraitQueue').disabled=true;ctx.details=null;if(!m)return;
+ const ctx=portraitContext;if(!ctx||ctx.busy)return;const ticket=++portraitRequest;const m=ctx.models[Number($('portraitModel').value)];$('portraitQueue').disabled=true;ctx.details=null;$('portraitPrompt').textContent=m?.prompt||'';if(!m||!m.prompt||!m.review_token)return;
  try{const r=await fetch('api/generator/model-details?'+new URLSearchParams({model:m.model,model_type:m.model_type}));if(!r.ok)throw Error(await r.text());const d=await r.json();if(ticket!==portraitRequest)return;ctx.details=d;portraitLoraChanged();}catch(e){if(ticket===portraitRequest)$('portraitStatus').textContent=e.message}
 }
 function portraitLoraChanged(){const ctx=portraitContext;if(!ctx?.details||ctx.busy)return;const m=ctx.models[Number($('portraitModel').value)];const defaults=collectGlobalDefaultLoras(generatorModelKey(m.model,m.model_type));const skip=$('portraitSkipLoras').checked;const missing=!skip&&defaults.some(x=>!(ctx.details.loras||[]).includes(x.name));$('portraitLoraInfo').textContent=defaults.length?(skip?'Global defaults overridden: ':'Global model defaults: ')+defaults.map(x=>x.name+' ×'+x.multiplier).join(', '):'No global LoRA defaults for this model.';if(missing)$('portraitLoraInfo').textContent+=' · Missing LoRA: override or update Settings.';$('portraitQueue').disabled=missing;}
@@ -1066,11 +1066,11 @@ async function queuePersonalPortrait(){
  const factory=(d.default_loras||[]).map((name,i)=>({name,multiplier:Number(raw[i]??1)}));
  const loras=defaults.length?mergeLoraSelections(factory,defaults):null;
  ctx.busy=true;$('portraitQueue').disabled=true;$('portraitModel').disabled=true;$('portraitSkipLoras').disabled=true;
- try{const r=await fetch('api/personal/'+encodeURIComponent(ctx.pid)+'/portrait-generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:m.model,model_type:m.model_type,loras,replace:!!ctx.profile.portrait_url})});if(!r.ok)throw Error(await r.text());const job=await r.json();trackGeneratorJob(job.id);void pollGenerator();
+ try{const r=await fetch('api/personal/'+encodeURIComponent(ctx.pid)+'/portrait-generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:m.model,model_type:m.model_type,loras,reviewed_prompt:m.prompt,review_token:m.review_token,replace:!!ctx.profile.portrait_url})});if(!r.ok)throw Error(await r.text());const job=await r.json();trackGeneratorJob(job.id);void pollGenerator();
  let sent=false;try{const btn=window.parent.document.querySelector('#casting_native_queue_button');if(btn){btn.click();sent=true}}catch(e){}
  if(portraitContext===ctx)$('portraitStatus').textContent=sent?'Queued in WanGP…':'Job staged; retry the pending queue handoff in Settings → Troubleshooting.';
  let state;do{await new Promise(resolve=>setTimeout(resolve,1800));const res=await fetch('api/generator/jobs/'+encodeURIComponent(job.id));if(!res.ok)throw Error(await res.text());state=await res.json();if(portraitContext===ctx)$('portraitStatus').textContent=state.message||state.state;}while(['queued','running'].includes(state.state));
- if(state.state==='completed'){await loadPersonal();if(portraitContext===ctx){ctx.profile=personalRows.find(p=>p.id===ctx.pid)||ctx.profile;$('portraitStatus').textContent='Profile portrait saved.';}}else throw Error(state.error||state.message||state.state);
+ if(state.state==='completed'){await loadPersonal();if(portraitContext===ctx){ctx.profile=personalRows.find(p=>p.id===ctx.pid)||ctx.profile;$('portraitStatus').textContent='Profile portrait saved.';ctx.details=null;$('portraitQueue').disabled=true;}}else {ctx.details=null;throw Error((state.error||state.message||state.state)+'. Reopen Generate portrait to review a new attempt.');}
  }catch(e){if(portraitContext===ctx)$('portraitStatus').textContent='Portrait: '+e.message;else console.warn(e)}finally{ctx.busy=false;if(portraitContext===ctx){$('portraitModel').disabled=false;$('portraitSkipLoras').disabled=false;portraitLoraChanged()}}
 }
 function openPersonalEditor(pid=''){
@@ -2028,10 +2028,11 @@ async function workshopShowResults(name){
  }catch(e){if(serial===workshopResultsSerial)gallery.textContent='Unable to display decompiled results: '+e.message}
 }
 let workshopPortraitSerial=0,workshopPortraitFamily='',workshopPortraitModels=[];
+function renderWorkshopPortraitPrompt(){const m=workshopPortraitModels.find(m=>JSON.stringify([m.model,m.model_type])===$('workshopPortraitModel').value);$('workshopPortraitPrompt').textContent=m?.prompt||'';}
 async function refreshWorkshopPortraitModels(){
  const serial=++workshopPortraitSerial,family=$('workshopFamily').value,enabled=$('workshopTestPortrait').checked,sel=$('workshopPortraitModel');
  const previous=workshopPortraitFamily===family?sel.value:'';
- workshopPortraitFamily=family;workshopPortraitModels=[];sel.replaceChildren();sel.disabled=true;
+ workshopPortraitFamily=family;workshopPortraitModels=[];sel.replaceChildren();sel.disabled=true;renderWorkshopPortraitPrompt();
  $('workshopPortraitSettings').hidden=!enabled;
  if(!enabled)return;
  workshopOption(sel,'','Choose an installed image model…');$('workshopPortraitStatus').textContent='Finding compatible installed image checkpoints…';
@@ -2041,7 +2042,7 @@ async function refreshWorkshopPortraitModels(){
   workshopPortraitModels=Array.isArray(result.models)?result.models:[];
   for(const m of workshopPortraitModels)workshopOption(sel,JSON.stringify([m.model,m.model_type]),m.name+' · '+m.model_type);
   if([...sel.options].some(o=>o.value===previous))sel.value=previous;
-  sel.disabled=!workshopPortraitModels.length;
+  sel.disabled=!workshopPortraitModels.length;renderWorkshopPortraitPrompt();
   $('workshopPortraitStatus').textContent=workshopPortraitModels.length?'Choose the exact checkpoint to generate the test image.':'No compatible image checkpoint found. Refresh or turn off the test portrait to create the RefMod only.';
  }catch(e){if(serial===workshopPortraitSerial)$('workshopPortraitStatus').textContent='Image model discovery failed: '+e.message;}
 }
@@ -2148,11 +2149,11 @@ async function startWorkshopCreate(){
  const family=$('workshopFamily').value;
  const test=$('workshopTestPortrait').checked;
  const portrait=test&&!$('workshopPortraitModel').disabled&&workshopPortraitFamily===family?workshopPortraitModels.find(m=>JSON.stringify([m.model,m.model_type])===$('workshopPortraitModel').value):null;
- if(test&&!portrait){$('workshopCreateStatus').textContent='Choose a compatible test image model, or turn off Generate a test image.';return;}
+ if(test&&(!portrait?.prompt||$('workshopPortraitPrompt').textContent!==portrait.prompt)){$('workshopCreateStatus').textContent='Choose a compatible test image model, or turn off Generate a test image.';return;}
  await workshopRun(family==='flux2'?'extract_flux':'extract',{
   person:src.person,production:src.production,character:src.character??null,image_ids:images,name:$('workshopName').value,
   model_type:$('workshopModel').value,mode:$('workshopMode').value,family,
-  layout:$('workshopLayout').value,budget:Number($('workshopBudget').value),test_portrait:test,...(portrait?{test_portrait_model:portrait.model,test_portrait_model_type:portrait.model_type}:{})});
+  layout:$('workshopLayout').value,budget:Number($('workshopBudget').value),test_portrait:test,...(portrait?{test_portrait_model:portrait.model,test_portrait_model_type:portrait.model_type,test_portrait_prompt:portrait.prompt}:{})});
 }
 async function viewWorkshopExistingResults(){
  const chosen=$('workshopMod').value!==''?workshopMods[Number($('workshopMod').value)]:null;
@@ -2582,11 +2583,11 @@ function generatorUpdateSubmitEnabled(){
  const badResolution=generatorDetails && $('generatorResolution').value &&
   !(generatorDetails.resolutions||[]).some(r=>r.value===$('generatorResolution').value);
  const canSubmit=!!$('generatorChoice').value&&!!generatorDetails&&!generatorRequestInProgress&&!generatorSubmitBusy&&!promptResetPending&&!characterIdentityPending&&!identityUnsettled('generator')&&!conversionInProgress&&!missing&&!badResolution&&!generatorCompatibilityIssue;
- const setReady=$('promptModel').value==='h3_video'||imagePromptSetIsReady();
+ const setReady=$('promptModel').value==='h3_video'?generatorPromptReviews.size>0:imagePromptSetIsReady();
  const remaining=generatorRemainingKeys(),currentPending=remaining.includes($('generatorChoice').value);
- $('generatorSubmit').disabled=!canSubmit||!setReady||!currentPending;if($('uxSingleJob'))$('uxSingleJob').disabled=!canSubmit;
+ $('generatorSubmit').disabled=!canSubmit||!setReady||!currentPending;if($('uxSingleJob'))$('uxSingleJob').disabled=!canSubmit||!setReady;
  $('generatorQueueAll').disabled=!canSubmit||!setReady||!remaining.length;
- $('generatorRestartPass').hidden=!generatorScopeChoices($('generatorScope').value).some(c=>generatorPassSet().has(c.key));
+ $('generatorRestartPass').hidden=!generatorScopeChoices($('generatorScope').value).length;
  $('generatorRestartPass').disabled=generatorSubmitBusy||generatorRequestInProgress||conversionInProgress;
  const scopeCount=generatorScopeChoices($('generatorScope').value).length,staged=scopeCount-remaining.length;
  $('generatorScopeStatus').textContent=`${scopeCount} casting task${scopeCount===1?'':'s'} in scope · ${remaining.length} remaining in this browser pass`+(staged?` · ${staged} previously staged (not live queue count). Start a new queue pass to repeat.`:'');
@@ -2620,7 +2621,7 @@ function addGeneratorLora(name='',multiplier=1){
  mult.style.width='85px';label.appendChild(mult);
  mult.addEventListener('input',()=>{generatorSaveCurrentSettings();generatorRenderWindowLoraMatrix();});
  const remove=document.createElement('button');remove.textContent='Remove';remove.type='button';
- remove.onclick=()=>{row.remove();generatorSaveCurrentSettings();generatorRenderWindowLoraMatrix();generatorUpdateSubmitEnabled()};
+ remove.onclick=()=>{row.remove();generatorSaveCurrentSettings();generatorRenderWindowLoraMatrix();generatorUpdateSubmitEnabled();if(!generatorRestoring&&!generatorPromptReviews.size)void previewGenerator()};
  row.append(select,label,remove);$('generatorLoraRows').appendChild(row);
  generatorSaveCurrentSettings();generatorRenderWindowLoraMatrix();generatorUpdateSubmitEnabled();
 }
@@ -2751,7 +2752,7 @@ const generatorBody=()=>{
  const strength=Number($('generatorStrength').value);if(!Number.isFinite(strength)||strength<=0||strength>2)throw Error('RefMod strength must be greater than 0 and at most 2');
  const loras=generatorDetails?generatorEffectiveLoras():null;
  if(loras&&loras.some(x=>!(generatorDetails.loras||[]).includes(x.name)))throw Error('A selected or global default LoRA is missing from this model. Remove or override it before submission.');
- return {choice_key:$('generatorChoice').value,model:$('promptModel').value,
+ return {choice_key:$('generatorChoice').value,model:$('promptModel').value,queue_pass:generatorQueueEpoch($('generatorChoice').value),
   model_type:$('generatorModelType').value,scene:Number($('generatorScene').value),
   strength:Number($('generatorStrength').value),steps:steps?Number(steps):null,
   seed:Number(seed),resolution:$('generatorResolution').value,extra_settings:extra,loras,
@@ -2779,6 +2780,18 @@ function generatorUpdateImageButtons(){
  $('generatorSubmit').textContent=left?(isImage?`▶ Queue ${count} image${count===1?'':'s'} & next (${left} left)`:(seconds>15?`▶ Queue ${seconds}s & next (${left} left)`:`▶ Queue & next (${left} left)`)):'All selections staged in this pass';
  $('generatorQueueAll').textContent=isImage?`▶ Queue all (${left*count} image${left*count===1?'':'s'})`:`▶ Queue all (${left} left)`;
 }
+// The epoch is shared across browser tabs; the server claims logical tasks
+// per epoch so separately reviewed overlapping requests cannot double-stage.
+const generatorQueueEpochs=new Map();
+function generatorQueueEpoch(key,model=$('promptModel').value,checkpoint=$('generatorModelType').value){
+ const storage='casting-studio:queue-epoch:'+JSON.stringify([model,checkpoint,key]);
+ try{return localStorage.getItem(storage)||generatorQueueEpochs.get(storage)||'initial'}catch(e){return generatorQueueEpochs.get(storage)||'initial'}
+}
+function rotateGeneratorQueueEpoch(key){
+ const storage='casting-studio:queue-epoch:'+JSON.stringify([$('promptModel').value,$('generatorModelType').value,key]);
+ const value=Array.from(crypto.getRandomValues(new Uint32Array(4)),x=>x.toString(16).padStart(8,'0')).join('');
+ generatorQueueEpochs.set(storage,value);try{localStorage.setItem(storage,value)}catch(e){}
+}
 // Queue-pass progress is local to this browser tab and model/checkpoint.
 // A deliberate new pass is required to repeat a selection.
 function generatorPassSet(model=$('promptModel').value,checkpoint=$('generatorModelType').value){
@@ -2791,7 +2804,7 @@ function hasUnsavedScene(key){return !!sceneDrafts[key]||Object.values(scenePane
 function confirmSavedScenes(keys){return !keys.some(hasUnsavedScene)||confirm('Some selected portrayal scenes have unsaved edits. Queue using only saved scene descriptions? Choose Cancel to return and save your edits first.');}
 function storeQueuePass(model,checkpoint,done){try{sessionStorage.setItem('casting-studio:queue-pass:'+JSON.stringify([model,checkpoint]),JSON.stringify([...done]));}catch(e){}}
 function markGeneratorQueued(task,keys){const done=generatorPassSet(task.model,task.model_type);keys.forEach(k=>done.add(k));storeQueuePass(task.model,task.model_type,done);invalidateGeneratorBatch();}
-function restartGeneratorPass(){if(generatorSubmitBusy||generatorRequestInProgress||!confirm('Start a new queue pass for this scope? Previously staged jobs are not cancelled.'))return;const done=generatorPassSet();generatorScopeChoices($('generatorScope').value).forEach(c=>done.delete(c.key));storeQueuePass($('promptModel').value,$('generatorModelType').value,done);invalidateGeneratorBatch();generatorUpdateSubmitEnabled();}
+function restartGeneratorPass(){if(generatorSubmitBusy||generatorRequestInProgress||!confirm('Start a new queue pass for this scope? Previously staged jobs are not cancelled.'))return;const done=generatorPassSet();generatorScopeChoices($('generatorScope').value).forEach(c=>{done.delete(c.key);rotateGeneratorQueueEpoch(c.key);});storeQueuePass($('promptModel').value,$('generatorModelType').value,done);invalidateGeneratorBatch();generatorUpdateSubmitEnabled();void previewGenerator();}
 function generatorScopeOptions(){
  const matches=new Map();
  for(const c of choices){
@@ -2906,23 +2919,48 @@ async function openGenerator(scope='all'){
  }catch(e){$('generatorStatus').textContent='Model discovery failed: '+e.message;generatorRequestInProgress=true;generatorUpdateSubmitEnabled()}
 }
 async function closeGenerator(){if(generatorSubmitBusy||promptResetPending)return;if(identityUnsettled('generator')&&!await flushIdentity('generator'))return;try{await flushPromptEdits();}catch(e){if(!confirm('Prompt changes could not be saved. Discard only unsaved edits and close? Previously saved prompts will be kept.\n\n'+e.message))return;clearTimeout(promptEditTimer);promptEditPending.clear();$('generatorDiscardDraft').hidden=true;}generatorChoiceMemory=$('generatorChoice').value;generatorSceneMemory=$('generatorScene').value;generatorSaveCurrentSettings();stashSceneDraft('generatorSceneContext');$('generatorModal').classList.remove('open')}
-let promptEditTask=null,promptEditTimer=null,promptEditRequest=0,promptEditSaving=Promise.resolve(),promptEditPending=new Map(),imagePromptReadyKey='';
+let promptEditTask=null,promptEditTimer=null,promptEditRequest=0,promptEditSaving=Promise.resolve(),promptEditPending=new Map(),imagePromptReadyKey='',generatorPromptReviews=new Map();
 function imagePromptSetKey(task){return JSON.stringify([task.choice_key,task.model,task.model_type,imageCountForModel()]);}
 function imagePromptSetIsReady(){try{return !!imagePromptReadyKey&&imagePromptReadyKey===imagePromptSetKey(generatorBody());}catch(e){return false;}}
 function clearExtraImagePrompts(){for(const node of $('generatorPromptGrid').querySelectorAll('.extra-image-prompt'))node.remove();}
 function configurePromptGrid(isImage,count){
  $('generatorPromptGrid').classList.toggle('single',!isImage);clearExtraImagePrompts();
  $('generatorPreviewTitle').textContent=isImage?`Review & edit all ${count} image prompts`:'Prompt preview';
- $('generatorPreviewInstructions').textContent=isImage?'Each image has its own final prompt. Edit any or all here. All changes save automatically; queueing waits for saves to finish. Review every image before submitting.':'Edit the final prompt for this selection, model and scene. Edits save automatically and are used for queueing. Window LoRA commands are added separately at submission.';
+ $('generatorPreviewInstructions').textContent=isImage?'Each image has its own final prompt. Edit any or all here. All changes save automatically; queueing waits for saves to finish. Review every image before submitting.':'Edit the prompt for this selection. The complete native prompt is also shown below when window directives are applied. Edits save automatically; queueing checks the exact reviewed text.';
  $('generatorPromptSave').textContent=isImage?'Save all prompts':'Save prompt';
- if(isImage)$('generatorPreviewPanel').open=true;
+ $('generatorPreviewPanel').open=true;
 }
 function renderExtraImagePrompt(task,data){
  const card=document.createElement('div');card.className='image-prompt-card extra-image-prompt';card.style.order=String(task.scene);card.dataset.scene=String(task.scene);card.dataset.promptContext=promptContext(task);
  const header=document.createElement('header'),title=document.createElement('strong'),state=document.createElement('span');title.textContent='Image '+task.scene;state.className='note';state.textContent=data.edited?'Custom prompt':'Saved template';header.append(title,state);
  const field=document.createElement('textarea');field.rows=9;field.maxLength=100000;field.setAttribute('aria-label','Image '+task.scene+' final prompt');field.value=data.editable_prompt??data.prompt;
  field.addEventListener('input',()=>queuePromptEdit(task,field.value));
- const controls=document.createElement('div');controls.className='toolbar';const reset=document.createElement('button');reset.type='button';reset.textContent='Reset to template';reset.onclick=()=>resetPromptForTask(task);controls.append(reset);card.append(header,field,controls);$('generatorPromptGrid').append(card);
+ const controls=document.createElement('div');controls.className='toolbar';const reset=document.createElement('button');reset.type='button';reset.textContent='Reset to template';reset.onclick=()=>resetPromptForTask(task);controls.append(reset);card.append(header,field,controls);renderNativePrompt(card,data);$('generatorPromptGrid').append(card);
+}
+
+function renderNativePrompt(card,data){
+ card.querySelector('.native-final-prompt')?.remove();
+ if(typeof data.prompt!=='string'||data.prompt===(data.editable_prompt??data.prompt))return;
+ const wrap=document.createElement('div');wrap.className='native-final-prompt';
+ const label=document.createElement('strong');label.textContent='Complete native prompt (including window directives)';
+ const pre=document.createElement('pre');pre.tabIndex=0;pre.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;user-select:text';pre.textContent=data.prompt;
+ wrap.append(label,pre);card.append(wrap);
+}
+function visibleNativePrompts(){
+ const result=new Map();for(const card of $('generatorPromptGrid').children){const field=card.querySelector('textarea');if(field)result.set(Number(card.dataset.scene||card.style.order),{editable:field.value,native:card.querySelector('.native-final-prompt pre')?.textContent??field.value});}return result;
+}
+async function currentPromptReview(body,allImages=false){
+ if($('generatorModal').dataset.workspace!=='prompts'||!$('generatorPreviewPanel').open){showGeneratorWorkspace('prompts');$('generatorStatus').textContent='Review the complete final prompt above, then click Queue.';return null;}
+ const scenes=allImages?Array.from({length:imageCountForModel()},(_,i)=>i+1):[body.scene];
+ const before=visibleNativePrompts();
+ const get=()=>scenes.map(scene=>generatorPromptReviews.get(scene));
+ const valid=rows=>rows.every((row,i)=>row&&row.data.review_token&&JSON.stringify(row.task)===JSON.stringify({...body,scene:scenes[i]})&&before.get(scenes[i])?.editable===(row.data.editable_prompt??row.data.prompt)&&before.get(scenes[i])?.native===row.data.prompt);
+ let rows=get();if(!valid(rows)){
+  await previewGenerator();rows=get();
+  if(!valid(rows)){ $('generatorStatus').textContent='Final prompts were refreshed. Review the complete text and click Queue again.';return null; }
+ }
+ if(JSON.stringify(generatorBody())!==JSON.stringify(body)){ $('generatorStatus').textContent='Settings changed during review. Review again.';return null; }
+ return rows.map(row=>row.data.review_token);
 }
 
 function promptContext(task){const sequence=task.model==='h3_video'&&task.video_seconds>15&&task.video_script_mode==='sequence';return JSON.stringify([task.choice_key,task.model,task.model_type,sequence?0:task.scene,sequence?task.video_seconds:0]);}
@@ -2955,7 +2993,7 @@ async function resetPromptForTask(task){if(promptResetPending||generatorSubmitBu
 }
 async function previewGenerator(){
  const request=++promptEditRequest;
- imagePromptReadyKey='';
+ imagePromptReadyKey='';generatorPromptReviews.clear();
  $('generatorPreview').disabled=true;$('generatorPromptSave').disabled=true;$('generatorPromptReset').disabled=true;
  for(const node of $('generatorPromptGrid').querySelectorAll('.extra-image-prompt textarea,.extra-image-prompt button'))node.disabled=true;
  generatorUpdateSubmitEnabled();
@@ -2969,13 +3007,14 @@ async function previewGenerator(){
   const results=await Promise.all(tasks.map(async task=>{
    const r=await fetch('api/generator/preview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(task)});
    if(!r.ok)throw Error((isImage?'Image '+task.scene+': ':'')+await r.text());
-   const data=await r.json();if(typeof (data.editable_prompt??data.prompt)!=='string')throw Error('Missing prompt for scene '+task.scene);return {task,data};
+   const data=await r.json();if(typeof data.prompt!=='string'||typeof (data.editable_prompt??data.prompt)!=='string'||!data.review_token)throw Error('Missing complete reviewed prompt for scene '+task.scene);return {task,data};
   }));
   if(request!==promptEditRequest||key!==promptContext(generatorBody())||(isImage&&setKey!==imagePromptSetKey(generatorBody())))return;
   const focused=results.find(x=>x.task.scene===body.scene);if(!focused)throw Error('Selected scene unavailable');
+  generatorPromptReviews=new Map(results.map(x=>[x.task.scene,x]));
   promptEditTask=body;
   const data=focused.data;
-  $('generatorPreview').value=data.editable_prompt??data.prompt;
+  $('generatorPreview').value=data.editable_prompt??data.prompt;renderNativePrompt($('generatorFocusedPrompt'),data);$('generatorFocusedPrompt').dataset.scene=String(body.scene);
   $('generatorPreview').disabled=false;$('generatorPromptSave').disabled=false;$('generatorPromptReset').disabled=false;
   $('generatorFocusedPrompt').dataset.promptContext=key;$('generatorFocusedPrompt').style.order=String(body.scene);$('generatorFocusedLabel').textContent='Image '+body.scene;$('generatorFocusedState').textContent=data.edited?'Custom prompt':'Saved template';
   $('generatorPreview').setAttribute('aria-label',isImage?'Image '+body.scene+' final prompt':'Final prompt');
@@ -3044,7 +3083,7 @@ async function saveGeneratorCharacterIdentity(reset=false){
 }
 function resetGeneratorCharacterIdentity(){saveGeneratorCharacterIdentity(true)}
 let reviewedCastingBatch=null,reviewedCastingSignature='',batchReviewRevision=0;
-function generatorBatchRequest(){return {task:generatorBody(),scope:$('generatorScope').value,scene_mode:$('generatorBatchMode').value,choice_keys:generatorRemainingKeys()}}
+function generatorBatchRequest(){const keys=generatorRemainingKeys();return {task:generatorBody(),scope:$('generatorScope').value,scene_mode:$('generatorBatchMode').value,choice_keys:keys,pass_ids:Object.fromEntries(keys.map(k=>[k,generatorQueueEpoch(k)]))}}
 function invalidateGeneratorBatch(){
  reviewedCastingBatch=null;reviewedCastingSignature='';batchReviewRevision++;
  const manifest=$('generatorBatchManifest'),count=$('generatorBatchCount');if(manifest)manifest.replaceChildren();if(count)count.textContent='';
@@ -3052,11 +3091,14 @@ function invalidateGeneratorBatch(){
  if(btn)btn.disabled=true;if(dl)dl.disabled=true;
  const pre=$('uxPreflight');if(pre)pre.textContent='';const status=$('generatorBatchStatus');if(status)status.textContent='Review all prompts to enable batch submission.';
 }
+function setBatchPromptExpansion(open){for(const el of $('generatorBatchManifest').querySelectorAll('details'))el.open=open;}
 function renderGeneratorBatchList(tasks){
  $('generatorBatchCount').textContent=`(${tasks.length})`;
- $('generatorBatchManifest').innerHTML=tasks.map((item,i)=>`<details class="pick" style="display:block;margin:6px 0"><summary><strong>${i+1}. ${esc(item.person)} — ${esc(item.character||'as themselves')}</strong> · ${esc(item.production||'Personal')} · ${esc((item.kind==='image'?'Image ':'Video ')+item.scene)}</summary><pre style="white-space:pre-wrap;font-size:11px;max-height:260px;overflow:auto">${esc(item.prompt)}</pre></details>`).join('');
+ $('generatorBatchManifest').innerHTML=tasks.map((item,i)=>`<details open class="pick" style="display:block;margin:6px 0"><summary><strong>${i+1}. ${esc(item.person)} — ${esc(item.character||'as themselves')}</strong> · ${esc(item.production||'Personal')} · ${esc((item.kind==='image'?'Image ':'Video ')+item.scene)}${item.windows>1?' · '+item.windows+' windows (one job)':''} · ${esc(item.model_type||$('generatorModelType').value)}</summary><pre tabindex="0" style="white-space:pre-wrap;overflow-wrap:anywhere;user-select:text;font-size:12px">${esc(item.prompt)}</pre></details>`).join('');
+ $('generatorBatchManifestPanel').open=true;
 }
 async function reviewGeneratorBatch(){
+ if(generatorSubmitBusy||generatorRequestInProgress||conversionInProgress)return;
  if(promptResetPending){$('generatorBatchStatus').textContent='Wait for the prompt reset to finish before reviewing.';return;}
  invalidateGeneratorBatch();const revision=batchReviewRevision;
  try{
@@ -3075,6 +3117,7 @@ async function reviewGeneratorBatch(){
   const data=await r.json();
   if(revision!==batchReviewRevision)return;
   if(JSON.stringify(request)!==JSON.stringify(generatorBatchRequest()))throw Error('Settings changed during preview; review again.');
+  if(typeof data.review_token!=='string'||!data.review_token||!Array.isArray(data.tasks)||data.count!==gate.count||data.tasks.length!==data.count||data.tasks.some(t=>typeof t.prompt!=='string'||!t.prompt.trim()))throw Error('Complete reviewed manifest unavailable; refresh and review again.');
   reviewedCastingBatch=data;reviewedCastingSignature=JSON.stringify(request);
   $('generatorBatchStatus').textContent=`Ready: ${data.count} unique generation tasks from ${data.selections} casting selections. Review the prompts below, then queue.`;
   $('generatorSubmitBatch').disabled=false;$('generatorDownloadBatch').disabled=false;
@@ -3083,7 +3126,7 @@ async function reviewGeneratorBatch(){
 }
 function downloadGeneratorBatchManifest(){
  if(!reviewedCastingBatch)return;
- const data={...reviewedCastingBatch,queue_settings:generatorBatchRequest()};
+ const {review_token,...manifest}=reviewedCastingBatch;const data={...manifest,queue_settings:generatorBatchRequest()};
  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
  const url=URL.createObjectURL(blob),a=document.createElement('a');
  a.href=url;a.download='Casting_Board_Review_'+Date.now()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
@@ -3098,48 +3141,28 @@ async function submitGeneratorBatch(){
   if(!reviewedCastingBatch||reviewedCastingSignature!==JSON.stringify(generatorBatchRequest()))throw Error('Generation settings changed; review the batch again');
   const request=generatorBatchRequest();
   if(!confirmSavedScenes(request.choice_keys))return;
-  if(!confirm(`Queue ${reviewedCastingBatch.count} individually prompted generation tasks for ${reviewedCastingBatch.selections} selections in WanGP?`))return;
+  // The reviewed queue button itself is the explicit confirmation.
+  const reviewToken=reviewedCastingBatch.review_token;
   generatorRequestInProgress=true;generatorUpdateSubmitEnabled();$('generatorSubmitBatch').disabled=true;
   $('generatorBatchStatus').textContent='Validating live consent, installed RefMods and every prompt…';
-  const r=await fetch('api/generator/batch/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(request)});
-  if(!r.ok)throw Error(await r.text());
+  const r=await fetch('api/generator/batch/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...request,review_token:reviewToken})});
+  if(!r.ok){if(r.status===409){invalidateGeneratorBatch();}throw Error(await r.text());}
   const d=await r.json();if(!d.id)throw Error('No job receipt returned');markGeneratorQueued(request.task,request.choice_keys);trackGeneratorJob(d.id);
   let sent=false;
   try{if(window.parent!==window&&window.parent.location.origin===window.location.origin){const b=window.parent.document.querySelector('#casting_native_queue_button');if(b){b.click();sent=true}}}catch(e){console.warn('Native queue relay:',e)}
   $('generatorBatchStatus').textContent=`Batch ${d.id.slice(0,8)} staged: ${d.task_count} prompts. `+(sent?'Native WanGP relay triggered.':'Job staged; retry the pending queue handoff in Settings → Troubleshooting.');
   setGeneratorReceipt(d.id,$('generatorBatchStatus').textContent);
   if(generatorPoll)clearTimeout(generatorPoll);await pollGenerator();
- }catch(e){$('generatorBatchStatus').textContent='Not queued: '+e.message}
+ }catch(e){$('generatorBatchStatus').textContent='Not queued: '+e.message+'. If the response was interrupted, check Batch history before starting a new queue pass.'}
  finally{generatorSubmitBusy=false;generatorRequestInProgress=false;generatorUpdateSubmitEnabled();try{if(reviewedCastingBatch&&reviewedCastingSignature===JSON.stringify(generatorBatchRequest())&&!$('generatorQueueAll').disabled)$('generatorSubmitBatch').disabled=false;}catch(e){}}
 }
 
 async function queueRemainingSelections(){
  if($('generatorQueueAll').disabled||generatorSubmitBusy||generatorRequestInProgress||conversionInProgress)return;
- generatorSubmitBusy=true;generatorUpdateSubmitEnabled();
- try{
-  if(characterIdentityPending)await characterIdentityPending;
-  const request={task:generatorBody(),scope:$('generatorScope').value,scene_mode:$('promptModel').value==='h3_video'?'first':'all',choice_keys:generatorRemainingKeys()};
-  const signature=JSON.stringify(request);if(!request.choice_keys.length)return;
-  if(identityUnsettled('generator')&&!await flushIdentity('generator'))throw Error('Character appearance is not saved.');
-  await flushPromptEdits();generatorSaveCurrentSettings();
-  const current=()=>JSON.stringify({task:generatorBody(),scope:$('generatorScope').value,scene_mode:$('promptModel').value==='h3_video'?'first':'all',choice_keys:generatorRemainingKeys()});
-  if(current()!==signature)throw Error('Settings or selections changed; review and retry.');
-  $('generatorStatus').textContent='Checking all remaining selections…';
-  const gate=await uxRequest('api/generator/batch/preflight',{method:'POST',body:JSON.stringify(request)});
-  if(current()!==signature)throw Error('Settings or selections changed during preflight; retry.');
-  if(!Number.isInteger(gate.count)||gate.count<1||gate.ready!==gate.count||gate.blocked||!gate.relay_ready)throw Error('Preflight blocked: '+(gate.issues||[]).map(x=>[x.person,x.character,x.issue].filter(Boolean).join(' / ')).join('; ')+' — review Bulk queue for details.');
-  if(!confirmSavedScenes(request.choice_keys))return;
-  if(!confirm(`Queue ${gate.count} generation tasks for ${request.choice_keys.length} remaining selections? ${request.scene_mode==='first'?'Video 1 per selection.':'All configured images per selection.'}`)){$('generatorStatus').textContent='Queue all cancelled; no jobs staged.';return;}
-  if(current()!==signature)throw Error('Settings changed; retry.');
-  generatorRequestInProgress=true;
-  const r=await fetch('api/generator/batch/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(request)});
-  if(!r.ok)throw Error(await r.text());const d=await r.json();if(!d.id)throw Error('No job receipt returned');
-  markGeneratorQueued(request.task,request.choice_keys);trackGeneratorJob(d.id);
-  let sent=false;try{const b=window.parent!==window&&window.parent.location.origin===window.location.origin?window.parent.document.querySelector('#casting_native_queue_button'):null;if(b){b.click();sent=true}}catch(e){}
-  $('generatorStatus').textContent=`Batch ${d.id.slice(0,8)} staged: ${d.task_count} jobs for ${request.choice_keys.length} selections. `+(sent?'Native WanGP relay triggered.':'Retry pending handoff in Settings → Troubleshooting.');
-  setGeneratorReceipt(d.id,$('generatorStatus').textContent);if(generatorPoll)clearTimeout(generatorPoll);await pollGenerator();
- }catch(e){$('generatorStatus').textContent='Queue all stopped: '+e.message;}
- finally{generatorSubmitBusy=false;generatorRequestInProgress=false;generatorUpdateSubmitEnabled();}
+ showGeneratorWorkspace('batch');
+ // Respect the existing scene mode selector (first or all); no hidden override.
+ await reviewGeneratorBatch();
+ $('generatorStatus').textContent=$('generatorBatchStatus').textContent;
 }
 async function submitOneImageSet(advance=false){
  try{
@@ -3148,18 +3171,18 @@ async function submitOneImageSet(advance=false){
   generatorSaveCurrentSettings();const body=generatorBody();
   if(JSON.stringify(body)!==requested)throw Error('Settings changed while saving. Review and click Queue again.');
   if(!body.model_type||!body.choice_key)throw Error('Choose a model and casting role');
-  const count=imageCountForModel();if(!imagePromptSetIsReady())throw Error('Load all image prompts before queueing.');generatorRequestInProgress=true;generatorUpdateSubmitEnabled();
+  const count=imageCountForModel();if(!imagePromptSetIsReady())throw Error('Load all image prompts before queueing.');const tokens=await currentPromptReview(body,true);if(!tokens)return;generatorRequestInProgress=true;generatorUpdateSubmitEnabled();
   $('generatorStatus').textContent=`Validating all ${count} image prompts and RefMods…`;
-  const payload={task:body,scope:'selection:'+body.choice_key,scene_mode:'all'};
+  const payload={task:body,scope:'selection:'+body.choice_key,scene_mode:'all',review_tokens:tokens};
   const r=await fetch('api/generator/batch/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-  if(!r.ok)throw Error(await r.text());const data=await r.json();if(!data.id)throw Error('No job receipt returned');trackGeneratorJob(data.id);
+  if(!r.ok){if(r.status===409)generatorPromptReviews.clear();throw Error(await r.text());}const data=await r.json();if(!data.id)throw Error('No job receipt returned');trackGeneratorJob(data.id);
   let sent=false;
   try{if(window.parent!==window&&window.parent.location.origin===window.location.origin){const b=window.parent.document.querySelector('#casting_native_queue_button');if(b){b.click();sent=true}}}catch(e){console.warn('Native queue relay:',e)}
   $('generatorStatus').textContent=`Image set ${data.id.slice(0,8)} staged: ${data.task_count} separately prompted jobs. `+(sent?'Native WanGP relay triggered.':'Job staged; retry the pending queue handoff in Settings → Troubleshooting.');
   setGeneratorReceipt(data.id,$('generatorStatus').textContent);
   if(advance){markGeneratorQueued(body,[body.choice_key]);generatorAdvanceSelection(true);}
   if(generatorPoll)clearTimeout(generatorPoll);await pollGenerator();
- }catch(e){$('generatorStatus').textContent='Image set not queued: '+e.message}
+ }catch(e){$('generatorStatus').textContent='Image set: '+e.message+'. If the response was interrupted, check Batch history before starting a new queue pass.';if(!generatorPromptReviews.size)void previewGenerator()}
  finally{generatorRequestInProgress=false;generatorUpdateSubmitEnabled()}
 }
 async function submitGenerator(advance=false,oneOnly=false){
@@ -3173,10 +3196,11 @@ async function submitGenerator(advance=false,oneOnly=false){
   await flushPromptEdits();
   generatorSaveCurrentSettings();
   const body=generatorBody();if(JSON.stringify(body)!==requested)throw Error('Settings changed while saving. Review and click Queue again.');if(!body.model_type)throw Error('Select a compatible WanGP model');
+  const tokens=await currentPromptReview(body,false);if(!tokens)return;
   generatorRequestInProgress=true;generatorUpdateSubmitEnabled();
   $('generatorStatus').textContent='Checking selection, consent and RefMod settings…';
-  const r=await fetch('api/generator/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  if(!r.ok)throw Error(await r.text());
+  const r=await fetch('api/generator/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...body,review_token:tokens[0]})});
+  if(!r.ok){if(r.status===409)generatorPromptReviews.clear();throw Error(await r.text());}
   const data=await r.json();if(!data.id)throw Error('No job receipt returned');trackGeneratorJob(data.id);
   $('generatorStatus').textContent='Casting job '+data.id.slice(0,8)+' prepared. Handing off to WanGP’s native queue…';
   let handedOff=false;
@@ -3192,7 +3216,7 @@ async function submitGenerator(advance=false,oneOnly=false){
   setGeneratorReceipt(data.id,handedOff?'Job '+data.id.slice(0,8)+' staged; native WanGP relay triggered.':$('generatorStatus').textContent);
   if(advance){markGeneratorQueued(body,[body.choice_key]);generatorAdvanceSelection(true);}
   if(generatorPoll)clearTimeout(generatorPoll);await pollGenerator();
- }catch(e){$('generatorStatus').textContent='Not submitted: '+e.message}
+ }catch(e){$('generatorStatus').textContent='Submission: '+e.message+'. If the response was interrupted, check Batch history before starting a new queue pass.';if(!generatorPromptReviews.size)void previewGenerator()}
  finally{generatorSubmitBusy=false;generatorRequestInProgress=false;generatorUpdateSubmitEnabled()}
 }
 
@@ -3875,7 +3899,8 @@ let uxHistoryRecords=[];
 async function loadUXHistory(){const serial=++uxHistorySerial,el=$('uxHistoryStatus');el.textContent='Loading history…';try{const data=await uxRequest('api/generator/history');if(serial!==uxHistorySerial)return;uxHistoryRecords=Array.isArray(data.jobs)?data.jobs:[];renderUXHistory();}catch(e){if(serial===uxHistorySerial)el.textContent='History unavailable: '+e.message;}}
 function renderUXHistory(){const q=$('historyFilter').value.trim().toLowerCase(),state=$('historyState').value;const jobs=uxHistoryRecords.filter(j=>(!state||state===j.state)&&(!q||[j.model_type,j.state,...(j.tasks||[]).flatMap(t=>[t.person,t.character,t.production])].join(' ').toLowerCase().includes(q)));$('uxHistoryRows').innerHTML=jobs.map(j=>`<div class="ux-history-row"><strong>${esc(j.model_type||'Model')} · ${esc(j.state||'unknown')}</strong><div class="note">${esc(j.id)} · ${Number(j.task_count)||0} task(s) · ${Number(j.output_count)||0} output(s) · ${esc(new Date(j.updated).toLocaleString())}</div><div>${esc(j.message||'')}</div>${j.tasks?.length?`<details><summary>Casting tasks (${j.tasks.length})</summary>${j.tasks.map(t=>`<div>${esc([t.person,t.character,t.production,t.scene?'Scene '+t.scene:''].filter(Boolean).join(' · '))}</div>`).join('')}</details>`:''}<details><summary>Submitted settings</summary><pre>${esc(JSON.stringify(j.settings||{},null,2))}</pre></details>${j.retry_count>0?`<button type="button" onclick='retryUXJob(${esc(JSON.stringify(j.id))},this)'>Retry ${Number(j.retry_count)} confirmed failed task(s)</button>`:''}</div>`).join('');$('uxHistoryStatus').textContent=uxHistoryRecords.length?`${jobs.length} of ${uxHistoryRecords.length} local records`:'No history yet. Submit a generation from a selected role.';}
 async function clearUXHistory(){if(!confirm('Clear saved batch history? Running jobs are not cancelled.'))return;try{await uxRequest('api/generator/history',{method:'DELETE'});loadUXHistory()}catch(e){$('uxHistoryStatus').textContent=e.message}}
-async function retryUXJob(id,btn){if(btn.disabled||!confirm('Retry only the confirmed failed tasks using their original submitted settings?'))return;btn.disabled=true;try{const d=await uxRequest('api/generator/jobs/'+encodeURIComponent(id)+'/retry-failed',{method:'POST'});trackGeneratorJob(d.id);let sent=false;try{const b=window.parent!==window&&window.parent.document.querySelector('#casting_native_queue_button');if(b){b.click();sent=true}}catch(e){}closeUXModal('uxHistoryModal');if(!sent)alert('Retry staged. Use Settings → Troubleshooting to trigger the native queue relay.');if(generatorPoll)clearTimeout(generatorPoll);await pollGenerator()}catch(e){$('uxHistoryStatus').textContent='Retry failed: '+e.message;btn.disabled=false}}
+async function retryUXJob(id,btn){if(btn.disabled)return;btn.disabled=true;try{const r=await uxRequest('api/generator/jobs/'+encodeURIComponent(id)+'/retry-preview');if(!btn.isConnected||!$('uxHistoryModal').classList.contains('open'))return;const panel=document.createElement('div');for(const t of r.tasks){const label=document.createElement('strong');label.textContent=[t.label.person,t.label.character,t.label.production,t.model_type,'Scene '+t.label.scene].filter(Boolean).join(' · ');const pre=document.createElement('pre');pre.style.whiteSpace='pre-wrap';pre.style.overflowWrap='anywhere';pre.textContent=t.prompt;panel.append(label,pre)}const queue=document.createElement('button');queue.textContent='Queue reviewed retry';queue.className='primary';queue.onclick=()=>submitReviewedRetry(id,r.review_token,queue);panel.append(queue);btn.replaceWith(panel);}catch(e){$('uxHistoryStatus').textContent='Retry review unavailable: '+e.message;btn.disabled=false}}
+async function submitReviewedRetry(id,token,btn){if(btn.disabled)return;btn.disabled=true;try{const d=await uxRequest('api/generator/jobs/'+encodeURIComponent(id)+'/retry-failed?review_token='+encodeURIComponent(token),{method:'POST'});trackGeneratorJob(d.id);let sent=false;try{const b=window.parent!==window&&window.parent.document.querySelector('#casting_native_queue_button');if(b){b.click();sent=true}}catch(e){}closeUXModal('uxHistoryModal');if(!sent)alert('Retry staged. Use Settings → Troubleshooting to trigger the native queue relay.');if(generatorPoll)clearTimeout(generatorPoll);await pollGenerator()}catch(e){$('uxHistoryStatus').textContent='Retry failed: '+e.message;btn.disabled=false}}
 setUXMode(uxRead(UX_MODE_KEY,false)===true);renderUXPresets();syncUXUndo();
 document.addEventListener('keydown',e=>{if(e.repeat||e.isComposing||e.target.closest?.('input,textarea,select,[contenteditable=true]'))return;if(e.key==='Escape')return;if(!e.altKey||e.ctrlKey||e.metaKey||e.shiftKey)return;if(activeCastingModal()?.id==='generatorModal'){if(e.key.toLowerCase()==='n'&&!$('generatorSubmit').disabled){e.preventDefault();submitGenerator(true)}else if(e.key.toLowerCase()==='p'){e.preventDefault();previewGenerator()}else if(e.key==='ArrowRight'&&!generatorSubmitBusy&&!generatorRequestInProgress){e.preventDefault();generatorAdvanceSelection()}else if(e.key==='ArrowLeft'&&!generatorSubmitBusy&&!generatorRequestInProgress&&$('generatorChoice').selectedIndex>0){e.preventDefault();$('generatorChoice').selectedIndex--;generatorChoiceChanged()}}else if(!document.querySelector('.modal.open')&&e.key.toLowerCase()==='u'){e.preventDefault();undoUXChoice()}});
 $('generatorSubmit').title='Queue & next selection (Alt+N)';$('uxUndo').title='Undo recent selection removal (Alt+U)';

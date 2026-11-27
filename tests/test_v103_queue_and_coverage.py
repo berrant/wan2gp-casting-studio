@@ -1,4 +1,5 @@
 """Queue-pass, remake isolation, responsible-use UX and cast coverage regressions."""
+from test_native_plugin import reviewed_submit
 from importlib import import_module
 from test_native_plugin import installation
 from test_dev56 import _init_128
@@ -16,7 +17,7 @@ def test_subset_preserves_distinct_prompts_and_scope(installation):
     rows=r.json()['tasks']
     assert [x['choice_key'] for x in rows]==keys[7:107]
     assert len(set(x['prompt'] for x in rows))==100
-    assert c.post(API+'/generator/batch/submit',json=body).json()['task_count']==100
+    assert reviewed_submit(c,API+'/generator/batch/submit',json=body).json()['task_count']==100
     assert len(plugin.queue_bridge._pending)==1
     for bad in ([keys[0],keys[0]],[keys[0],'missing']):
         r=c.post(API+'/generator/batch/submit',json={**body,'choice_keys':bad})
@@ -116,14 +117,19 @@ def test_last_selection_cannot_repeat_without_new_pass(page):
 
 def test_queue_all_after_one_of_hundred_and_failed_preflight(page):
     tab,errors=page
-    tab.evaluate('''()=>{choices=Array.from({length:100},(_,i)=>({key:'choice'+i,person:'Example Person',character:'Role '+i,production:'Example Show',refmod:'Example.safetensors'}));window.batchWrites=[];window.blockBatch=true;const orig=fetch;const ok=d=>({ok:true,json:async()=>d,text:async()=>JSON.stringify(d)});window.fetch=async(u,o={})=>{if(u==='api/generator/batch/preflight'){const n=JSON.parse(o.body).choice_keys.length;return ok({count:n,ready:window.blockBatch?n-1:n,blocked:window.blockBatch?1:0,relay_ready:true,issues:[]})}if(u==='api/generator/batch/submit'){const body=JSON.parse(o.body);batchWrites.push(body);return ok({id:'batch00000000',task_count:body.choice_keys.length})}return orig(u,o);};openGenerator();}''')
+    tab.evaluate('''()=>{choices=Array.from({length:100},(_,i)=>({key:'choice'+i,person:'Example Person',character:'Role '+i,production:'Example Show',refmod:'Example.safetensors'}));window.batchWrites=[];window.blockBatch=true;const orig=fetch;const ok=d=>({ok:true,json:async()=>d,text:async()=>JSON.stringify(d)});window.fetch=async(u,o={})=>{if(u==='api/generator/batch/preflight'){const n=JSON.parse(o.body).choice_keys.length;return ok({count:n,ready:window.blockBatch?n-1:n,blocked:window.blockBatch?1:0,relay_ready:true,issues:[]})}if(u==='api/generator/batch/preview'){const body=JSON.parse(o.body);return ok({count:body.choice_keys.length,selections:body.choice_keys.length,review_token:'test-review',tasks:body.choice_keys.map((key,i)=>({choice_key:key,person:'Example Person',character:'Role '+i,production:'Example Show',scene:1,kind:'video',prompt:'Full distinct prompt '+key}))})}if(u==='api/generator/batch/submit'){const body=JSON.parse(o.body);batchWrites.push(body);return ok({id:'batch00000000',task_count:body.choice_keys.length})}return orig(u,o);};openGenerator();}''')
     tab.wait_for_function("!$('generatorSubmit').disabled&&$('generatorChoice').options.length===100")
     first=tab.locator('#generatorChoice').input_value()
     tab.locator('#generatorSubmit').click();tab.wait_for_function("window.responses.length===1&&!$('generatorQueueAll').disabled")
     assert '99 left' in tab.locator('#generatorQueueAll').text_content()
     tab.locator('#generatorQueueAll').click();tab.wait_for_function("$('generatorStatus').textContent.includes('Preflight blocked')")
     assert tab.evaluate('batchWrites.length')==0 and '99 left' in tab.locator('#generatorQueueAll').text_content()
-    tab.evaluate('blockBatch=false');tab.once('dialog',lambda d:d.accept());tab.locator('#generatorQueueAll').click()
+    tab.evaluate('blockBatch=false');tab.locator('#generatorQueueAll').click()
+    tab.wait_for_function("!$('generatorSubmitBatch').disabled")
+    assert tab.evaluate('batchWrites.length')==0
+    assert tab.locator('#generatorBatchManifest pre').count()==99
+    assert tab.locator('#generatorBatchManifest details[open]').count()==99
+    tab.locator('#generatorSubmitBatch').click()
     tab.wait_for_function('batchWrites.length===1&&!generatorSubmitBusy')
     req=tab.evaluate('batchWrites[0]');assert len(req['choice_keys'])==99 and first not in req['choice_keys']
     assert len(set(req['choice_keys']))==99

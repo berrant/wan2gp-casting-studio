@@ -1,4 +1,5 @@
 """Seeded misuse tests. Isolated local data, simulated WanGP; no online or GPU work."""
+from test_native_plugin import reviewed_submit
 import random, shutil, io
 from pathlib import Path
 import pytest
@@ -94,7 +95,7 @@ def test_bad_inputs_and_unicode_identity(installation):
     for mutant in mutants:
         r=c.post(API+'/generator/submit',json={**task,**mutant});assert 400<=r.status_code<500,(mutant,r.status_code,r.text)
     assert not p.queue_bridge._pending
-    assert c.post(API+'/generator/submit',json=task).status_code==200
+    assert reviewed_submit(c,API+'/generator/submit',json=task).status_code==200
 
 
 def test_workshop_invalid_settings_and_duplicate_pending(installation,monkeypatch):
@@ -118,7 +119,7 @@ def test_image_sets_ignore_stale_native_repeat_settings(installation):
     s.merge_settings_with_defaults=lambda data:{**old(data),'batch_size':7,'repeat_generation':9}
     p.queue_bridge.api_session=s;p.queue_bridge.dispatch_mode='gradio';key=_create_public_selection(c);_set_image_template(c,count=3)
     body={'task':{'choice_key':key,'model':'h3_image_pruned','model_type':'h3_image_pruned_checkpoint'},'scope':'selection:'+key,'scene_mode':'all'}
-    assert c.post(API+'/generator/batch/submit',json=body).status_code==200
+    assert reviewed_submit(c,API+'/generator/batch/submit',json=body).status_code==200
     p.queue_bridge.process_pending_in_gradio(s)
     assert len(s.manifests[0])==3
     assert all(x['batch_size']==x['repeat_generation']==1 for x in s.manifests[0])

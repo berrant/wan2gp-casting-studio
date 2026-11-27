@@ -1,4 +1,5 @@
 """RC12.8 local persistence and Workshop workflow regressions."""
+from test_native_plugin import reviewed_submit
 import copy,json
 import pytest
 from types import SimpleNamespace as NS
@@ -31,7 +32,7 @@ def failed_job(installation):
         result=NS(success=False,generated_files=['synthetic-output.png'],errors=[NS(task_index=2,message='test failure',cancelled=False)],failed_tasks=1,cancelled=False) if len(manifests)==1 else NS(success=True,generated_files=['synthetic-retry.png'],errors=[],cancelled=False)
         return NS(result=lambda:result,cancel=lambda:None,webui_client_ids=[])
     session.submit_manifest=submit
-    r=c.post(API+'/generator/batch/submit',json=req);assert r.status_code==200,r.text
+    r=reviewed_submit(c,API+'/generator/batch/submit',json=req);assert r.status_code==200,r.text
     jid=r.json()['id'];b.process_pending_in_gradio(session)
     fresh=type(b)(b.adapter);fresh.api_session=session;fresh.dispatch_mode='gradio';fresh.history_sink=server().persist_cast_job_history
     server().app.state.casting_queue_bridge=fresh
@@ -41,7 +42,10 @@ def test_historical_retry_preserves_exact_prompt_and_blocks_repeat(installation)
     c,b,session,jid,manifests=failed_job(installation)
     h=c.get(API+'/generator/history').json()['jobs'][0];assert h['retry_count']==1 and not any(k.startswith('_retry_') for k in h)
     tpl=c.get(API+'/prompts/image-template?model=h3_image_pruned').json();tpl['shots'][1]['action']='Changed after original submission';assert c.put(API+'/prompts/image-template?model=h3_image_pruned',json=tpl).status_code==200
-    r=c.post(API+'/generator/jobs/'+jid+'/retry-failed');assert r.status_code==200,r.text;assert r.json()['task_count']==1
+    preview=c.get(API+'/generator/jobs/'+jid+'/retry-preview');assert preview.status_code==200,preview.text
+    assert preview.json()['tasks'][0]['prompt']==manifests[0][1]['prompt']
+    assert c.post(API+'/generator/jobs/'+jid+'/retry-failed').status_code==409
+    r=c.post(API+'/generator/jobs/'+jid+'/retry-failed',params={'review_token':preview.json()['review_token']});assert r.status_code==200,r.text;assert r.json()['task_count']==1
     assert c.post(API+'/generator/jobs/'+jid+'/retry-failed').status_code==400
     b.process_pending_in_gradio(session);assert len(manifests[1])==1 and manifests[1][0]['prompt']==manifests[0][1]['prompt']
     assert next(j for j in c.get(API+'/generator/history').json()['jobs'] if j['id']==jid)['retry_count']==0
@@ -101,6 +105,8 @@ def test_optional_workshop_test_portrait_exact_refmod(installation,monkeypatch,e
         assert c.post(API+'/workshop/create',json=req).status_code==400
         assert c.post(API+'/workshop/create',json={**req,'test_portrait_model':'h3_video','test_portrait_model_type':'flux-test'}).status_code==400
         req.update(test_portrait_model='flux2_klein9',test_portrait_model_type='flux-test')
+    candidates=c.get(API+'/workshop/portrait-models?family=flux2').json()['models']
+    req['test_portrait_prompt']=next(m['prompt'] for m in candidates if m['model_type']=='flux-test' and m['model']=='flux2_klein9')
     r=c.post(API+'/workshop/create',json=req);assert r.status_code==200,r.text;jid=r.json()['job_id']
     if explicit=='disappears':
         monkeypatch.setattr(b,'models',lambda board:[{'model_type':'flux-other','name':'Other','ready':True}] if board=='flux2_klein9' else [])

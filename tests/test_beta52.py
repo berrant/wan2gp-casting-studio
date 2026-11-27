@@ -1,4 +1,5 @@
 """Cross-chat regression gate for current beta; uses fake WanGP, no GPU."""
+from test_native_plugin import reviewed_submit
 import json
 import shutil
 import pytest
@@ -37,7 +38,7 @@ def test_window_lora_native_payload(installation):
     p.queue_bridge._lora_catalog=lambda *args:{'supported':True,'loras':['a.safetensors','b.safetensors']}
     key=_create_public_selection(c)
     body={'choice_key':key,'model':'h3_video','model_type':'h3_ref2va_pruned_checkpoint','video_seconds':60,'video_script_mode':'sequence','sliding':{'sliding_window_size':362,'sliding_window_overlap':18},'loras':[{'name':'a.safetensors','multiplier':1.5},{'name':'b.safetensors','multiplier':0}], 'window_loras':{'b.safetensors':[0,.8,0,0]}}
-    r=c.post(API+'/generator/submit',json=body);assert r.status_code==200,r.text
+    r=reviewed_submit(c,API+'/generator/submit',json=body);assert r.status_code==200,r.text
     assert _await_job(c,r.json()['id'])['state']=='completed'
     task=session.submitted[-1];assert task['activated_loras']==['a.safetensors','b.safetensors'];assert task['loras_multipliers']=='1.5 0'
     assert [part.split(']')[0]+']' for part in task['prompt'].split('\n\n')]==['[/loras_mult=1.5 0]','[/loras_mult=1.5 0.8]','[/loras_mult=1.5 0]','[/loras_mult=1.5 0]']

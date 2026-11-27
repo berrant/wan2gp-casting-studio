@@ -355,6 +355,8 @@ def connect():
         conn.execute('CREATE TABLE IF NOT EXISTS production_selection_sets (production TEXT NOT NULL, family TEXT NOT NULL, payload TEXT NOT NULL, PRIMARY KEY(production,family))')
         conn.execute('CREATE TABLE IF NOT EXISTS casting_gallery (id INTEGER PRIMARY KEY CHECK(id=1), payload TEXT NOT NULL)')
         conn.execute('CREATE TABLE IF NOT EXISTS casting_job_history (id TEXT PRIMARY KEY, updated INTEGER NOT NULL, payload TEXT NOT NULL)')
+        conn.execute('CREATE TABLE IF NOT EXISTS casting_review_receipts (id TEXT PRIMARY KEY, request_digest TEXT NOT NULL, receipt TEXT, created INTEGER NOT NULL)')
+        conn.execute('CREATE TABLE IF NOT EXISTS casting_review_tasks (task_digest TEXT PRIMARY KEY, review_id TEXT NOT NULL)')
         conn.execute('CREATE TABLE IF NOT EXISTS images (key TEXT PRIMARY KEY, url TEXT NOT NULL)')
         conn.execute('CREATE TABLE IF NOT EXISTS photo_files (url TEXT PRIMARY KEY, filename TEXT NOT NULL)')
         conn.execute('CREATE TABLE IF NOT EXISTS profile_categories (name TEXT PRIMARY KEY, categories TEXT NOT NULL)')
@@ -838,7 +840,7 @@ def get_profile_link(name:str=Query(min_length=1,max_length=180)):
         return {'provider':'imdb','url':row[0],'verified':True} if row[0] else default
     imdb=''
     try:
-        with httpx.Client(timeout=5,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.11 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
+        with httpx.Client(timeout=5,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.12 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
             resp=client.get('https://www.wikidata.org/w/api.php',params={'action':'wbsearchentities','search':name,'language':'en','format':'json','limit':6,'type':'item'})
             resp.raise_for_status()
             candidates=[v for v in resp.json().get('search',[]) if token(v.get('label'))==token(name)]
@@ -950,7 +952,7 @@ def short_stage_profile(name, *, qid=None):
         qid=row[0] if row else ''
     if not re.fullmatch(r'Q[1-9][0-9]{0,14}',qid):
         raise ValueError('Short stage name requires a reviewed Wikidata QID in Settings')
-    with httpx.Client(timeout=20,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.11'}) as client:
+    with httpx.Client(timeout=20,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.12'}) as client:
         response=client.get('https://www.wikidata.org/w/api.php',params={'action':'wbgetentities','ids':qid,'props':'claims|labels|aliases|sitelinks','languages':'en','sitefilter':'enwiki','format':'json'})
         response.raise_for_status()
         entity=response.json().get('entities',{}).get(qid,{})
@@ -991,7 +993,7 @@ def researched_credits(name):
     if len(name.strip())!=1:return fetch_credits(name)
     _,title=short_stage_profile(name)
     if not title:raise ValueError('Reviewed identity has no English Wikipedia article')
-    with httpx.Client(timeout=20,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.11'}) as client:
+    with httpx.Client(timeout=20,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.12'}) as client:
         response=client.get('https://en.wikipedia.org/w/api.php',params={'action':'parse','page':title,'prop':'text','format':'json','formatversion':'2'})
         response.raise_for_status()
         article=response.json().get('parse') or {}
@@ -1002,7 +1004,7 @@ def researched_credits(name):
 
 def wikidata_profile(name):
     if len(name.strip())==1:return short_stage_profile(name)[0]
-    with httpx.Client(timeout=20, trust_env=False, headers={'User-Agent':'CastingStudio/1.0.11 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
+    with httpx.Client(timeout=20, trust_env=False, headers={'User-Agent':'CastingStudio/1.0.12 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
         search=wikidata_get(client,{
             'action':'wbsearchentities','search':name,'language':'en','format':'json','type':'item','limit':8})
         candidates=[c for c in search.get('search',[]) if token(c.get('label',''))==token(name) or
@@ -2358,7 +2360,7 @@ def download_image(url):
         if cached and safe_media_file(PHOTO_DIR,cached[0],r'[0-9a-f]{64}\.jpg'):return 'api/photos/'+cached[0]
         address=validate_public_url(url)
         # Disable proxies and redirects; redirects must not reach private network addresses.
-        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.11)'}) as client:
+        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.12)'}) as client:
             with pinned_image_request(client,url,address) as res:
                 if res.status_code!=200 or not res.headers.get('content-type','').lower().startswith('image/'):
                     return ''
@@ -3295,6 +3297,8 @@ class CastTask(BaseModel):
     sliding: dict = Field(default_factory=dict)
     window_loras: dict = Field(default_factory=dict)
     fixed_windows: bool = False
+    queue_pass: str = Field(default="initial",min_length=1,max_length=80,pattern=r"^[a-zA-Z0-9_-]+$")
+    review_token: str | None = Field(default=None,max_length=64,exclude=True)
 
 
 def _casting_bridge():
@@ -3404,9 +3408,15 @@ class PortraitRequest(BaseModel):
     model_type: str = Field(min_length=1,max_length=200)
     loras: list[dict] | None = None
     replace: bool = False
+    reviewed_prompt: str | None = None
+    review_token: str | None = Field(default=None,max_length=64)
 
 portrait_jobs_lock=threading.Lock()
 portrait_jobs={}
+
+def portrait_review_binding(profile,model,model_type,path):
+    stat=path.stat()
+    return ['portrait',profile['id'],profile['name_key'],profile['portrait'],model,model_type,str(path),stat.st_size,stat.st_mtime_ns,portrait_prompt(model)]
 
 @app.get('/api/personal/{personal_id}/portrait-models')
 def portrait_models(personal_id:str):
@@ -3419,10 +3429,14 @@ def portrait_models(personal_id:str):
         if option['kind']!='image':continue
         field='h3_refmod' if option['family']=='minimax_h3' else 'flux_refmod'
         if profile[field] not in known:continue
-        try:models=bridge.models(option['id'])
-        except (ValueError,RuntimeError):continue
+        try:
+            models=bridge.models(option['id'])
+            path=bridge.adapter.validate_refmod(relative_path=profile[field],family=option['family'],personal=True)
+        except (ValueError,RuntimeError,PermissionError):continue
         for model in models:
-            if model['ready']:out.append({'model':option['id'],'model_type':model['model_type'],'name':model['name']})
+            if model['ready']:
+                binding=portrait_review_binding(profile,option['id'],model['model_type'],path)
+                out.append({'model':option['id'],'model_type':model['model_type'],'name':model['name'],'prompt':portrait_prompt(option['id']),'review_token':remember_cast_review(binding,{})})
     return out
 
 def portrait_prompt(model):
@@ -3442,9 +3456,10 @@ def generate_personal_portrait(personal_id:str,req:PortraitRequest):
     profile=personal_row_by_id(personal_id)
     if not profile:raise HTTPException(404,'Personal profile not found')
     if not profile['consent']:raise HTTPException(403,'Consent required')
-    if profile['portrait'] and not req.replace:raise HTTPException(409,'Confirm replacement of the existing portrait')
+    request_digest=casting_digest([personal_id,req.model_dump(exclude={'review_token'})])
     family=selected['family'];field='h3_refmod' if family=='minimax_h3' else 'flux_refmod'
     linked=profile[field]
+    reviewed_binding=None
     def check_profile():
         current=personal_row_by_id(personal_id)
         if not current or not current['consent']:raise PermissionError('Personal consent revoked or profile deleted')
@@ -3455,6 +3470,7 @@ def generate_personal_portrait(personal_id:str,req:PortraitRequest):
         check_profile()
         if not linked or not any(m['path']==linked and m['family']==family for m in personal_refmod_inventory()):raise ValueError('Link an installed Personal RefMod for this image model')
         path=bridge.adapter.validate_refmod(relative_path=linked,family=family,personal=True)
+        if reviewed_binding is not None and portrait_review_binding(profile,req.model,req.model_type,path)!=reviewed_binding:raise ValueError('Portrait reference changed after review')
         return portrait_prompt(req.model),family,path
     def complete(files):
         # Only consume paths returned by this native job, never client paths or inference previews.
@@ -3480,11 +3496,27 @@ def generate_personal_portrait(personal_id:str,req:PortraitRequest):
         return 'api/personal/portraits/'+filename
     submission=Submission(model=req.model,model_type=req.model_type,choice_key='portrait:'+personal_id,loras=req.loras,portrait_completion=complete,monitor_details={'person':profile['name'],'kind':'image','scene':1,'personal':True})
     try:
-        with portrait_jobs_lock:
+        with portrait_jobs_lock,casting_review_lock:
+            if req.review_token:
+                with connect() as db:receipt=db.execute('SELECT request_digest,receipt FROM casting_review_receipts WHERE id=?',(req.review_token,)).fetchone()
+                if receipt:
+                    if receipt[0]!=request_digest or not receipt[1]:raise HTTPException(409,'Previous portrait submission differs or has an uncertain outcome; check the native queue')
+                    return json.loads(receipt[1])
+            if profile['portrait'] and not req.replace:raise HTTPException(409,'Confirm replacement of the existing portrait')
             previous=portrait_jobs.get(personal_id)
             if previous and (bridge.status(previous) or {}).get('state') in ('queued','running'):raise HTTPException(409,'A portrait job is already active for this profile')
+            bridge.preflight(submission,validate)
+            _,_,path=validate(submission)
+            reviewed_binding=portrait_review_binding(profile,req.model,req.model_type,path)
+            review=casting_reviews.get(req.review_token or '')
+            if req.reviewed_prompt!=portrait_prompt(req.model) or not review or time.monotonic()-review[0]>CASTING_REVIEW_TTL or review[1]!=casting_digest(reviewed_binding):raise HTTPException(409,'Portrait prompt or reference review is missing or stale; reopen Generate portrait')
+            submission._reviewed_native_prompt=req.reviewed_prompt
+            with connect() as db:db.execute('INSERT INTO casting_review_receipts VALUES (?,?,NULL,?)',(req.review_token,request_digest,int(time.time())))
             job=bridge.enqueue(submission,validate);portrait_jobs[personal_id]=job
-        return {'id':job,'state':'queued'}
+            result={'id':job,'state':'queued'}
+            with connect() as db:db.execute('UPDATE casting_review_receipts SET receipt=? WHERE id=?',(json.dumps(result),req.review_token))
+            casting_reviews.pop(req.review_token,None)
+        return result
     except PermissionError as exc:raise HTTPException(403,str(exc))
     except (ValueError,RuntimeError) as exc:raise HTTPException(400,str(exc))
 
@@ -3512,10 +3544,12 @@ def preview_window_loras(task,prompt):
 def generator_preview(task:CastTask):
     try:
         from types import SimpleNamespace
-        raw,family,path=build_live_cast_prompt(task)
+        details={}
+        raw,family,path=build_live_cast_prompt(task,monitor_details=details)
         prompt=preview_window_loras(task,raw)
+        review_token=remember_cast_review(task.model_dump(),{final_prompt_key(task):cast_review_fingerprint(task,prompt,family,path,details)})
         with connect() as db:edited=bool(db.execute('SELECT 1 FROM final_prompt_edits WHERE key=?',(final_prompt_key(task),)).fetchone())
-        return {'prompt':prompt,'editable_prompt':raw,'edited':edited,'family':family,'refmod_filename':path.name,'scene':task.scene}
+        return {'prompt':prompt,'editable_prompt':raw,'edited':edited,'family':family,'refmod_filename':path.name,'scene':task.scene,'review_token':review_token}
     except PermissionError as exc:raise HTTPException(403,str(exc))
     except ValueError as exc:raise HTTPException(400,str(exc))
 
@@ -3557,20 +3591,92 @@ def retry_choice_personal_id(key):
     if not row:raise ValueError('Casting selection no longer exists')
     return require_choice(key,row[0]).get('personal_id') or ''
 
-def snapshot_cast_validator():
+# Reviewed manifests are ephemeral capabilities, scoped to this process and
+# exact request. Receipts are durable so a lost HTTP response cannot restage it.
+# No prompt text, paths or names are stored in the receipt table.
+casting_review_lock=threading.RLock()
+casting_reviews={}
+CASTING_REVIEW_TTL=3600
+
+def casting_digest(value):
+    return hashlib.sha256(json.dumps(value,sort_keys=True,ensure_ascii=False,separators=(',',':'),allow_nan=False).encode()).hexdigest()
+
+def cast_review_fingerprint(task,native,family,path,details):
+    st=path.stat()
+    return casting_digest([final_prompt_key(task),native,family,str(path),st.st_size,st.st_mtime_ns,details,retry_choice_personal_id(task.choice_key)])
+
+def remember_cast_review(request_data,fingerprints):
+    now=time.monotonic(); key=uuid.uuid4().hex
+    with casting_review_lock:
+        for expired in [k for k,v in casting_reviews.items() if now-v[0]>CASTING_REVIEW_TTL]:casting_reviews.pop(expired,None)
+        while len(casting_reviews)>=512:casting_reviews.pop(next(iter(casting_reviews)))
+        casting_reviews[key]=(now,casting_digest(request_data),dict(fingerprints))
+    return key
+
+def reviewed_cast_enqueue(review_token,request_data,submissions,bridge,*,batch,individual_tokens=None,tasks=None):
+    digest=casting_digest(request_data)
+    if individual_tokens:
+        if review_token or len(individual_tokens)!=len(submissions) or len(set(individual_tokens))!=len(individual_tokens):
+            raise HTTPException(409,'Image review is incomplete. Reload every image prompt.')
+        review_token='set_'+casting_digest(individual_tokens)
+    if not review_token:raise HTTPException(409,'Review the complete final prompts before submitting.')
+    with casting_review_lock:
+        with connect() as db:
+            row=db.execute('SELECT request_digest,receipt FROM casting_review_receipts WHERE id=?',(review_token,)).fetchone()
+        if row:
+            if row[0]!=digest:raise HTTPException(409,'Review belongs to a different request. Review again.')
+            if row[1] is None:raise HTTPException(409,'Previous submission outcome is uncertain. Check native queue and history before starting a new review.')
+            return json.loads(row[1])
+        def get_review(token,request):
+            review=casting_reviews.get(token)
+            if not review or time.monotonic()-review[0]>CASTING_REVIEW_TTL or review[1]!=casting_digest(request):
+                raise HTTPException(409,'Review expired or generation settings changed. Review every prompt again.')
+            return review[2]
+        if individual_tokens:
+            expected={}
+            for token,task in zip(individual_tokens,tasks):expected.update(get_review(token,task.model_dump()))
+        else:expected=get_review(review_token,request_data)
+        if len(expected)!=len(submissions) or set(expected)!={final_prompt_key(t) for t in submissions}:
+            raise HTTPException(409,'Generation task list changed. Review again.')
+        validate=snapshot_cast_validator(expected)
+        # Validate ALL tasks before claiming or staging any. The same immutable
+        # validator is then used by enqueue and the native relay.
+        for sub in submissions:bridge.preflight(sub,validate)
+        task_ids=[casting_digest([sub.queue_pass,final_prompt_key(sub)]) for sub in submissions]
+        with connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            if any(db.execute('SELECT 1 FROM casting_review_tasks WHERE task_digest=?',(key,)).fetchone() for key in task_ids):
+                raise HTTPException(409,'At least one task was already staged in this queue pass. Check queue/history or start an intentional new pass.')
+            db.execute('INSERT INTO casting_review_receipts VALUES (?,?,NULL,?)',(review_token,digest,int(time.time())))
+            db.executemany('INSERT INTO casting_review_tasks VALUES (?,?)',[(key,review_token) for key in task_ids])
+        # If the process is interrupted after claiming, retain the uncertain
+        # claim rather than silently stage a second native job on retry.
+        job_id=bridge.enqueue_batch(submissions,validate) if batch else bridge.enqueue(submissions[0],validate)
+        receipt={'id':job_id,'state':'queued','task_count':len(submissions),'selections':len({t.choice_key for t in submissions})}
+        with connect() as db:db.execute('UPDATE casting_review_receipts SET receipt=? WHERE id=?',(json.dumps(receipt),review_token))
+        for token in individual_tokens or [review_token]:casting_reviews.pop(token,None)
+        return receipt
+
+def snapshot_cast_validator(expected=None):
     staged={}
     def validate(task):
         k=final_prompt_key(task)
         details={}
         prompt,family,path=build_live_cast_prompt(task,use_saved=k not in staged,monitor_details=details)
-        if k not in staged:staged[k]=(prompt,family,path,details)
+        if k not in staged:
+            if expected is not None:
+                native=preview_window_loras(task,prompt)
+                if expected.get(k)!=cast_review_fingerprint(task,native,family,path,details):
+                    raise HTTPException(409,'A reviewed prompt or reference changed. Review every prompt again.')
+                task._reviewed_native_prompt=native
+            staged[k]=(prompt,family,path,details)
         saved,old_family,old_path,old_details=staged[k]
         task.monitor_details=dict(old_details)
         if (old_family,old_path)!=(family,path):raise ValueError('RefMod changed after staging; queue the task again')
         # Private snapshot kept in runtime DB only if native WanGP confirms failure.
         if not hasattr(task,'_retry_snapshot'):
             st=path.stat()
-            task._retry_snapshot={'prompt':saved,'family':family,'path':str(path),'size':st.st_size,'mtime':st.st_mtime_ns,'details':dict(old_details),'personal_id':retry_choice_personal_id(task.choice_key)}
+            task._retry_snapshot={'prompt':saved,'family':family,'path':str(path),'size':st.st_size,'mtime':st.st_mtime_ns,'details':dict(old_details),'personal_id':retry_choice_personal_id(task.choice_key),'native_prompt':task._reviewed_native_prompt if hasattr(task,'_reviewed_native_prompt') else preview_window_loras(task,saved)}
         else:
             snap=task._retry_snapshot;st=path.stat()
             if (st.st_size,st.st_mtime_ns,details,retry_choice_personal_id(task.choice_key))!=(snap['size'],snap['mtime'],snap['details'],snap.get('personal_id','')):raise ValueError('Original casting identity or RefMod changed; queue the task again')
@@ -3587,10 +3693,12 @@ def generator_submit(task:CastTask):
         submission=Submission(model=task.model,model_type=task.model_type,
                               choice_key=task.choice_key,scene=task.scene,
                               steps=task.steps,resolution=task.resolution,seed=task.seed,
-                              strength=task.strength,extra_settings=task.extra_settings,loras=task.loras,video_seconds=task.video_seconds,video_script_mode=task.video_script_mode,sliding=task.sliding,window_loras=task.window_loras,fixed_windows=task.fixed_windows)
-        # Callable must be invoked for worker execution as well as preflight.
-        job_id=bridge.enqueue(submission,snapshot_cast_validator())
-        return {'id':job_id,'state':'queued'}
+                              strength=task.strength,extra_settings=task.extra_settings,loras=task.loras,video_seconds=task.video_seconds,video_script_mode=task.video_script_mode,sliding=task.sliding,window_loras=task.window_loras,fixed_windows=task.fixed_windows,queue_pass=task.queue_pass)
+        if task.review_token:return reviewed_cast_enqueue(task.review_token,task.model_dump(),[submission],bridge,batch=False)
+        # Preserve meaningful validation errors for malformed or incompatible
+        # requests, but never stage an unreviewed generation.
+        bridge.preflight(submission,snapshot_cast_validator())
+        raise HTTPException(409,'Review the complete final prompt before submitting.')
     except PermissionError as exc:raise HTTPException(403,str(exc))
     except (ValueError,RuntimeError) as exc:raise HTTPException(400,str(exc))
 
@@ -3599,6 +3707,9 @@ class CastBatchRequest(BaseModel):
     scope:str=Field(default='all',max_length=260)
     scene_mode:str=Field(default='first',pattern='^(first|all)$')
     choice_keys:list[str]|None=Field(default=None,min_length=1,max_length=2000)
+    review_token:str|None=Field(default=None,max_length=64)
+    review_tokens:list[str]|None=Field(default=None,max_length=10)
+    pass_ids:dict[str,str]=Field(default_factory=dict,max_length=2000)
 
 
 def expand_cast_batch(req:CastBatchRequest):
@@ -3640,7 +3751,9 @@ def expand_cast_batch(req:CastBatchRequest):
                     ov=stored_video_template(overrides.get(entry.get('key','')),override=True)
                     count=max(1,min(4,int(ov.get('video_count',base.get('video_count',2)))))
         for index in range(1,count+1):
-            task=req.task.model_copy(update={'choice_key':entry['key'],'scene':index})
+            pass_id=req.pass_ids.get(entry['key'],req.task.queue_pass)
+            if not re.fullmatch(r'[a-zA-Z0-9_-]{1,80}',pass_id):raise ValueError('Invalid queue pass')
+            task=req.task.model_copy(update={'choice_key':entry['key'],'scene':index,'queue_pass':pass_id,'review_token':None})
             tasks.append(task)
             labels.append({'person':entry.get('person',''), 'character':entry.get('character',''),
                            'production':portrayal_production_label(entry) if entry.get('production') else '',
@@ -3651,16 +3764,19 @@ def expand_cast_batch(req:CastBatchRequest):
 
 @app.post('/api/generator/batch/preview',include_in_schema=False)
 def generator_batch_preview(request:CastBatchRequest):
-    from types import SimpleNamespace
     try:
         tasks,labels=expand_cast_batch(request)
-        out=[]
+        out=[];fingerprints={}
         for task,label in zip(tasks,labels):
-            prompt,family,path=build_live_cast_prompt(SimpleNamespace(**task.model_dump()))
-            prompt=preview_window_loras(task,prompt)
-            out.append({**label,'prompt':prompt,'refmod_filename':path.name})
+            details={}
+            raw,family,path=build_live_cast_prompt(task,monitor_details=details)
+            prompt=preview_window_loras(task,raw)
+            fingerprints[final_prompt_key(task)]=cast_review_fingerprint(task,prompt,family,path,details)
+            out.append({**label,'prompt':prompt,'refmod_filename':path.name,'model_type':task.model_type,
+                        'windows':(task.video_seconds+14)//15 if task.model=='h3_video' and task.video_seconds>15 and task.video_script_mode=='sequence' else 1})
+        review_token=remember_cast_review(request.model_dump(exclude={'review_token','review_tokens'}),fingerprints)
         return {'count':len(out),'selections':len(set(x['choice_key'] for x in out)),
-                'tasks':out,'model_type':request.task.model_type}
+                'tasks':out,'model_type':request.task.model_type,'review_token':review_token}
     except PermissionError as exc:raise HTTPException(403,str(exc))
     except (ValueError,TypeError) as exc:raise HTTPException(400,str(exc))
 
@@ -3674,10 +3790,12 @@ def generator_batch_submit(request:CastBatchRequest):
         tasks,labels=expand_cast_batch(request)
         submissions=[Submission(model=t.model,model_type=t.model_type,choice_key=t.choice_key,
                      scene=t.scene,steps=t.steps,resolution=t.resolution,seed=t.seed,
-                     strength=t.strength,extra_settings=t.extra_settings,loras=t.loras,video_seconds=t.video_seconds,video_script_mode=t.video_script_mode,sliding=t.sliding,window_loras=t.window_loras,fixed_windows=t.fixed_windows)
+                     strength=t.strength,extra_settings=t.extra_settings,loras=t.loras,video_seconds=t.video_seconds,video_script_mode=t.video_script_mode,sliding=t.sliding,window_loras=t.window_loras,fixed_windows=t.fixed_windows,queue_pass=t.queue_pass)
                      for t in tasks]
-        batch_id=bridge.enqueue_batch(submissions,snapshot_cast_validator())
-        return {'id':batch_id,'state':'queued','task_count':len(tasks),'selections':len(set(x['choice_key'] for x in labels))}
+        if request.review_token or request.review_tokens:
+            return reviewed_cast_enqueue(request.review_token,request.model_dump(exclude={'review_token','review_tokens'}),submissions,bridge,batch=True,individual_tokens=request.review_tokens,tasks=tasks)
+        for sub in submissions:bridge.preflight(sub,snapshot_cast_validator())
+        raise HTTPException(409,'Review the complete final prompts before submitting.')
     except PermissionError as exc:raise HTTPException(403,str(exc))
     except (ValueError,TypeError,RuntimeError) as exc:raise HTTPException(400,str(exc))
 
@@ -3723,7 +3841,7 @@ def retry_historical_job(job_id,bridge):
         if not tasks:raise ValueError('No confirmed failed task snapshots available')
         subs=[]
         for t in tasks:
-            sub=Submission(**t['settings']);sub._retry_snapshot=t['snapshot'];subs.append(sub)
+            sub=Submission(**t['settings']);sub._retry_snapshot=t['snapshot'];sub._reviewed_native_prompt=retry_native_prompt(t);subs.append(sub)
         def validate(sub):
             snap=sub._retry_snapshot;details={}
             _,family,path=build_live_cast_prompt(sub,use_saved=False,monitor_details=details)
@@ -3774,11 +3892,44 @@ def clear_casting_job_history():
     with connect() as db:db.execute('DELETE FROM casting_job_history')
     return {'cleared':True}
 
+def retry_native_prompt(task):
+    snap=task['snapshot'];settings=task['settings']
+    if 'native_prompt' in snap:return snap['native_prompt']
+    if settings.get('window_loras') or settings.get('fixed_windows'):raise ValueError('Original native window prompt was not recorded. Create and review a new job instead.')
+    return snap['prompt']
+
+def retry_review_manifest(job_id):
+    with connect() as db:row=db.execute('SELECT payload FROM casting_job_history WHERE id=?',(job_id,)).fetchone()
+    if not row:raise ValueError('No confirmed failed tasks available')
+    record=json.loads(row[0]);tasks=historical_retry_tasks(record)
+    if not tasks:raise ValueError('No confirmed failed tasks available')
+    out=[]
+    for task in tasks:
+        snap=task['snapshot'];settings=task['settings'];details={}
+        from ..queue_bridge import Submission
+        sub=Submission(**settings)
+        _,family,path=build_live_cast_prompt(sub,use_saved=False,monitor_details=details)
+        st=path.stat()
+        if (family,str(path),st.st_size,st.st_mtime_ns,details,retry_choice_personal_id(sub.choice_key))!=(snap['family'],snap['path'],snap['size'],snap['mtime'],snap['details'],snap['personal_id']):raise ValueError('Original casting identity or RefMod changed; create a new job instead')
+        native=retry_native_prompt(task)
+        if preview_window_loras(sub,snap['prompt'])!=native:raise ValueError('Original native prompt no longer matches; create a new job instead')
+        out.append({'prompt':native,'model_type':settings['model_type'],'label':details})
+    return {'tasks':out,'review_token':casting_digest([job_id,tasks,out])}
+
+@app.get('/api/generator/jobs/{job_id}/retry-preview',include_in_schema=False,dependencies=[Depends(require_responsible_use)])
+def preview_failed_cast_job(job_id:str):
+    try:return retry_review_manifest(job_id)
+    except PermissionError as exc:raise HTTPException(403,str(exc))
+    except (ValueError,TypeError,RuntimeError) as exc:raise HTTPException(400,str(exc))
+
 @app.post('/api/generator/jobs/{job_id}/retry-failed',include_in_schema=False,dependencies=[Depends(require_responsible_use)])
-def retry_failed_cast_job(job_id:str):
+def retry_failed_cast_job(job_id:str,review_token:str=''):
     try:
-        bridge=_casting_bridge()
-        new_id,count=bridge.retry_failed(job_id) if bridge.status(job_id) else retry_historical_job(job_id,bridge)
+        with historical_retry_lock:
+            review=retry_review_manifest(job_id)
+            if review_token!=review['review_token']:raise HTTPException(409,'Review all original failed-task prompts before retrying')
+            bridge=_casting_bridge()
+            new_id,count=bridge.retry_failed(job_id) if bridge.status(job_id) else retry_historical_job(job_id,bridge)
         return {'id':new_id,'task_count':count,'state':'queued'}
     except PermissionError as exc:raise HTTPException(403,str(exc))
     except (ValueError,TypeError,RuntimeError) as exc:raise HTTPException(400,str(exc))
@@ -3795,6 +3946,9 @@ def casting_batch_preflight(request:CastBatchRequest):
             sub=Submission(**task.model_dump())
             # Match the existing side-effect-free enqueue gate, never submit.
             bridge.preflight(sub,snapshot_cast_validator())
+            with connect() as db:
+                claimed=db.execute('SELECT 1 FROM casting_review_tasks WHERE task_digest=?',(casting_digest([sub.queue_pass,final_prompt_key(sub)]),)).fetchone()
+            if claimed:raise ValueError('Already staged in this queue pass. Check history or start a deliberate new pass.')
             ready.append({**label,'refmod': 'Installed and validated'})
         except (HTTPException,ValueError,TypeError,RuntimeError,PermissionError) as exc:
             blocked+=1
@@ -4214,7 +4368,7 @@ def search_production_online(q:str=Query(min_length=2,max_length=120)):
 # Key-free film credit source. Search is discovery only: accept a verified
 # film article with a matching title, documented alias or explicit redirect.
 WIKIPEDIA_API='https://en.wikipedia.org/w/api.php'
-WIKI_AGENT='CastingStudio/1.0.11 (+https://github.com/berrant/wan2gp-casting-studio)'
+WIKI_AGENT='CastingStudio/1.0.12 (+https://github.com/berrant/wan2gp-casting-studio)'
 def wiki_api(client,params):
     r=client.get(WIKIPEDIA_API,params={**params,'format':'json','formatversion':2},headers={'User-Agent':WIKI_AGENT})
     r.raise_for_status();return r.json()
@@ -4735,7 +4889,7 @@ def save_reference_image(item:ReferenceImageRequest):
             return {**result,'reused_local':True}
         try:address=validate_public_url(item.image_url)
         except Exception as e:raise HTTPException(400,str(e))
-        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.11'}) as client:
+        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.12'}) as client:
             with pinned_image_request(client,item.image_url,address) as r:
                 if r.status_code!=200 or not r.headers.get('content-type','').lower().startswith('image/'):
                     raise HTTPException(422,'Image host did not return an image')
@@ -5296,7 +5450,7 @@ def workshop_portrait_candidates(bridge,family):
         except (ValueError,RuntimeError):continue
         for model in models:
             if model['ready']:
-                candidates.append({'model':option['id'],'model_type':model['model_type'],'name':model['name']})
+                candidates.append({'model':option['id'],'model_type':model['model_type'],'name':model['name'],'prompt':portrait_prompt(option['id']).replace('linked Personal RefMod','newly created RefMod')})
     return candidates
 
 
@@ -5419,6 +5573,7 @@ class WorkshopCreateRequest(BaseModel):
     test_portrait:bool=False
     test_portrait_model:str|None=Field(default=None,max_length=160)
     test_portrait_model_type:str|None=Field(default=None,max_length=200)
+    test_portrait_prompt:str|None=None
 
 
 class WorkshopDecompileRequest(BaseModel):
@@ -5492,6 +5647,7 @@ def workshop_create(item:WorkshopCreateRequest):
         else:
             chosen=next((c for c in candidates if c['model']==item.test_portrait_model and c['model_type']==item.test_portrait_model_type),None)
         if chosen is None:raise HTTPException(400,'Choose a compatible installed image model for the test portrait, or turn the test portrait off')
+        if item.test_portrait_prompt!=chosen['prompt']:raise HTTPException(409,'Review the complete test image prompt before creating the RefMod')
         board,checkpoint=chosen['model'],chosen['model_type']
         def test_portrait():
             from ..queue_bridge import Submission
@@ -5504,6 +5660,7 @@ def workshop_create(item:WorkshopCreateRequest):
                 if current!=expected or not current.is_file() or (current.stat().st_size,current.stat().st_mtime_ns)!=(stat.st_size,stat.st_mtime_ns):raise ValueError('New RefMod changed before test generation')
                 return portrait_prompt(board).replace('linked Personal RefMod','newly created RefMod'),item.family,current
             sub=Submission(model=board,model_type=checkpoint,choice_key='workshop-test:'+name,monitor_details={'person':item.person,'character':item.character or '', 'production':item.production,'kind':'image','scene':1})
+            sub._reviewed_native_prompt=item.test_portrait_prompt
             return sub,validate
         task.test_portrait=test_portrait
     try:job=bridge.enqueue_workshop(task,validate_workshop_task)

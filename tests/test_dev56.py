@@ -1,4 +1,5 @@
 """dev5.6: batch manifest queue and source-specific character identity."""
+from test_native_plugin import reviewed_submit
 import json
 from types import SimpleNamespace
 from test_native_plugin import installation, _mock_fork, FakeWanSession, FakeTaskHandle
@@ -44,7 +45,7 @@ def test_all_128_have_individual_prompts_and_native_manifest(installation):
     assert len(set(x['choice_key'] for x in data['tasks']))==128
     assert len(set(x['prompt'] for x in data['tasks']))==128
     assert 'Ahsoka (2023)' in data['tasks'][0]['prompt'] or 'Star Wars: A New Hope (1977)' in data['tasks'][0]['prompt']
-    submit=client.post(API+'/generator/batch/submit',json=body)
+    submit=reviewed_submit(client,API+'/generator/batch/submit',json=body)
     assert submit.status_code==200,submit.text
     bid=submit.json()['id']
     assert submit.json()['task_count']==128
@@ -120,7 +121,7 @@ def test_privacy_consent_rechecked_after_batch_staging(installation):
     client,plugin,session,body=_init_128(installation)
     # Stage, then delete a selection before native callback: all 128 must fail,
     # not silently admit the remaining 127 to the GPU queue.
-    r=client.post(API+'/generator/batch/submit',json=body)
+    r=reviewed_submit(client,API+'/generator/batch/submit',json=body)
     assert r.status_code==200,r.text
     from importlib import import_module
     srv=import_module('cb_under_test.app.server')

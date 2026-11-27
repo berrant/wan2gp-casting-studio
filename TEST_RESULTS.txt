@@ -1,3 +1,17 @@
+Casting Studio v1.0.12 — Complete native prompt review and queue safety
+Measured verification (2026-11-27)
+
+FINAL COMPLETE CUMULATIVE REGRESSION GATE
+519 collected; 517 passed; 2 approved retired standalone Docker skips; zero failures.
+Group 1: 88 passed, 133 warnings in 175.05s (0:02:55).
+Group 2: 216 passed, 2 skipped, 278 warnings in 212.48s (0:03:32).
+Group 3: 213 passed, 290 warnings in 179.02s (0:02:59).
+110 modules covered exactly once; all exits zero. 128 final application/test fingerprints unchanged; Python, JSON and inline JavaScript syntax validated. Eight new test functions; none removed.
+The initial gate was stopped after a model-settings persistence regression. The correction restores review after removing an unavailable LoRA, and the existing browser case retains its settings-persistence checks while requiring visible prompt review. Focused corrected run: 14 passed. The full gate was restarted on the corrected application and tests.
+Exact archived v1.0.11 synthetic startup upgrade: 31 existing tables, seven stored rows and six artifacts preserved, SQLite integrity OK; two additive receipt/task tables. 800x650 Chromium review smoke: PASS (actual transformed prompt, model-workspace navigation, expanded bulk manifest, explicit confirmation). Actual user data, real native GPU inference, Safari, source-provider quality and availability, host restart/relay ambiguity, and publication are not verified. No upstream files changed.
+
+--- Earlier release evidence ---
+
 Casting Studio v1.0.11 — Integrated scene preparation and RefMod Workshop tabs
 Measured verification (2026-11-27)
 

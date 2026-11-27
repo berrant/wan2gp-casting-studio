@@ -1,3 +1,11 @@
+# v1.0.12 — Reviewed native prompts and queue safety
+
+- [x] Complete final cumulative gate on final application and tests; record counts in TEST_RESULTS.txt.
+- [x] Verify exact native prompt equality for single, image sets, bulk, video windows, retries, personal portraits and Workshop test images; stale and incomplete review must stage nothing.
+- [x] Verify concurrent duplicate/replay requests, overlapping task claims, intentional new pass, one native generation per task and additive upgrade.
+- [ ] Focused live: full prompt readability and window labels in Safari, Queue All first/all scenes, deliberate new pass, response/relay interruption and history recovery. Check native job count and actual submitted text. Do not repeat previously completed acceptance.
+- [ ] Live canonical accuracy, earlier unreported acceptance, publisher clearance and exact staged public privacy checks remain outstanding.
+
 # v1.0.11 — Integrated scene preparation and RefMod Workshop
 
 - [x] Final complete cumulative gate: 509 passed, 2 approved skips, zero failures; 109 modules, 685 non-failing warnings. Legacy gallery test updated for explicit Decompile navigation; full gate repeated. See TEST_RESULTS.txt.

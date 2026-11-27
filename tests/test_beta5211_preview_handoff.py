@@ -1,4 +1,5 @@
 """Completed output vs live preview, exact task abort, and browser preferences."""
+from test_native_plugin import reviewed_submit
 from pathlib import Path
 from types import SimpleNamespace as NS
 import shutil
@@ -89,7 +90,7 @@ def test_batch_native_output_and_abort_continues_other_tasks(installation):
             return NS(success=False,generated_files=[paths[0],paths[2]],errors=[NS(cancelled=True,task_index=2,message='Generation was cancelled')],cancelled=False)
         return NS(result=result,cancel=lambda:cancelled.append('all'),webui_client_ids=['c1','c2','c3'])
     session.submit_manifest=submit
-    response=c.post(API+'/generator/batch/submit',json={'task':{'choice_key':key,'model':'h3_image_pruned','model_type':'h3_image_pruned_checkpoint'},'scope':'selection:'+key,'scene_mode':'all'})
+    response=reviewed_submit(c,API+'/generator/batch/submit',json={'task':{'choice_key':key,'model':'h3_image_pruned','model_type':'h3_image_pruned_checkpoint'},'scope':'selection:'+key,'scene_mode':'all'})
     assert response.status_code==200,response.text;jid=response.json()['id'];b.process_pending_in_gradio(session)
     state=b.status(jid);assert state['state']=='completed' and '1 aborted' in state['message'] and state['last_result']['task_index']==3
     assert cancelled==['q2'];assert len(state['files'])==2

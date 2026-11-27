@@ -1,12 +1,24 @@
 # Casting Studio for WanGP
 
-Version: v1.0.11
+Version: v1.0.12
 Date: 2026-11-27
 
 
 ## License
 
 Casting Studio uses the [MIT License](LICENSE) for independently licensable project material. Use, modification, distribution and commercial use are permitted subject to the license notices. See [notices](NOTICE.md) and [contribution policy](CONTRIBUTING.md). WanGP, Refmod-Fork and other third-party material retain their applicable terms; no upstream rights or ownership of user outputs are granted or claimed. The project uses generic attribution without a personal name or email. The version number does not itself authorize publication.
+
+## v1.0.12 reviewed native prompts and queue safety
+
+Open **Send to WanGP**, choose the model/checkpoint, and inspect the full prompt in Prompts. Image sets show every image; video window directives appear in a separate complete native text when they differ from the editable source. Queue & Next or the single-job control uses the current reviewed prompt. If settings, prompt text or references change, review again before staging.
+
+**Queue all** opens the existing Bulk queue review and honors its first/all video-scene choice. Read or copy every expanded prompt; collapse or expand the manifest as needed. Only **Queue reviewed batch** stages the manifest. A server-side review binds the exact prompt, model, settings, scope and reference identity. If any task is stale or invalid, no task in that request is staged. The native relay also checks the reviewed text against the actual transformed prompt.
+
+A persistent local receipt and task claims prevent replaying the same request or overlapping requests in the same queue pass. A lost response is not proof of rejection: check Batch history and the native queue before starting a new pass. Start new queue pass only for a deliberate repeat. Every reviewed task forces one native generation; inherited batch/repeat defaults cannot multiply it. Browser-pass counters describe selected roles, not live native job completion. Overlapping previously staged tasks are blocked with an explanation rather than silently resubmitted. To intentionally rerun those tasks use a new pass; to avoid repetition select unstaged tasks separately.
+
+Historical retry first displays the original confirmed failed-task prompts, then queues only those tasks after explicit review. If a legacy native window prompt cannot be recovered exactly, create a new reviewed job instead. Personal portrait and optional Workshop test-image paths display their complete prompt before generation. Portrait reviews also bind the current linked reference revision and return a persistent receipt on replay; reopen Generate portrait to deliberately review a new attempt. Removing an unavailable saved LoRA refreshes a missing prompt preview without closing the generator. RefMod encoding, conversion and decompiling are not generative prompt submissions. Consent, path, model and identity checks remain in force.
+
+Two additive local SQLite tables store review receipts and hashed logical task claims; no prompt text, names or paths are stored in those tables. Reviews expire after one hour or process restart; durable receipts and claims survive restart. No new runtime data is included in distribution. Back up external data and finish active jobs before updating. Actual WanGP/Safari/GPU behavior requires focused live acceptance.
 
 ## v1.0.11 integrated AI scene preparation and queue workflow
 
