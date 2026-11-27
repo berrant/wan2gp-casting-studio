@@ -1,3 +1,7 @@
+# v1.0.10 global scene-scope requirements
+
+- Global video template scope loads all selected public portrayals independently, with no generation queue or pass prerequisite. Individual scope loads only its role. Separate source lookup, scene save and explicit batch AI review from generation submission. Preserve custom scene profiles and unsaved drafts across scope changes; ignore stale responses. Use sequential lookup and existing research limits; never submit AI or generation automatically. No database migration.
+
 # v1.0.9 scene-context requirements
 
 - Automatically resolve unchanged factory wardrobe and setting per dated public fictional portrayal, with distinct costume, physical identity, setting and action sections. Display the concrete description in the selected-role scene editor. Do not store one role's description as the global factory template.
@@ -7,7 +11,7 @@
 
 # Casting Board — cumulative requirements
 
-Authoritative delivered baseline: v1.0.7 (MIT). v1.0.8 is the character-first prompt revision; live acceptance and publishing remain gated. v1.0.5 compact masthead and v1.0.4 production integrity repairs remain intact. Run the complete cumulative suite on final application/test code before release. Preserve external user data, historic keys, consent and saved prompts. Queue progress is browser-tab-local per model/checkpoint; a receipt represents staging rather than native completion. Distinct production keys preserve existing records. Credits must come from explicit source mappings; label partial coverage. Validate release identity before importing cast or selecting film artwork, reject ambiguous series title matches, and reject conflicting explicit credit years atomically. Do not automatically rewrite previously mixed historical records.
+Authoritative delivered baseline: v1.0.9 (MIT). v1.0.10 is the global scene-scope correction; live acceptance and publishing remain gated. v1.0.5 compact masthead and v1.0.4 production integrity repairs remain intact. Run the complete cumulative suite on final application/test code before release. Preserve external user data, historic keys, consent and saved prompts. Queue progress is browser-tab-local per model/checkpoint; a receipt represents staging rather than native completion. Distinct production keys preserve existing records. Credits must come from explicit source mappings; label partial coverage. Validate release identity before importing cast or selecting film artwork, reject ambiguous series title matches, and reject conflicting explicit credit years atomically. Do not automatically rewrite previously mixed historical records.
 
 ## Research maintenance
 - Explicit due, forced and error-only screen-role sync; due-only, due-unclassified, forced and error-only classification. Confirm bulk forced refresh; preserve provider pacing and local manual classifications. No startup or automatic retries. Report scope, eligibility, cooldown and errors separately. Retain bounded aggregate local per-run summaries, with stopped and interrupted distinct from completed; do not ship runtime history.

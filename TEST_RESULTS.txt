@@ -1,3 +1,16 @@
+Casting Studio v1.0.10 — Global scene scope before queueing
+Measured verification (2026-11-27)
+
+FINAL COMPLETE CUMULATIVE REGRESSION GATE
+502 collected; 500 passed; 2 approved retired standalone Docker skips; zero failures.
+Group 1: 167 passed, 2 skipped, 237 warnings in 149.96s.
+Group 2: 156 passed, 0 skipped, 178 warnings in 200.65s.
+Group 3: 177 passed, 0 skipped, 266 warnings in 157.37s.
+107 test modules covered exactly once; all exits zero; 681 non-failing warnings. Final application/test fingerprints verified; Python, JSON and inline JavaScript syntax validated.
+Six focused scene-scope/context tests passed, including two new permanent browser cases. Global scope independently loads every selected eligible portrayal, without generation or analysis submission; reviewed scenes and unsaved drafts are protected; changing scope or closing stops subsequent lookups. Individual scope is isolated; bulk save writes edited scenes separately; batch analysis opens review with a captured role list. Synthetic upgrade from the exact archived v1.0.9 source preserved all 31 existing SQLite tables, eight stored rows, model/photo bytes and integrity. Separate fresh startup passed. No schema changes. Live WanGP, Safari, source-provider availability, actual user data, GPU output and publication remain unverified.
+
+--- Earlier release evidence ---
+
 Casting Studio v1.0.9 — Portrayal-specific wardrobe and environment
 Measured verification (2026-11-27)
 

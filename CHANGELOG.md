@@ -1,3 +1,9 @@
+## v1.0.10 — Global portrayal scene scope
+
+- Load a separate wardrobe and setting panel for every selected public character role in the video editor's global scope, regardless of generation queue/pass state. Individual scope loads only the selected role. Run public lookups sequentially; stop starting new lookups on scope change or close. Retain unsaved scene drafts by choice key and ignore stale responses.
+- Add global refresh, save-edited-scenes and batch AI review controls. Protect reviewed and unsaved descriptions from bulk refresh; do not copy one character's scene to another. Batch AI opens the explicit reference-selection workflow, restricted to the captured roles, with existing batch limits. Opening or changing editor scope does not submit generation or AI analysis.
+- No new database schema, upstream modifications or default prompt changes. Source-dependent details may remain unavailable; previous live checks remain outstanding.
+
 ## v1.0.9 — Portrayal-specific wardrobe and scene context
 
 - Resolve unchanged factory wardrobe and setting fields independently from the selected dated public fictional portrayal, shared across stills and videos. Custom template, per-shot and final prompt edits retain precedence. Personal, broadcast and game prompt defaults are unchanged.

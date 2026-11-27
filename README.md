@@ -1,12 +1,16 @@
 # Casting Studio for WanGP
 
-Version: v1.0.9
+Version: v1.0.10
 Date: 2026-11-27
 
 
 ## License
 
 Casting Studio uses the [MIT License](LICENSE) for independently licensable project material. Use, modification, distribution and commercial use are permitted subject to the license notices. See [notices](NOTICE.md) and [contribution policy](CONTRIBUTING.md). WanGP, Refmod-Fork and other third-party material retain their applicable terms; no upstream rights or ownership of user outputs are granted or claimed. The project uses generic attribution without a personal name or email. The version number does not itself authorize publication.
+
+## v1.0.10 global scene preparation
+
+Choose **Default template for all selections** in the video prompt editor to load independent scene panels for every selected character role before queueing any generation. The global template remains an automatic/default rule, not a shared costume or location. Public lookup is sequential and uses the existing cache. Individual scope shows only the chosen role. Refresh public details for all skips reviewed profiles and unsaved edits. Save edited portrayal scenes writes each edited profile separately; the template Save button still saves template fields. Analyze all portrayals with AI opens a reference-selection review for those roles; actual analysis requires a separate start action and follows the existing 20-role limit. No generation is submitted by opening or changing the editor scope. Switching or closing stops new lookups; an in-flight request may finish and update its own cached public profile. Unsaved scene edits are retained in memory by role, not as a durable backup.
 
 ## v1.0.9 portrayal-specific wardrobe and setting
 

@@ -20,4 +20,6 @@
 
 - v1.0.8 character-first prompt defaults require focused live model comparison with the previous release (Hera and Ahsoka or equivalent nonhuman roles). Verify H3 video and stills, FLUX stills, saved custom prompt preservation, and one human role. v1.0.6/v1.0.7 outstanding live checks remain outstanding unless separately reported.
 
+- v1.0.10 live acceptance: before queueing anything, select three dated roles, open global video template scope, verify separate scene panels for all, switch individual/global scope, verify protected edits and bulk refresh/save, and confirm batch AI opens the review without staging a job. All earlier unreported live checks remain outstanding.
+
 - v1.0.9 live acceptance: open the video template and image builder for a dated role; verify automatic scene details, source and missing-field handling, separate same-title adaptations, manual profile save/reset, exact custom override preservation, and local AI scene analysis while a native generation is queued. Review actual canonical accuracy and output quality. Prior unreported live checks remain outstanding.

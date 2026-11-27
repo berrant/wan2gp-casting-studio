@@ -1,3 +1,9 @@
+# v1.0.10 — Global scene preparation
+
+- [x] Complete final cumulative gate: 500 passed, 2 approved skips, zero failures; 107 modules. Two new permanent browser cases; six focused tests passed.
+- [x] Exact v1.0.9 synthetic startup upgrade: 31 tables and eight stored rows preserved, unchanged model/photo bytes and SQLite integrity; separate fresh startup.
+- [ ] Live acceptance: before queueing any generation, select multiple roles; open global video template scope and confirm each role has its own scene panel. Switch individual/global scope, verify refresh protects reviewed/unsaved descriptions, save edited scenes, and open AI batch review without starting analysis. Earlier unreported live checks remain outstanding.
+
 # v1.0.9 — Canonical wardrobe and setting
 
 - [x] Complete final cumulative gate: 498 passed, 2 approved skips, zero failures; 106 modules. Four new permanent scene-context cases; final fingerprints and syntax checks; focused privacy checks and browser smoke.
