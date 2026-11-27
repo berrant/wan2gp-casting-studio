@@ -840,7 +840,7 @@ def get_profile_link(name:str=Query(min_length=1,max_length=180)):
         return {'provider':'imdb','url':row[0],'verified':True} if row[0] else default
     imdb=''
     try:
-        with httpx.Client(timeout=5,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.12 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
+        with httpx.Client(timeout=5,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.13 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
             resp=client.get('https://www.wikidata.org/w/api.php',params={'action':'wbsearchentities','search':name,'language':'en','format':'json','limit':6,'type':'item'})
             resp.raise_for_status()
             candidates=[v for v in resp.json().get('search',[]) if token(v.get('label'))==token(name)]
@@ -952,7 +952,7 @@ def short_stage_profile(name, *, qid=None):
         qid=row[0] if row else ''
     if not re.fullmatch(r'Q[1-9][0-9]{0,14}',qid):
         raise ValueError('Short stage name requires a reviewed Wikidata QID in Settings')
-    with httpx.Client(timeout=20,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.12'}) as client:
+    with httpx.Client(timeout=20,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.13'}) as client:
         response=client.get('https://www.wikidata.org/w/api.php',params={'action':'wbgetentities','ids':qid,'props':'claims|labels|aliases|sitelinks','languages':'en','sitefilter':'enwiki','format':'json'})
         response.raise_for_status()
         entity=response.json().get('entities',{}).get(qid,{})
@@ -993,7 +993,7 @@ def researched_credits(name):
     if len(name.strip())!=1:return fetch_credits(name)
     _,title=short_stage_profile(name)
     if not title:raise ValueError('Reviewed identity has no English Wikipedia article')
-    with httpx.Client(timeout=20,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.12'}) as client:
+    with httpx.Client(timeout=20,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.13'}) as client:
         response=client.get('https://en.wikipedia.org/w/api.php',params={'action':'parse','page':title,'prop':'text','format':'json','formatversion':'2'})
         response.raise_for_status()
         article=response.json().get('parse') or {}
@@ -1004,7 +1004,7 @@ def researched_credits(name):
 
 def wikidata_profile(name):
     if len(name.strip())==1:return short_stage_profile(name)[0]
-    with httpx.Client(timeout=20, trust_env=False, headers={'User-Agent':'CastingStudio/1.0.12 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
+    with httpx.Client(timeout=20, trust_env=False, headers={'User-Agent':'CastingStudio/1.0.13 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
         search=wikidata_get(client,{
             'action':'wbsearchentities','search':name,'language':'en','format':'json','type':'item','limit':8})
         candidates=[c for c in search.get('search',[]) if token(c.get('label',''))==token(name) or
@@ -2360,7 +2360,7 @@ def download_image(url):
         if cached and safe_media_file(PHOTO_DIR,cached[0],r'[0-9a-f]{64}\.jpg'):return 'api/photos/'+cached[0]
         address=validate_public_url(url)
         # Disable proxies and redirects; redirects must not reach private network addresses.
-        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.12)'}) as client:
+        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.13)'}) as client:
             with pinned_image_request(client,url,address) as res:
                 if res.status_code!=200 or not res.headers.get('content-type','').lower().startswith('image/'):
                     return ''
@@ -2452,6 +2452,7 @@ def archive_existing_worker():
 
 # Editable template is separate from casting metadata and from per-selection overrides.
 SAMPLE_TEMPLATE={
+ 'wardrobe_mode':None,
  'name':'Cinematic character showcase',
  'wardrobe':'Clothing faithful to the selected subject’s established visual appearance and appropriate to the scene. For a named production, match its wardrobe design and period. Maintain consistent clothing throughout this presentation.',
  'setting':'A cinematic setting appropriate to the selected production and year, with authentic environmental design, natural lighting and subtle background ambience. For a subject appearing as themselves, use a tasteful, neutral portrait environment.',
@@ -2474,11 +2475,12 @@ PERSONAL_VIDEO_ACTIONS={
     3:'0–5s: <Subject 1> looks toward the camera. 5–10s: Make a small, natural expressive gesture. 10–15s: Settle into a friendly expression.',
     4:'0–5s: <Subject 1> faces the camera. 5–10s: Relax the shoulders and smile gently. 10–15s: Hold the composed studio pose.',
 }
-TEMPLATE_FIELDS=('name','wardrobe','setting','video_count','include_non_diegetic_music','include_caption','music_description',*(f'video{v}_{field}' for v in range(1,5) for field in ('action','sound')))
+TEMPLATE_FIELDS=('name','wardrobe','wardrobe_mode','setting','video_count','include_non_diegetic_music','include_caption','music_description',*(f'video{v}_{field}' for v in range(1,5) for field in ('action','sound')))
 
 class TemplatePayload(BaseModel):
     name:str=Field(default='Custom template',max_length=140)
     wardrobe:str=Field(default='',max_length=8000)
+    wardrobe_mode:Literal['canon','transform','custom']|None=None
     setting:str=Field(default='',max_length=4000)
     video_count:int=Field(default=2,ge=1,le=4)
     include_non_diegetic_music:bool=False
@@ -2492,6 +2494,12 @@ class TemplatePayload(BaseModel):
     video2_sound:str=Field(default='',max_length=4000)
     video3_sound:str=Field(default='',max_length=4000)
     video4_sound:str=Field(default='',max_length=4000)
+
+def merge_video_template(base, override):
+    merged={**base,**{k:v for k,v in override.items() if k in TEMPLATE_FIELDS}}
+    if 'wardrobe' in override and 'wardrobe_mode' not in override:
+        merged['wardrobe_mode']=None
+    return merged
 
 def stored_video_template(row, *, override=False):
     if not row:return {} if override else dict(SAMPLE_TEMPLATE)
@@ -2837,6 +2845,30 @@ def resolve_scene_fields(item,wardrobe,setting):
         setting=flatten(profile.get('setting')) or SCENE_NEUTRAL_SETTING
     return wardrobe,setting
 
+def compile_wardrobe(item, raw, mode, *, video, live_character):
+    """Explicit modes are distinct from legacy prose; never invent an AI result."""
+    text=flatten(raw or '')
+    if mode is None:return text
+    if mode not in ('canon','transform','custom'):raise ValueError('Unknown wardrobe mode')
+    if mode=='custom':
+        if not text or text==flatten(SAMPLE_TEMPLATE['wardrobe']):
+            raise ValueError('Enter the custom outfit for wardrobe option C.')
+        return text
+    if mode=='transform' and (not text or text==flatten(SAMPLE_TEMPLATE['wardrobe'])):
+        raise ValueError('Enter the destination outfit for wardrobe option B.')
+    if not live_character:
+        # No fictional screen portrayal exists for Personal and broadcast profiles.
+        if mode=='transform':raise ValueError('Wardrobe option B requires a dated screen portrayal; use option C for this subject.')
+        return 'Simple, appropriate everyday clothing.' if not item.get('character') else 'Clothing consistent with the selected subject’s established visual appearance.'
+    profile=scene_profile(item)
+    canon=flatten(profile.get('wardrobe') or '')
+    if not canon or not profile.get('custom'):
+        raise ValueError('Prepare and approve the canonical wardrobe using AI wardrobe & setting for this portrayal before reviewing the prompt.')
+    if mode=='canon':return canon
+    if not video:
+        return 'Single still showing the completed wardrobe change: '+text+'. Preserve the character identity and depict the final outfit only.'
+    return 'At the opening, <Subject 1> wears: '+canon+'\nDuring the middle of the shot, the clothing visibly and smoothly transforms into: '+text+'\nBy the end, the destination outfit is fully established and remains consistent.'
+
 def scene_role(choice_key):
     role=appearance_role(choice_key)
     if is_video_game_character(role['person']):raise HTTPException(400,'Game-world prompts retain their existing defaults; use custom wardrobe and setting instructions.')
@@ -2936,6 +2968,9 @@ def prompt_for_selection(item,t,personal=False):
     if game_character:setting=game_world_setting(item,setting)
     if character and production and not personal and not broadcast and not game_character:
         wardrobe,setting=resolve_scene_fields(item,wardrobe,setting)
+    live_character=bool(character and production and not personal and not broadcast and not game_character)
+    if t.get('wardrobe_mode') is not None:
+        wardrobe=compile_wardrobe(item,t.get('wardrobe'),t['wardrobe_mode'],video=True,live_character=live_character)
     out=[]
     for v in range(1,max(1,min(4,int(t.get('video_count',2))))+1):
         acts=flatten(t.get('video%d_action'%v,''))
@@ -2944,53 +2979,30 @@ def prompt_for_selection(item,t,personal=False):
             acts=PERSONAL_VIDEO_ACTIONS[v]
             if sound==flatten(SAMPLE_TEMPLATE[f'video{v}_sound']):
                 sound='Quiet studio ambience and subtle natural movement.'
-        live_character=bool(character and production and not personal and not broadcast and not game_character)
+        description='[reference generation] A photorealistic 15-second shot of <Subject 1> in a new scene, following the action below.'
         if live_character:
-            description='[reference generation] A photorealistic 15-second live-action shot of <Subject 1> in a new scene, following the action below.'
-            keep=('<Subject 1> (throughout [Shot 1]): partially_preserved — Preserve the reference-derived facial likeness and apparent age; '
+            keep=('<Subject 1> (throughout [Shot 1]): partially_preserved - Preserve the reference-derived facial likeness and apparent age; '
                   'the defined character phenotype, anatomy, pigmentation, irises and permanent markings remain consistent from first frame to last. '
                   'Expressions, movement and scene presentation follow the shot direction.')
-            dress=wardrobe
+        elif game_character:
+            keep='<Subject 1> (throughout [Shot 1]): fully_preserved - Maintain the established fictional game character’s defining anatomy, facial structure, colors, markings and proportions throughout the scene.'
         else:
-            if v==1:
-                description=('[reference generation] A photorealistic continuous 15-second photography-studio shot of the same person, following the editable Video 1 actions.' if personal else '[reference generation] A photorealistic 15-second continuous shot featuring the selected character and the editable Video 1 actions.')
-                if personal:
-                    keep='<Subject 1> (throughout [Shot 1]): partially_preserved — Maintain the same recognizable person, facial features, anatomy and natural proportions throughout the studio shot.'
-                elif game_character:
-                    keep=('<Subject 1> (throughout [Shot 1]): fully_preserved — Maintain the fictional game character’s '
-                          'defining anatomy, facial structure, colors, markings and proportions throughout the scene. '
-                          'Preserve the established character identity through the editable actions.'
-                          +(f' Character-defining visual identity: {traits}' if traits else ''))
-                else:
-                    keep='<Subject 1> (throughout [Shot 1]): partially_preserved — The same selected subject remains recognizably consistent through the entire continuous shot. Preserve the established identity and individual character-defining appearance throughout the editable actions.'
-                dress=wardrobe
-            else:
-                description=(f'[reference generation] A photorealistic 15-second continuous studio shot following Video {v-1}, with editable Video {v} actions.' if personal else f'[reference generation] A photorealistic 15-second continuous shot following Video {v-1}, with editable Video {v} actions.')
-                if personal:
-                    keep=f'<Subject 1> (throughout [Shot 1]): partially_preserved — The same recognizable person remains consistent, with the same studio, natural proportions, and facial identity established at the end of Video {v-1}.'
-                elif game_character:
-                    keep='<Subject 1> (throughout [Shot 1]): fully_preserved — Continue the same fictional game character and established game-world environment across every segment.'
-                else:
-                    keep=f'<Subject 1> (throughout [Shot 1]): partially_preserved — Maintain performer identity, character-defining features, setting, and continuity established at the end of Video {v-1}.'
-                dress=f'Use the independent wardrobe instructions for this segment: '+wardrobe
+            keep='<Subject 1> (throughout [Shot 1]): partially_preserved - Maintain the same recognizable person, facial features, anatomy and natural proportions throughout this independent shot.'
+        dress=wardrobe
         music='N/A'
         if t.get('include_non_diegetic_music',False):
             source=clean_line(t.get('music_description') or SAMPLE_TEMPLATE['music_description'])
             music=flatten(source.replace('{production}',production or 'this original presentation'))
-        if live_character:
-            parts=[f'# {refmod} — Video {v}', 'subject_definitions:',identity,
-                   'summary:',description,'retention_analysis:',keep,'detailed_description:',
-                   '[Shot 1, 0.00s–15.00s] '+setting,acts,
-                   'Maintain the defined character appearance across motion, angles and all exposed skin surfaces.',
-                   '  wardrobe_description:',dress]
-            parts+=['overall_soundscape:',sound,'non_diegetic_music:',music]
-        else:
-            parts=[f'# {refmod} — Video {v}', 'subject_definitions:',identity,
-                'wardrobe_description:',dress,'summary:',description,
-                'retention_analysis:',keep,'detailed_description:',
-                '[Shot 1] '+setting,acts,
-                'overall_soundscape:',sound,'non_diegetic_music:',music]
-        out.append('\n'.join(generated_caption_parts(parts,t.get('include_caption',False),caption,video=True)))
+        parts=[f'# {refmod} — Video {v}', 'subject_definitions:',identity,
+               'summary:',description,'retention_analysis:',keep,'detailed_description:',
+               '[Shot 1] '+setting,acts,
+               *(['Maintain the defined character appearance across motion, angles and all exposed skin surfaces.'] if live_character else []),
+               '  wardrobe_description:',dress,'overall_soundscape:',sound,'non_diegetic_music:',music]
+        body='\n'.join(generated_caption_parts(parts,t.get('include_caption',False),caption,video=True))
+        expected=['subject_definitions','summary','retention_analysis','detailed_description','overall_soundscape','non_diegetic_music']
+        if re.findall(r'^([a-z_]+):\s*$',body,re.M)!=expected:
+            raise ValueError('A template field contains a reserved H3 section heading; remove it and review again.')
+        out.append(body)
     return '\n\n'.join(out)
 
 # Exact old factory values are migrated field-by-field; personal edits are never parsed or rewritten.
@@ -3035,6 +3047,7 @@ IMAGE_REFERENCE_LABEL={'h3_image_pruned':'<Picture 1>','p_h3_image':'<Picture 1>
 
 class ImageShot(BaseModel):
     wardrobe: str = Field(default='', max_length=5000)
+    wardrobe_mode: Literal['canon','transform','custom']|None = None
     action: str = Field(default='', max_length=5000)
     framing: str = Field(default='', max_length=2500)
     expression: str = Field(default='', max_length=2500)
@@ -3157,11 +3170,8 @@ def image_prompts_for_selection(item,model,template,video_template,installed,per
               'all images provided collectively establish the performer’s recognizable facial likeness. The selected character’s on-screen species, anatomy, skin coloration and markings determine the finished appearance and take precedence over the performer’s everyday appearance.' if character and production and not broadcast else
               'all images provided collectively establish this same performer’s recognizable facial features and natural proportions.')
     direction=('Photorealistic studio portrait with accurate facial detail, soft balanced studio lighting and a neutral seamless backdrop.' if personal else IMAGE_MODEL_DIRECTIONS[model])
-    # Each manifest entry starts from its selected RefMod and complete prompt.
-    # Do NOT claim the preceding generated image is attached: WanGP gets
-    # independent still-image jobs (not a sequential image-to-image workflow).
-    refname=('<Picture 1>' if model.startswith('h3_') or model=='p_h3_image' else
-             '<ref_image_1>' if model=='flux3_klein' else 'image 1')
+    # RefMod injects identity conditioning, not an ordered list of actual images.
+    # Never manufacture numbered image slots or pretend a previous still is attached.
     prompts=[]
     for n,shot in enumerate(template['shots'],1):
         scene=flatten(shot['action'])
@@ -3175,38 +3185,28 @@ def image_prompts_for_selection(item,model,template,video_template,installed,per
         live_character=bool(character and production and not personal and not broadcast and not game_character)
         if live_character:
             wardrobe,setting=resolve_scene_fields(item,wardrobe,setting)
-            is_h3=MODEL_BY_ID[model]['family']=='minimax_h3'
-            reference=portrayal_reference_authority(traits,concise=not is_h3)
+        if shot.get('wardrobe_mode') is not None:
+            wardrobe=compile_wardrobe(item,shot['wardrobe'],shot['wardrobe_mode'],video=False,live_character=live_character)
+        if live_character:
+            reference=portrayal_reference_authority(traits,concise=MODEL_BY_ID[model]['family']!='minimax_h3')
             style=template.get('visual_style') or CHARACTER_IMAGE_VISUAL_STYLE
             if style==LEGACY_IMAGE_VISUAL_STYLE:style=CHARACTER_IMAGE_VISUAL_STYLE
-            if is_h3:
-                reference='Reference roles: '+reference
-            # Complete target image, not an edit/transform instruction. The same
-            # natural-language reference scoping is valid across still models.
-            fields=[f'### Image {n}/{template["image_count"]} — {MODEL_BY_ID[model]["label"]} — RefMod: {filepath}',
-                    *(['subject_definitions:'] if model=='p_h3_image' else []),
-                    subject+' A photorealistic live-action production still of this character in a new scene.',
-                    reference,
-                    'Maintain the defined anatomy and pigmentation across every visible exposed skin surface.',
-                    ' '.join(x for x in (scene,flatten(shot['framing']),flatten(shot['expression'])) if x),
-                    'wardrobe_description: '+wardrobe,
-                    'Location: '+setting,
-                    flatten(style)]
+            appearance='Maintain the defined anatomy and pigmentation across every visible exposed skin surface.'
         else:
-            fields=[
-                f'### Image {n}/{template["image_count"]} — {MODEL_BY_ID[model]["label"]} — RefMod: {filepath}',
-                *(['subject_definitions:'] if model=='p_h3_image' else []),
-                f'Subject: {subject}',
-                f'The subject identity is defined by the selected RefMod ({refname}). '+identity,
-                *([f'Character identity (fixed anatomy, coloration, markings and recognizable features): {traits}'] if traits else []),
-                'Action and pose: '+scene,
-                *(['Framing: '+flatten(shot['framing'])] if shot['framing'].strip() else []),
-                *(['Expression: '+flatten(shot['expression'])] if shot['expression'].strip() else []),
-                'wardrobe_description: '+wardrobe,
-                'Location: '+setting,
-                'Visual style: '+('Photorealistic professional studio photography, soft balanced light and a plain seamless background.' if personal else flatten(template.get('visual_style') or ImageTemplate().visual_style)),
-                'Photographic direction: '+direction]
-        prompts.append('\n'.join(generated_caption_parts(fields,template.get('include_caption',False),caption)))
+            reference=identity+(' Character-defining visual identity: '+traits if traits else '')
+            appearance=''
+            style=('Photorealistic professional studio photography, soft balanced light and a plain seamless background.' if personal else template.get('visual_style') or ImageTemplate().visual_style)
+        heading=f'### Image {n}/{template["image_count"]} — {MODEL_BY_ID[model]["label"]} — RefMod: {filepath}'
+        # MiniMax and Pruna use fully described target compositions; FLUX uses
+        # natural scene captions. Neither still protocol uses video headers.
+        target=('The target image is a photorealistic portrait of ' if MODEL_BY_ID[model]['family']=='minimax_h3' else 'A photorealistic photograph of ')+subject
+        fields=[heading,target,reference,appearance,scene,flatten(shot['framing']),flatten(shot['expression']),
+                'wardrobe_description: '+wardrobe, 'Location: '+setting,flatten(style)]
+        if not live_character:fields.append(direction)
+
+        parts=generated_caption_parts(fields,template.get('include_caption',False),caption)
+        # A continuous caption, not a sequence of native prompts. Preserve the export heading separately.
+        prompts.append(parts[0]+'\n'+' '.join(' '.join(x.splitlines()) for x in parts[1:] if x.strip()))
     return '\n\n'.join(prompts)
 
 def resolve_public_cast_model(item,family,models):
@@ -3226,6 +3226,10 @@ def resolve_public_cast_model(item,family,models):
 
 @app.get('/api/prompts/export',dependencies=[Depends(require_responsible_use)])
 def export_prompts(filename:str=Query(default='RefMod_Prompts.txt',max_length=120),model:str='h3_video'):
+    try:return compile_prompt_export(filename,model)
+    except ValueError as exc:raise HTTPException(400,str(exc))
+
+def compile_prompt_export(filename,model):
     selected=selected_model(model)
     with connect() as db:
         choices,damaged=read_choices(db)
@@ -3249,7 +3253,7 @@ def export_prompts(filename:str=Query(default='RefMod_Prompts.txt',max_length=12
         if not pid and (token(item['person']) in private_keys or token(canonical_name(item['person'])) in private_keys):continue
         private=by_id.get(pid) if pid else None
         if pid and not private:continue  # Deleted personal profile: never fall back to public export.
-        t={**template,**{k:v for k,v in stored_video_template(overrides.get(item['key']),override=True).items() if k in TEMPLATE_FIELDS}}
+        t=merge_video_template(template,stored_video_template(overrides.get(item['key']),override=True))
         if private:
             if not private['consent']:continue
             linked=private['h3_refmod'] if selected['family']=='minimax_h3' else private['flux_refmod']
@@ -3331,7 +3335,7 @@ def build_live_cast_prompt(req, *, use_saved=True, monitor_details=None):
         raise PermissionError('Use the Personal tab for this profile; re-select it explicitly')
     base=stored_video_template(tplrow)
     overrides=stored_video_template(override,override=True)
-    template={**base,**{k:v for k,v in overrides.items() if k in TEMPLATE_FIELDS}}
+    template=merge_video_template(base,overrides)
     image_template=stored_image_template(imgrow) if selected['kind']=='image' else None
     pid=item.get('personal_id') or ''
     rows=get_personal_rows()
@@ -3382,7 +3386,19 @@ def build_live_cast_prompt(req, *, use_saved=True, monitor_details=None):
         segments=segments or [prompt]
         script=[(segments[min(i,len(segments)-1)].split('\n',1)[-1])
                 for i in range(window_count)]
+        if template.get('wardrobe_mode')=='transform':
+            # One transformation, not a reset to canonical clothing at every
+            # overlapping window. The final outfit is retained thereafter.
+            target=flatten(template['wardrobe'])
+            for i in range(1,len(script)):
+                prefix,rest=script[i].split('  wardrobe_description:\n',1)
+                _,sound=rest.split('\noverall_soundscape:',1)
+                # Preserve optional caption from the generated description.
+                caption_lines=[x for x in rest.split('\noverall_soundscape:',1)[0].splitlines() if x.startswith('A crisp, fixed bottom caption reads:')]
+                script[i]=prefix+'  wardrobe_description:\n'+target+'\nMaintain this destination outfit throughout the remaining shot.'+('\n'+'\n'.join(caption_lines) if caption_lines else '')+'\noverall_soundscape:'+sound
         prompt='\n\n'.join(script)
+    elif selected['kind']=='video' and getattr(req,'video_seconds',15)>15 and template.get('wardrobe_mode')=='transform' and not final_edit:
+        raise ValueError('For a single wardrobe transformation in a long video, choose one window per Video 1–4 action (sequence).')
     # Resolve against the same files the native plugin exposes; file checking
     # (including path-traversal checks) occurs again in queue_bridge.
     if family=='minimax_h3':
@@ -3440,8 +3456,8 @@ def portrait_models(personal_id:str):
     return out
 
 def portrait_prompt(model):
-    ref=('<Picture 1>' if model.startswith('h3_') or model=='p_h3_image' else '<ref_image_1>' if model=='flux3_klein' else 'image 1')
-    return ('Subject: the same person as depicted in all images provided. The linked Personal RefMod ('+ref+') establishes the subject’s recognizable facial identity, hair, natural anatomy and proportions. '
+    selected_model(model)
+    return ('A single realistic profile portrait of the same person depicted in all images provided. The reference identity establishes the subject’s recognizable facial identity, hair, natural anatomy and proportions. '
             'A single realistic chest-up profile portrait, face centered, looking toward the camera with a relaxed friendly expression. '
             'wardrobe_description: Simple, appropriate everyday clothing. '
             'Location: A seamless neutral gray studio background with soft, balanced professional portrait lighting. '
@@ -4368,7 +4384,7 @@ def search_production_online(q:str=Query(min_length=2,max_length=120)):
 # Key-free film credit source. Search is discovery only: accept a verified
 # film article with a matching title, documented alias or explicit redirect.
 WIKIPEDIA_API='https://en.wikipedia.org/w/api.php'
-WIKI_AGENT='CastingStudio/1.0.12 (+https://github.com/berrant/wan2gp-casting-studio)'
+WIKI_AGENT='CastingStudio/1.0.13 (+https://github.com/berrant/wan2gp-casting-studio)'
 def wiki_api(client,params):
     r=client.get(WIKIPEDIA_API,params={**params,'format':'json','formatversion':2},headers={'User-Agent':WIKI_AGENT})
     r.raise_for_status();return r.json()
@@ -4889,7 +4905,7 @@ def save_reference_image(item:ReferenceImageRequest):
             return {**result,'reused_local':True}
         try:address=validate_public_url(item.image_url)
         except Exception as e:raise HTTPException(400,str(e))
-        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.12'}) as client:
+        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.13'}) as client:
             with pinned_image_request(client,item.image_url,address) as r:
                 if r.status_code!=200 or not r.headers.get('content-type','').lower().startswith('image/'):
                     raise HTTPException(422,'Image host did not return an image')

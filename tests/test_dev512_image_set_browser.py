@@ -32,12 +32,14 @@ def test_image_set_count_fields_and_single_click_multi_image_queue(page):
     tab.wait_for_function("document.querySelector('#imageEditBtn').style.display!=='none'")
     tab.locator('#imageEditBtn').click()
     tab.wait_for_function("document.querySelectorAll('[id^=shotWardrobe]').length===5")
+    tab.locator('input[name=shotWardrobe1Mode][value=custom]').check()
     tab.locator('#shotWardrobe1').fill('EXPLICIT wardrobe first')
     tab.locator('#shotAction1').fill('EXPLICIT action first')
     tab.locator('#imageSetCount').select_option('3')
     assert tab.locator('#shotWardrobe1').input_value()=='EXPLICIT wardrobe first'
     assert tab.locator('#shotAction1').input_value()=='EXPLICIT action first'
     assert tab.locator('[id^=shotWardrobe]').count()==3
+    tab.locator('input[name=shotWardrobe2Mode][value=custom]').check()
     tab.locator('#shotWardrobe2').fill('EXPLICIT wardrobe second')
     tab.locator('#shotAction2').fill('EXPLICIT action second')
     tab.locator('#shotFraming2').fill('Portrait vertical framing')

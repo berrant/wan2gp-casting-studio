@@ -1,12 +1,26 @@
 # Casting Studio for WanGP
 
-Version: v1.0.12
+Version: v1.0.13
 Date: 2026-11-27
 
 
 ## License
 
 Casting Studio uses the [MIT License](LICENSE) for independently licensable project material. Use, modification, distribution and commercial use are permitted subject to the license notices. See [notices](NOTICE.md) and [contribution policy](CONTRIBUTING.md). WanGP, Refmod-Fork and other third-party material retain their applicable terms; no upstream rights or ownership of user outputs are granted or claimed. The project uses generic attribution without a personal name or email. The version number does not itself authorize publication.
+
+## v1.0.13 model-specific prompt compiler and wardrobe choices
+
+Video and image generation use their respective prompt renderers, rather than sending video section syntax to image models. H3 video uses six official sections, with wardrobe inside the detailed description and shot markers starting at `[Shot 1]`. Independently queued clips describe their own starting state. H3 Image, Pruna H3 Image and FLUX stills use complete target-image captions with reference identity and appearance instructions; they do not invent numbered reference pictures for RefMod conditioning. Native automatic prompt enhancement is disabled for Casting Studio tasks so inherited host settings cannot silently rewrite reviewed prompts. This does not modify global WanGP defaults or guarantee that every downstream model-internal transformation is identical on every host.
+
+Choose exactly one wardrobe option in the video template or each still definition:
+
+- **A — Canonical outfit:** Use Prepare wardrobe & settings with AI to draft the dated portrayal, then review and save it. Explicit A requires an approved description for fictional live-action roles; a manually approved description also works. No automatic generation or hidden AI analysis occurs.
+- **B — Canonical outfit transforms into:** Enter the destination outfit. Video starts in the approved canonical outfit and changes to the destination; successive sliding windows retain the destination instead of restarting the change. For an independently generated still, depict only the completed outfit. B requires a supported dated fictional portrayal and approved wardrobe. Long repeated independent-window mode is not supported by the automatic B renderer; use a suitable window mode or an explicitly reviewed complete custom prompt.
+- **C — Custom outfit:** Enter the desired outfit; the canonical outfit is not inserted.
+
+Existing saved template, per-role and per-shot overrides and full custom prompts are retained. Untouched legacy automatic wardrobes keep their prior fallback behavior until a new choice is explicitly made. For non-fictional or personal subjects A uses a neutral default rather than inventing a canonical costume. Full manual prompt edits remain authoritative and must be reviewed again before submission. The program does not guarantee model adherence or canonical accuracy; compare actual output and native prompts during live acceptance.
+
+Model guidance consulted: [H3 video](https://github.com/MiniMax-AI/MiniMax-H3/blob/main/skills/h3-prompt-writing/SKILL.md), [H3 Image](https://github.com/MiniMax-AI/MiniMax-H3-Image), [Pruna H3 Image](https://huggingface.co/PrunaAI/P-H3-Image), [FLUX.2](https://docs.bfl.ml/flux_2/flux2_text_to_image.md), [FLUX.3 Klein](https://docs.bfl.ml/flux_3/flux3_image_klein.md), and [WanGP native implementation](https://github.com/deepbeepmeep/WanGP/blob/main/wgp.py). Complete captions are compiled locally instead of relying on an unreviewed native upsampler. No model weights or external dependencies are added.
 
 ## v1.0.12 reviewed native prompts and queue safety
 

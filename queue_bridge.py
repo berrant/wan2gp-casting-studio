@@ -518,6 +518,10 @@ class QueueBridge:
             merged.update(lora_settings)
         merged['model_type'] = submission.model_type
         merged['prompt'] = prompt
+        # A reviewed Casting Studio prompt must not be silently rewritten by
+        # the host's inherited automatic prompt-enhancer setting. WanGP uses
+        # the empty mode for Disabled; this is per task, not a host preference.
+        merged['prompt_enhancer'] = ''
         if submission.portrait_completion is not None and submission.model == 'h3_video':raise ValueError('Portrait requires an image model')
         # Each reviewed casting task maps to one native generation.
         merged.update(batch_size=1, repeat_generation=1)

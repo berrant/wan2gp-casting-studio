@@ -47,8 +47,8 @@ def test_still_protocols_and_caption_roundtrip(installation):
         assert 'Bottom caption: "Ada Test - Pilot - Example Series (2025)".' in text
         body=text.split('\n',1)[1]
         assert not re.search(r'<(?:Picture |ref_image_)\d+>|\bimage [1-9]\d*\b',body,re.I)
-        assert body.startswith('subject_definitions:\n') == (model=='p_h3_image')
-        assert ('Reference roles:' in text)==(s.MODEL_BY_ID[model]['family']=='minimax_h3')
+        assert 'subject_definitions:' not in body and '\n' not in body
+        assert body.startswith('The target image' if s.MODEL_BY_ID[model]['family']=='minimax_h3' else 'A photorealistic photograph')
         assert c.post(API+'/prompts/image-template/reset',params={'model':model}).json()['include_caption'] is False
     old={k:v for k,v in s.SAMPLE_TEMPLATE.items() if k!='include_caption'}
     assert c.put(API+'/prompts/template',json=old).status_code==200

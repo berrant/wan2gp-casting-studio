@@ -1,3 +1,7 @@
+# v1.0.13 prompt compiler requirements
+
+Use model-family-specific automatic prompt formats for all supported still and video model IDs; retain exact explicit final edits. Video uses the six H3 sections and nested wardrobe; independently queued clips must not depend on nonexistent prior context. A requires approved canonical wardrobe for fictional roles; B requires a destination and depicts an actual transition once in video or its completed outfit in stills; C uses only the specified outfit. Legacy saved data remains compatible. Use mutually exclusive conditional controls; no automatic AI inference or submission. Native reviewed prompt text must remain unchanged by inherited WanGP enhancement; do not alter global settings. No new database schema or dependencies. Full cumulative gate and separate host acceptance required.
+
 # v1.0.12 review and duplicate-protection requirements
 
 Authoritative input baseline: v1.0.11 (MIT). Every generation entry point must display complete effective native prompts before staging. Reuse existing Prompts/Bulk queue, portrait, Workshop and history interfaces. Review must bind exact settings, scope, prompt, reference and identity; stale or incomplete reviews block all staging. Native transformations must match reviewed text. No automatic staging from review.

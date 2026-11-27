@@ -1,3 +1,15 @@
+Casting Studio v1.0.13 — Model-specific prompt compiler and wardrobe choices
+Measured verification (2026-11-27)
+
+FINAL COMPLETE CUMULATIVE REGRESSION GATE
+524 collected; 522 passed; 2 approved retired standalone Docker skips; zero failures.
+Group 1: 88 passed, 133 warnings in 187.11s (0:03:07)
+Group 2: 216 passed, 2 skipped, 278 warnings in 220.82s (0:03:40)
+Group 3: 218 passed, 298 warnings in 196.28s (0:03:16)
+111 modules covered exactly once; all exits zero. 129 application/test fingerprints unchanged; Python, JSON and inline JavaScript syntax validated. Five new cumulative test functions. Corrected focused run including model/wardrobe matrix, browser, native relay and default compatibility: 9 passed. Separate four-window wardrobe transformation and actual fake-relay parity check: 1 passed. Earlier preliminary gate was stopped after enhancement/window corrections; a subsequent gate caught two inconsistent default shapes. Corrected server and browser defaults, added the four-window test to cumulative coverage, and restarted the full final gate. No new database schema or upstream code changes. Exact archived v1.0.12 synthetic upgrade: 33 tables, seven stored rows, four artifacts, approved wardrobe and custom templates unchanged; SQLite integrity OK. Separate 800x650 Chromium wardrobe UI smoke: PASS. Actual live WanGP, GPU/model output, Safari, actual user-data upgrade and publication remain unverified. Model-specific automatic prompting does not guarantee canonical accuracy or output adherence.
+
+--- Earlier release evidence ---
+
 Casting Studio v1.0.12 — Complete native prompt review and queue safety
 Measured verification (2026-11-27)
 

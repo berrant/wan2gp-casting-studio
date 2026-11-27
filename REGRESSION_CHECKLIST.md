@@ -1,3 +1,11 @@
+# v1.0.13 — Model-specific prompting and wardrobe
+
+- [x] Full cumulative regression suite on final application and tests; record results in TEST_RESULTS.txt. Additional four-window transformation check passed.
+
+- [x] Focused automated model/wardrobe matrix and H3 structure checks, browser conditional choices/copy, stale review and fake native relay parity with enhancement disabled.
+- [ ] Live: A draft/approve a dated canonical outfit using local AI; B enter destination and verify opening/change/ending video plus completed still; C verify only specified outfit. Test missing approval/destination and existing overrides.
+- [ ] Live: verify actual H3, H3 Image, Pruna and FLUX native prompt, sliding-window behavior, output quality, and unchanged host-wide enhancement defaults. Verify Safari and previous outstanding v1.0.12 queue recovery checks before public release.
+
 # v1.0.12 — Reviewed native prompts and queue safety
 
 - [x] Complete final cumulative gate on final application and tests; record counts in TEST_RESULTS.txt.

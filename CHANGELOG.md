@@ -1,3 +1,10 @@
+## v1.0.13 — Model-specific prompt compiler and wardrobe choices
+
+- Normalize H3 video to six official sections; embed wardrobe in detailed description, remove false prior-clip continuity, and validate automatic section structure. Separate complete still-image captions for supported H3, Pruna and FLUX model IDs from video syntax; preserve reference identity and explicit final prompt overrides.
+- Add mutually exclusive A canonical, B canonical-to-custom, C custom wardrobe controls to templates and still definitions; reuse approved local AI portrayal descriptions, require valid destination and preserve legacy data. B changes once per sliding sequence; stills show the final outfit.
+- Disable inherited native prompt enhancement only for Casting Studio tasks to protect reviewed prompt parity. Preserve review receipts, one-generation enforcement, duplicate protection and existing settings; no upstream or database schema changes.
+- Add model/wardrobe matrix, section validation, browser choice/copy and native relay regression coverage. Live host and model output verification remain outstanding.
+
 ## v1.0.12 — Reviewed native prompts and queue safety
 
 - Route Queue All through existing full Bulk queue review; show each exact native prompt, checkpoint, scene and window count, with expanded text and explicit staging confirmation. Single videos and image sets require current visible native previews and bind them to their submission settings.
