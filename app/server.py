@@ -1,5 +1,6 @@
 import json, os, re, sqlite3, threading, time, random, hashlib, socket, ipaddress, io, shutil, zipfile, uuid, subprocess
 from pathlib import Path
+from typing import Literal
 from functools import lru_cache
 from urllib.parse import quote, urlencode
 from fastapi import FastAPI, HTTPException, Query, Request, Depends
@@ -13,9 +14,11 @@ from bs4 import BeautifulSoup
 try:
     from .credit_sync import parse_wikipedia_filmography, parse_tvmaze_castcredits
     from .credit_service import fetch_credits
+    from .scene_context import research_scene
 except ImportError:  # top-level test imports
     from credit_sync import parse_wikipedia_filmography, parse_tvmaze_castcredits
     from credit_service import fetch_credits
+    from scene_context import research_scene
 
 ROOT=Path(__file__).resolve().parent
 WANGP_ROOT=ROOT.parents[2]
@@ -385,6 +388,7 @@ def connect():
         conn.execute('CREATE TABLE IF NOT EXISTS prompt_overrides (key TEXT PRIMARY KEY, payload TEXT NOT NULL)')
         conn.execute("CREATE TABLE IF NOT EXISTS final_prompt_edits (key TEXT PRIMARY KEY, choice_key TEXT NOT NULL, personal_id TEXT NOT NULL DEFAULT '', prompt TEXT NOT NULL)")
         conn.execute('CREATE TABLE IF NOT EXISTS character_identity (key TEXT PRIMARY KEY, traits TEXT NOT NULL, updated_at INTEGER NOT NULL)')
+        conn.execute('CREATE TABLE IF NOT EXISTS portrayal_scenes (key TEXT PRIMARY KEY, payload TEXT NOT NULL)')
         conn.execute('CREATE TABLE IF NOT EXISTS appearance_analysis (key TEXT PRIMARY KEY, payload TEXT NOT NULL)')
         conn.execute('CREATE TABLE IF NOT EXISTS character_identity_suggestions (key TEXT PRIMARY KEY, traits TEXT NOT NULL, source TEXT NOT NULL, checked INTEGER NOT NULL)')
         conn.commit()
@@ -834,7 +838,7 @@ def get_profile_link(name:str=Query(min_length=1,max_length=180)):
         return {'provider':'imdb','url':row[0],'verified':True} if row[0] else default
     imdb=''
     try:
-        with httpx.Client(timeout=5,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.8 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
+        with httpx.Client(timeout=5,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.9 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
             resp=client.get('https://www.wikidata.org/w/api.php',params={'action':'wbsearchentities','search':name,'language':'en','format':'json','limit':6,'type':'item'})
             resp.raise_for_status()
             candidates=[v for v in resp.json().get('search',[]) if token(v.get('label'))==token(name)]
@@ -946,7 +950,7 @@ def short_stage_profile(name, *, qid=None):
         qid=row[0] if row else ''
     if not re.fullmatch(r'Q[1-9][0-9]{0,14}',qid):
         raise ValueError('Short stage name requires a reviewed Wikidata QID in Settings')
-    with httpx.Client(timeout=20,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.8'}) as client:
+    with httpx.Client(timeout=20,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.9'}) as client:
         response=client.get('https://www.wikidata.org/w/api.php',params={'action':'wbgetentities','ids':qid,'props':'claims|labels|aliases|sitelinks','languages':'en','sitefilter':'enwiki','format':'json'})
         response.raise_for_status()
         entity=response.json().get('entities',{}).get(qid,{})
@@ -987,7 +991,7 @@ def researched_credits(name):
     if len(name.strip())!=1:return fetch_credits(name)
     _,title=short_stage_profile(name)
     if not title:raise ValueError('Reviewed identity has no English Wikipedia article')
-    with httpx.Client(timeout=20,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.8'}) as client:
+    with httpx.Client(timeout=20,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.9'}) as client:
         response=client.get('https://en.wikipedia.org/w/api.php',params={'action':'parse','page':title,'prop':'text','format':'json','formatversion':'2'})
         response.raise_for_status()
         article=response.json().get('parse') or {}
@@ -998,7 +1002,7 @@ def researched_credits(name):
 
 def wikidata_profile(name):
     if len(name.strip())==1:return short_stage_profile(name)[0]
-    with httpx.Client(timeout=20, trust_env=False, headers={'User-Agent':'CastingStudio/1.0.8 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
+    with httpx.Client(timeout=20, trust_env=False, headers={'User-Agent':'CastingStudio/1.0.9 (+https://github.com/berrant/wan2gp-casting-studio)'}) as client:
         search=wikidata_get(client,{
             'action':'wbsearchentities','search':name,'language':'en','format':'json','type':'item','limit':8})
         candidates=[c for c in search.get('search',[]) if token(c.get('label',''))==token(name) or
@@ -2354,7 +2358,7 @@ def download_image(url):
         if cached and safe_media_file(PHOTO_DIR,cached[0],r'[0-9a-f]{64}\.jpg'):return 'api/photos/'+cached[0]
         address=validate_public_url(url)
         # Disable proxies and redirects; redirects must not reach private network addresses.
-        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.8)'}) as client:
+        with httpx.Client(timeout=12,follow_redirects=False,trust_env=False,headers={'User-Agent':'Mozilla/5.0 (compatible; CastingStudio/1.0.9)'}) as client:
             with pinned_image_request(client,url,address) as res:
                 if res.status_code!=200 or not res.headers.get('content-type','').lower().startswith('image/'):
                     return ''
@@ -2805,6 +2809,96 @@ def generated_caption_parts(parts, enabled, caption, *, video=False):
     return cleaned
 
 
+# Global factory prose acts as an auto-resolution marker; custom fields always win.
+SCENE_NEUTRAL_WARDROBE = 'Simple, understated clothing with a consistent silhouette and fabric texture throughout the scene.'
+SCENE_NEUTRAL_SETTING = 'An uncluttered portrait space with a matte neutral backdrop, soft directional light and gentle background depth.'
+
+def scene_profile(item):
+    if not all(item.get(k) for k in ('person','character','production')) or item.get('personal_id'):
+        return {}
+    label=portrayal_production_label(item)
+    if not re.search(r'\(\d{4}\)$',label):return {}
+    key=portrayal_identity_key(item['character'],item['production'],item['person'],item.get('year'))
+    with connect() as db:
+        row=db.execute('SELECT payload FROM portrayal_scenes WHERE key=?',(key,)).fetchone()
+    try:
+        value=json.loads(row[0]) if row else {}
+        if not isinstance(value,dict) or any(not isinstance(value.get(k,''),str) for k in ('wardrobe','setting','source')) or type(value.get('checked',0)) is not int:return {}
+        return value
+    except (ValueError,TypeError):return {}
+
+def resolve_scene_fields(item,wardrobe,setting):
+    profile=scene_profile(item)
+    if wardrobe==flatten(SAMPLE_TEMPLATE['wardrobe']):
+        wardrobe=flatten(profile.get('wardrobe')) or SCENE_NEUTRAL_WARDROBE
+    if setting==flatten(SAMPLE_TEMPLATE['setting']):
+        setting=flatten(profile.get('setting')) or SCENE_NEUTRAL_SETTING
+    return wardrobe,setting
+
+def scene_role(choice_key):
+    role=appearance_role(choice_key)
+    if is_video_game_character(role['person']):raise HTTPException(400,'Game-world prompts retain their existing defaults; use custom wardrobe and setting instructions.')
+    return role
+
+class SceneProfilePayload(BaseModel):
+    choice_key:str=Field(min_length=1,max_length=1200)
+    wardrobe:str=Field(default='',max_length=5000)
+    setting:str=Field(default='',max_length=4000)
+    expected_revision:str|None=Field(default=None,max_length=64)
+
+def scene_revision(value):
+    return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+
+_SCENE_LOOKUP_LOCK=threading.Lock()
+_SCENE_LOOKUPS=set()
+
+@app.get('/api/characters/scene')
+def get_portrayal_scene(choice_key:str=Query(min_length=1,max_length=1200),auto:bool=False,refresh:bool=False):
+    role=scene_role(choice_key)
+    current=scene_profile(role)
+    if auto and not current.get('custom') and (refresh or int(time.time())-current.get('checked',0)>7*86400):
+        with _SCENE_LOOKUP_LOCK:
+            if role['profile_key'] in _SCENE_LOOKUPS:return {**current,'role':role,'revision':scene_revision(current),'research_error':'Lookup already in progress; saved descriptions retained.'}
+            _SCENE_LOOKUPS.add(role['profile_key'])
+        label=portrayal_production_label(role); title=re.sub(r'\s*\(\d{4}\)$','',label)
+        try:
+            with httpx.Client(timeout=5,trust_env=False,follow_redirects=False) as client:
+                found=research_scene(client,wiki_api,role['character'],title,role['year'])
+            # Never erase previously useful fields, or a concurrent manual save.
+            with lock,connect() as db:
+                row=db.execute('SELECT payload FROM portrayal_scenes WHERE key=?',(role['profile_key'],)).fetchone()
+                latest=json.loads(row[0]) if row else {}
+                if not isinstance(latest,dict):raise ValueError('Invalid saved scene profile')
+                if not latest.get('custom'):
+                    current={**latest,**{k:v for k,v in found.items() if v},'checked':int(time.time())}
+                    db.execute('INSERT OR REPLACE INTO portrayal_scenes VALUES (?,?)',(role['profile_key'],json.dumps(current)))
+                else:current=latest
+        except (httpx.HTTPError,ValueError,TypeError,KeyError):
+            return {**current,'role':role,'revision':scene_revision(current),'research_error':'Public source unavailable; saved descriptions retained.'}
+        finally:
+            with _SCENE_LOOKUP_LOCK:_SCENE_LOOKUPS.discard(role['profile_key'])
+    return {**current,'role':role,'revision':scene_revision(current)}
+
+@app.put('/api/characters/scene')
+def save_portrayal_scene(payload:SceneProfilePayload):
+    role=scene_role(payload.choice_key)
+    with lock,connect() as db:
+        row=db.execute('SELECT payload FROM portrayal_scenes WHERE key=?',(role['profile_key'],)).fetchone()
+        old=json.loads(row[0]) if row else {}
+        if payload.expected_revision is not None and payload.expected_revision!=scene_revision(old):raise HTTPException(409,'Scene profile changed in another editor; reopen before saving.')
+        if not isinstance(old,dict):raise HTTPException(409,'Saved scene profile is damaged; reset it before saving.')
+        value={**old,'wardrobe':payload.wardrobe.strip(),'setting':payload.setting.strip(),'custom':True,'checked':int(time.time())}
+        db.execute('INSERT OR REPLACE INTO portrayal_scenes VALUES (?,?)',(role['profile_key'],json.dumps(value)))
+    return {**value,'role':role,'revision':scene_revision(value)}
+
+@app.delete('/api/characters/scene')
+def reset_portrayal_scene(choice_key:str=Query(min_length=1,max_length=1200)):
+    role=scene_role(choice_key)
+    with _SCENE_LOOKUP_LOCK:
+        if role['profile_key'] in _SCENE_LOOKUPS:raise HTTPException(409,'Wait for the current scene lookup to finish.')
+        with lock,connect() as db:db.execute('DELETE FROM portrayal_scenes WHERE key=?',(role['profile_key'],))
+    return {'deleted':True}
+
 def prompt_for_selection(item,t,personal=False):
     actress=clean_line(item.get('person',''))
     character=clean_line(item.get('character',''))
@@ -2838,6 +2932,8 @@ def prompt_for_selection(item,t,personal=False):
         wardrobe='Simple, appropriate everyday clothing, consistent throughout the presentation.'
     setting=PERSONAL_STUDIO if personal else flatten(t.get('setting',''))
     if game_character:setting=game_world_setting(item,setting)
+    if character and production and not personal and not broadcast and not game_character:
+        wardrobe,setting=resolve_scene_fields(item,wardrobe,setting)
     out=[]
     for v in range(1,max(1,min(4,int(t.get('video_count',2))))+1):
         acts=flatten(t.get('video%d_action'%v,''))
@@ -3076,6 +3172,7 @@ def image_prompts_for_selection(item,model,template,video_template,installed,per
         if game_character:setting=game_world_setting(item,setting)
         live_character=bool(character and production and not personal and not broadcast and not game_character)
         if live_character:
+            wardrobe,setting=resolve_scene_fields(item,wardrobe,setting)
             is_h3=MODEL_BY_ID[model]['family']=='minimax_h3'
             reference=portrayal_reference_authority(traits,concise=not is_h3)
             style=template.get('visual_style') or CHARACTER_IMAGE_VISUAL_STYLE
@@ -4117,7 +4214,7 @@ def search_production_online(q:str=Query(min_length=2,max_length=120)):
 # Key-free film credit source. Search is discovery only: accept a verified
 # film article with a matching title, documented alias or explicit redirect.
 WIKIPEDIA_API='https://en.wikipedia.org/w/api.php'
-WIKI_AGENT='CastingStudio/1.0.8 (+https://github.com/berrant/wan2gp-casting-studio)'
+WIKI_AGENT='CastingStudio/1.0.9 (+https://github.com/berrant/wan2gp-casting-studio)'
 def wiki_api(client,params):
     r=client.get(WIKIPEDIA_API,params={**params,'format':'json','formatversion':2},headers={'User-Agent':WIKI_AGENT})
     r.raise_for_status();return r.json()
@@ -4638,7 +4735,7 @@ def save_reference_image(item:ReferenceImageRequest):
             return {**result,'reused_local':True}
         try:address=validate_public_url(item.image_url)
         except Exception as e:raise HTTPException(400,str(e))
-        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.8'}) as client:
+        with httpx.Client(timeout=20,follow_redirects=False,trust_env=False,headers={'User-Agent':'CastingStudio/1.0.9'}) as client:
             with pinned_image_request(client,item.image_url,address) as r:
                 if r.status_code!=200 or not r.headers.get('content-type','').lower().startswith('image/'):
                     raise HTTPException(422,'Image host did not return an image')
@@ -5049,6 +5146,7 @@ class AppearanceSelection(BaseModel):
     choice_key:str=Field(min_length=1,max_length=1200)
     image_ids:list[str]=Field(min_length=1,max_length=4)
 class AppearanceBatch(BaseModel):
+    mode:Literal['identity','scene']='identity'
     engine:str=Field(min_length=1,max_length=20)
     selections:list[AppearanceSelection]=Field(min_length=1,max_length=20)
 class AppearanceApproval(BaseModel):
@@ -5088,12 +5186,13 @@ def resolve_appearance_images(task):
 def appearance_batch(req:AppearanceBatch):
     bridge=appearance_bridge(); tasks=[];seen=set()
     for selection in req.selections:
-        role=appearance_role(selection.choice_key)
+        role=(scene_role(selection.choice_key) if req.mode=='scene' else appearance_role(selection.choice_key))
         if role['profile_key'] in seen:raise HTTPException(400,'Duplicate portrayal in batch')
         seen.add(role['profile_key'])
         available={r['id'] for r in appearance_photo_rows(role)}
         if len(set(selection.image_ids))!=len(selection.image_ids) or not set(selection.image_ids)<=available:raise HTTPException(400,'Select 1–4 available, readable character-specific references per role; refresh if a reference was changed or damaged')
         task={**role,'image_ids':selection.image_ids,'baseline':exact_identity_snapshot(role['profile_key'])}
+        if req.mode=='scene':task.update(mode='scene',scene_baseline=scene_profile(role))
         raw_images,task['staged_fingerprints']=appearance_source_bytes(task)
         try:
             for raw in raw_images:
@@ -5125,7 +5224,7 @@ def appearance_status(job_id:str):
     result=appearance_bridge().status(job_id)
     if result is None:raise HTTPException(404,'Appearance batch unavailable; run it again.')
     for draft in result.get('results',[]):
-        if draft.get('state')=='review':draft['wardrobe_flags']=appearance_wardrobe_flags(draft.get('traits',''))
+        if draft.get('state')=='review' and draft.get('mode')!='scene':draft['wardrobe_flags']=appearance_wardrobe_flags(draft.get('traits',''))
     return result
 
 @app.post('/api/appearance/batch/{job_id}/cancel')
@@ -5142,7 +5241,7 @@ def appearance_approve(job_id:str,req:AppearanceApproval):
     with bridge.lock:
         job=bridge.job
         if not job or job['id']!=job_id or job['state'] not in ('completed','cancelled','failed'):raise HTTPException(409,'Wait for the batch to finish before approving drafts')
-        result=next((r for r in job['results'] if r['index']==req.index and r['state']=='review'),None)
+        result=next((r for r in job['results'] if r['index']==req.index and r['state']=='review' and r.get('mode')!='scene'),None)
         if not result:raise HTTPException(409,'No pending draft for this portrayal')
         key=result['profile_key']
         with lock,connect() as db:
@@ -5155,6 +5254,32 @@ def appearance_approve(job_id:str,req:AppearanceApproval):
             db.execute('INSERT OR REPLACE INTO appearance_analysis VALUES (?,?)',(key,json.dumps(meta)))
         result.update(state='approved',traits=traits)
     return {'saved':True,'traits':traits}
+
+class SceneApproval(BaseModel):
+    index:int=Field(ge=0,le=19)
+    wardrobe:str=Field(default='',max_length=5000)
+    setting:str=Field(default='',max_length=4000)
+
+@app.post('/api/appearance/batch/{job_id}/approve-scene')
+def appearance_approve_scene(job_id:str,req:SceneApproval):
+    bridge=appearance_bridge()
+    wardrobe,setting=req.wardrobe.strip(),req.setting.strip()
+    if not wardrobe and not setting:raise HTTPException(400,'Enter wardrobe or setting details')
+    with bridge.lock:
+        job=bridge.job
+        if not job or job['id']!=job_id or job['state'] not in ('completed','cancelled','failed'):raise HTTPException(409,'Wait for the batch to finish before approving drafts')
+        result=next((r for r in job['results'] if r['index']==req.index and r['state']=='review' and r.get('mode')=='scene'),None)
+        if not result:raise HTTPException(409,'No pending scene draft for this portrayal')
+        with lock,connect() as db:
+            _,fingerprints=appearance_source_bytes(result)
+            if fingerprints!=result['fingerprints']:raise HTTPException(409,'Source images changed; analyze again.')
+            row=db.execute('SELECT payload FROM portrayal_scenes WHERE key=?',(result['profile_key'],)).fetchone()
+            old=json.loads(row[0]) if row else {}
+            if old!=result['scene_baseline']:raise HTTPException(409,'Scene profile changed since analysis; existing edits retained.')
+            value={**old,'wardrobe':wardrobe or old.get('wardrobe',''),'setting':setting or old.get('setting',''),'custom':True,'checked':int(time.time())}
+            db.execute('INSERT OR REPLACE INTO portrayal_scenes VALUES (?,?)',(result['profile_key'],json.dumps(value)))
+        result.update(state='approved',wardrobe=value['wardrobe'],setting=value['setting'])
+    return {'saved':True,**value}
 
 def workshop_portrait_candidates(bridge,family):
     candidates=[]
@@ -5535,6 +5660,7 @@ def export_prompt_backup():
                 'overrides':{k:json.loads(v) for k,v in db.execute('SELECT key,payload FROM prompt_overrides')},
                 'final_edits':[dict(zip(('key','choice_key','personal_id','prompt'),row)) for row in db.execute('SELECT key,choice_key,personal_id,prompt FROM final_prompt_edits')],
                 'character_traits':dict(db.execute('SELECT key,traits FROM character_identity')),
+                'portrayal_scenes':{k:json.loads(v) for k,v in db.execute('SELECT key,payload FROM portrayal_scenes')},
                 'production_sets':[{'production':p,'family':f,'choices':json.loads(v)} for p,f,v in db.execute('SELECT production,family,payload FROM production_selection_sets')]}
         return JSONResponse(data,headers={'Cache-Control':'no-store'})
     except (ValueError,TypeError) as exc:
@@ -5548,7 +5674,7 @@ async def import_prompt_backup(request:Request):
         raw.extend(chunk)
     try:
         data=json.loads(raw)
-        if not isinstance(data,dict) or set(data)-{'templates','overrides','final_edits','character_traits','production_sets'} or not {'templates','overrides','final_edits','character_traits'}<=set(data):raise ValueError('Unrecognized prompt backup structure')
+        if not isinstance(data,dict) or set(data)-{'templates','overrides','final_edits','character_traits','production_sets','portrayal_scenes'} or not {'templates','overrides','final_edits','character_traits'}<=set(data):raise ValueError('Unrecognized prompt backup structure')
         sets=data.get('production_sets',[]);production_sets=[];seen=set();private=personal_name_keys()
         if not isinstance(sets,list) or len(sets)>10000:raise ValueError('Invalid production collections')
         for rec in sets:
@@ -5567,7 +5693,13 @@ async def import_prompt_backup(request:Request):
             value=data[name]
             if not isinstance(value,dict) or len(value)>10000 or any(not isinstance(k,str) or not k or len(k)>500 for k in value):raise ValueError('Invalid '+name)
             return value
-        templates=[];overrides=[];traits=[];edits=[]
+        templates=[];overrides=[];traits=[];edits=[];scenes=[]
+        for k,v in data.get('portrayal_scenes',{}).items() if isinstance(data.get('portrayal_scenes',{}),dict) else ():
+            if not re.fullmatch(r'portrayal\|[0-9a-f]{64}',k) or not isinstance(v,dict) or set(v)-{'wardrobe','setting','source','custom','checked'}:raise ValueError('Invalid portrayal scene')
+            if any(not isinstance(v.get(f,''),str) or len(v.get(f,''))>limit for f,limit in [('wardrobe',5000),('setting',4000),('source',900)]):raise ValueError('Invalid portrayal scene text')
+            if type(v.get('custom',False)) is not bool or type(v.get('checked',0)) is not int:raise ValueError('Invalid portrayal scene metadata')
+            scenes.append((k,json.dumps(v)))
+        if not isinstance(data.get('portrayal_scenes',{}),dict) or len(scenes)>10000:raise ValueError('Invalid portrayal scenes')
         for k,v in mapping('templates').items():
             if not isinstance(v,dict):raise ValueError('Invalid template')
             if k=='default':value=TemplatePayload.model_validate({**SAMPLE_TEMPLATE,**v}).model_dump()
@@ -5593,10 +5725,11 @@ async def import_prompt_backup(request:Request):
         db.executemany('INSERT OR REPLACE INTO prompt_settings VALUES (?,?)',templates)
         db.executemany('INSERT OR REPLACE INTO prompt_overrides VALUES (?,?)',overrides)
         db.executemany('INSERT OR REPLACE INTO character_identity VALUES (?,?,?)',traits)
+        db.executemany('INSERT OR REPLACE INTO portrayal_scenes VALUES (?,?)',scenes)
         db.executemany('DELETE FROM appearance_analysis WHERE key=?',[(row[0],) for row in traits])
         db.executemany('INSERT OR REPLACE INTO production_selection_sets VALUES (?,?,?)',production_sets)
         for row in edits:
             if row[2] and not db.execute('SELECT 1 FROM personal_profiles WHERE id=? AND consent=1',(row[2],)).fetchone():
                 skipped+=1;continue
             db.execute('INSERT OR REPLACE INTO final_prompt_edits VALUES (?,?,?,?)',row)
-    return {'saved':True,'templates':len(templates),'overrides':len(overrides),'final_edits':len(edits)-skipped,'skipped_private_edits':skipped,'character_traits':len(traits),'production_sets':len(production_sets)}
+    return {'saved':True,'templates':len(templates),'overrides':len(overrides),'final_edits':len(edits)-skipped,'skipped_private_edits':skipped,'character_traits':len(traits),'portrayal_scenes':len(scenes),'production_sets':len(production_sets)}

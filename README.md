@@ -1,12 +1,20 @@
 # Casting Studio for WanGP
 
-Version: v1.0.8
+Version: v1.0.9
 Date: 2026-11-27
 
 
 ## License
 
 Casting Studio uses the [MIT License](LICENSE) for independently licensable project material. Use, modification, distribution and commercial use are permitted subject to the license notices. See [notices](NOTICE.md) and [contribution policy](CONTRIBUTING.md). WanGP, Refmod-Fork and other third-party material retain their applicable terms; no upstream rights or ownership of user outputs are granted or claimed. The project uses generic attribution without a personal name or email. The version number does not itself authorize publication.
+
+## v1.0.9 portrayal-specific wardrobe and setting
+
+The video template editor, image set builder and generator identity workspace show the selected public character's shared scene profile. Unchanged factory wardrobe and setting fields automatically resolve from that exact performer/character/production/year; global custom text, per-selection video overrides, per-image edits and exact final prompts retain priority. The global template uses an automatic marker instead of binding one character's costume or background to every role. An image's blank setting inherits the video template's setting. Review and save profile text separately from the global template. Use Reset portrayal scene to explicitly clear a profile and return to source research.
+
+Opening the selected role's editor checks a seven-day local cache and a bounded English Wikipedia query when due. The lookup accepts only a matching dated production article mentioning the role, and extracts explicitly attributed wardrobe and story-world location clauses. Source links and CC BY-SA attribution are displayed; public descriptions are suggestions, not proof of accuracy. Sparse articles, unavailable providers or ambiguous titles may yield empty fields. Missing factory fields use a neutral portrait fallback, not an invented canonical location. No library-wide research scan or network call occurs in prompt rendering or queue submission. Unvisited bulk selections use saved data or the fallback.
+
+For more detailed wardrobe and backgrounds, use Analyze wardrobe & setting with AI. Select 1–4 approved pictures of the exact portrayal. The installed local WanGP vision model drafts a costume and a single recognizable setting, including architecture, furnishings, lighting and background elements. This uses the same non-interrupting native queue and requires explicit review and approval; AI knowledge may be wrong. It does not replace the physical identity profile. Personal and broadcast profiles are excluded from public scene research; game-world prompt behavior remains unchanged. Scene data is stored in one new additive local table and included in prompt backups. No new models, curated character catalog, or upstream modifications are shipped.
 
 ## v1.0.8 character-first prompting
 

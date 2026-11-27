@@ -1,3 +1,10 @@
+## v1.0.9 — Portrayal-specific wardrobe and scene context
+
+- Resolve unchanged factory wardrobe and setting fields independently from the selected dated public fictional portrayal, shared across stills and videos. Custom template, per-shot and final prompt edits retain precedence. Personal, broadcast and game prompt defaults are unchanged.
+- Automatically check locally cached public scene details on opening a selected role's editor or generator. Extract only attributed wardrobe and explicit story-world setting clauses from a matching production article and year, distinguish filming locations, retain previous data on provider errors, and cache successful lookups. No new background library scan or generation-time network lookup. Display source attribution, missing details and neutral fallback; never claim a missing location is canonical.
+- Add separately reviewed local WanGP vision scene analysis using approved character references, with explicit descriptive wardrobe/location instructions, native GPU scheduling and stale-source/profile safeguards. Identity-only analysis remains independent. Review inferred AI details before approval.
+- Add one local SQLite table and optional backward-compatible prompt backup data. Preserve existing templates, profiles, selections and prompts; no bundled character data or upstream changes. Live provider, local model and generation quality checks remain necessary.
+
 ## v1.0.8 — Character-first generation defaults (Option D)
 
 - Name the character and recorded production/year in generated fictional live-action prompts; the selected RefMod supplies reference-derived facial likeness and apparent age. Do not name the performer in factory identity prose or invent a second subject or numbered picture assignment.

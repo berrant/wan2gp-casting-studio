@@ -1,3 +1,12 @@
+# v1.0.9 — Canonical wardrobe and setting
+
+- [x] Complete final cumulative gate: 498 passed, 2 approved skips, zero failures; 106 modules. Four new permanent scene-context cases; final fingerprints and syntax checks; focused privacy checks and browser smoke.
+
+- [x] Exact v1.0.8 synthetic startup upgrade, all 30 prior SQLite tables and seeded data preserved, one additive portrayal scene table, model/photo byte preservation, SQLite integrity; separate fresh startup.
+- [ ] Live public-source lookup and accurate dated portrayal scene suggestions; select different characters and remakes, confirm factory fields use the correct shared context, confirm missing evidence is clearly identified.
+- [ ] Live local scene analysis with approved character pictures, wait behind generation, review wardrobe/setting separately from identity, confirm save/reset, and compare actual FLUX/H3 output. Confirm custom prompts survive.
+- [ ] Publisher clearance and version-specific release approval. Earlier unreported live checks remain outstanding.
+
 # v1.0.8 — Character-first Option D
 - [x] Focused prompt tests: 10 passed, including every supported still-image model and H3 video, Hera/Ahsoka trait preservation, no performer name in factory generation identity, no invented extra subjects, legacy factory style substitution and exact custom prompt/style preservation.
 - [x] Final full cumulative automated gate: 494 passed, 2 approved skips, zero failures across 105 modules; 496 collected. Legacy assertion corrected and full gate repeated. See TEST_RESULTS.txt.

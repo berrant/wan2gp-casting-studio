@@ -1,3 +1,10 @@
+# v1.0.9 scene-context requirements
+
+- Automatically resolve unchanged factory wardrobe and setting per dated public fictional portrayal, with distinct costume, physical identity, setting and action sections. Display the concrete description in the selected-role scene editor. Do not store one role's description as the global factory template.
+- Use exact title/year source matching, conservative attributed scene evidence, source attribution and local caching. Explicitly identify missing canonical details and never fabricate certainty. No automatic bulk scanning or network calls during prompt rendering/submission.
+- Provide explicit local AI scene analysis through the existing safe native vision queue, with separate wardrobe/setting draft fields, human approval, stale source/profile rejection, and no wardrobe leakage into identity. Preserve user text and final prompt overrides.
+- Keep Personal/broadcast research exclusions and game prompt behavior. Additive scene storage, legacy prompt backup compatibility, clean distribution and complete final regression gate.
+
 # Casting Board — cumulative requirements
 
 Authoritative delivered baseline: v1.0.7 (MIT). v1.0.8 is the character-first prompt revision; live acceptance and publishing remain gated. v1.0.5 compact masthead and v1.0.4 production integrity repairs remain intact. Run the complete cumulative suite on final application/test code before release. Preserve external user data, historic keys, consent and saved prompts. Queue progress is browser-tab-local per model/checkpoint; a receipt represents staging rather than native completion. Distinct production keys preserve existing records. Credits must come from explicit source mappings; label partial coverage. Validate release identity before importing cast or selecting film artwork, reject ambiguous series title matches, and reject conflicting explicit credit years atomically. Do not automatically rewrite previously mixed historical records.

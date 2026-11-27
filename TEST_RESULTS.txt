@@ -1,3 +1,16 @@
+Casting Studio v1.0.9 — Portrayal-specific wardrobe and environment
+Measured verification (2026-11-27)
+
+FINAL COMPLETE CUMULATIVE REGRESSION GATE
+500 collected; 498 passed; 2 approved retired standalone Docker skips; zero failures.
+Group 1: 168 passed, 2 skipped, 222 warnings in 178.12s.
+Group 2: 165 passed, 0 skipped, 228 warnings in 194.87s.
+Group 3: 165 passed, 0 skipped, 231 warnings in 166.28s.
+All 106 test modules covered exactly once in three disjoint groups; all exits zero; 681 non-failing warnings. Final application and test fingerprints unchanged; Python, JSON and inline JavaScript syntax validated.
+Seven focused checks passed (four scene-context tests, three release/privacy tests). Synthetic browser smoke verified global template scope, concrete selected-role scene fields, revision-checked save and opening native AI scene mode. Exact v1.0.8 synthetic upgrade preserved all 30 existing SQLite tables, 11 stored rows including 10 seeded user records and model/photo bytes; one additive table; SQLite integrity and separate fresh startup passed. Source-provider responses and local AI output were mocked. No live GPU, provider, Safari, actual user database, repository push or tag verified. Prior live checks remain outstanding.
+
+--- Earlier release evidence ---
+
 Casting Studio v1.0.8 — Character-first Option D
 Measured verification (2026-11-27)
 

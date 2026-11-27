@@ -40,7 +40,7 @@ def test_compact_header_responsive_and_live_status():
         assert page.locator('body').evaluate("e=>e.classList.contains('ux-basic')")
         page.locator('#integrationButton').click()
         assert page.locator('#aboutModal').is_visible()
-        assert 'v1.0.8' in page.locator('#aboutModal').inner_text()
+        assert 'v1.0.9' in page.locator('#aboutModal').inner_text()
         page.evaluate("$('aboutModal').classList.remove('open')")
         page.locator('#peopleMenuButton').click()
         assert page.locator('#peopleMenu').is_visible()
